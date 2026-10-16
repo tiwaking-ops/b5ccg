@@ -20,6 +20,17 @@
   689 CRLF lines on disk (= Claude's 1,236 LF lines, same bytes). Canonical,
   unedited.
 
+## 2026-10-16 — B5-0001 DONE (WP-00/B0)
+
+* Untracked `.java` = 0 (173/173); secret scan clean; restore drill green
+  from a spaced-path clone; `snapshot-age-check.ps1` alert shipped.
+* Build fix landed: `compile.bat` response file now emits quoted
+  forward-slash paths (javac @-files split on spaces unquoted and eat
+  backslashes quoted — two measured failures, commits `0b25e44`,
+  `fa89b5a`). In-place build re-verified green after the change.
+* Branch note: genesis commit landed on `master`, later commits on `main`
+  (host default-branch config); reconcile before first push.
+
 ## Pending owner decisions (Claude §1.5)
 
 * D1 product intent (gates A7/F1–F5) — OPEN.

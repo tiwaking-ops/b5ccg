@@ -7,7 +7,7 @@ Acceptance lines are binding.
 
 | ID | Status | Task | Scope | Claim | Report |
 |---|---|---|---|---|---|
-| B5-0001 | OPEN | WP-00 Snapshot, secret scan, restore drill (B0). Acceptance: untracked .java = 0, restore drill builds + gates green, stale-snapshot alert exists | tooling | - | - |
+| B5-0001 | DONE | WP-00 Snapshot, secret scan, restore drill (B0). Acceptance: untracked .java = 0, restore drill builds + gates green, stale-snapshot alert exists | tooling | - | .agent/REPORTS/2026-10-16-opencode (muse-spark-1.3-free) 01-B5-0001.md |
 | B5-0002 | OPEN | WP-01 Pin rulebook, rule-set profile stub (A9). Acceptance: hash recorded, 689-vs-1236 reconciled in writing, profile recorded in replays | engine | - | - |
 | B5-0003 | OPEN | WP-02 Canonical-key function + parity probe (A1a). Acceptance: probe exits 0, every CardEffects literal canonical, existing probes unchanged | engine | - | - |
 | B5-0004 | OPEN | WP-03 Printing-diff triage of 82 special-cased titles (A1a). Acceptance: all 58 single-literal titles resolved + scenario test passing under both ids | engine | - | - |
