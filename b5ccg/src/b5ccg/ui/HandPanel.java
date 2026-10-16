@@ -36,7 +36,7 @@ public class HandPanel extends JPanel {
     private Conflict        resolvedConflict;
     private GameState       resolvedState;
     private boolean[]       typeFilter = new boolean[CardType.values().length];
-    private boolean[]       factionFilter = new boolean[Faction.values().length];
+    private boolean[]       factionFilter = new boolean[Loyalty.values().length];
     private int             sortMode = 0;   // 0=unsorted, 1=cost asc, 2=cost desc
     private boolean         showUnplayable = true;
 
@@ -74,9 +74,9 @@ public class HandPanel extends JPanel {
     }
 
     // B5-0348: inject rules engine + human faction for affordability/playability checks
-    public void setRules(RulesEngine rules, Faction humanFaction) {
+    public void setRules(RulesEngine rules, Race humanRace) {
         this.rules = rules;
-        // humanFaction stored for filter purposes; humanPlayer for affordability
+        // humanRace stored for filter purposes; humanPlayer for affordability
     }
 
     public void setHumanPlayer(Player human) { this.humanPlayer = human; }
@@ -90,7 +90,7 @@ public class HandPanel extends JPanel {
     }
 
     // B5-0348: faction filter control
-    public void setFactionFilter(Faction faction, boolean show) {
+    public void setRaceFilter(Loyalty faction, boolean show) {
         factionFilter[faction.ordinal()] = show;
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() { repaint(); }
@@ -232,7 +232,7 @@ public class HandPanel extends JPanel {
     // B5-0348: returns true when card passes all active filters
     private boolean cardVisible(Card card) {
         if (!typeFilter[card.getType().ordinal()]) return false;
-        if (!factionFilter[card.getFaction().ordinal()]) return false;
+        if (!factionFilter[card.getLoyalty().ordinal()]) return false;
         return true;
     }
 
@@ -280,7 +280,7 @@ public class HandPanel extends JPanel {
         }
         // Non-character cards: conflict cards are playable if faction-legal (checked elsewhere)
         // Agenda/Event/Enhancement/Group/Location cards: playable via playCard if faction-legal
-        if (card.getFaction().isPlayableBy(humanPlayer.getFaction())) {
+        if (card.getLoyalty().isPlayableBy(humanPlayer.getRace())) {
             return humanPlayer.getHand().contains(card);
         }
         return false;
@@ -308,7 +308,7 @@ public class HandPanel extends JPanel {
             sb.append(" — Cost: ").append(card.getCost()).append(" INF");
         }
         // B5-1971: add faction, rarity, subtype
-        sb.append("<br>Faction: ").append(card.getFaction().toString());
+        sb.append("<br>Race: ").append(card.getLoyalty().toString());
         sb.append(" | Rarity: ").append(card.getRarity().toString());
         String subtype = card.getSubtype();
         if (subtype != null && subtype.length() > 0) {
@@ -481,10 +481,10 @@ public class HandPanel extends JPanel {
         String title = card.getTitle().length() > 16 ? card.getTitle().substring(0, 15) + "…" : card.getTitle();
         g.drawString(title, x + 3, y + 26);
 
-        // Faction
+        // Race
         g.setFont(new Font("SansSerif", Font.ITALIC, 8));
         g.setColor(new Color(180, 180, 180));
-        g.drawString(card.getFaction().toString(), x + 3, y + 37);
+        g.drawString(card.getLoyalty().toString(), x + 3, y + 37);
 
         // B5-0333 F13: influence cost on card face
         int cost = card.getCost();

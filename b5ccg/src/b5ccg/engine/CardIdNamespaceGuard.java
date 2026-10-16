@@ -208,6 +208,13 @@ public class CardIdNamespaceGuard {
         return new Result(v, filesRead, idsSeen);
     }
 
+    /** Strips the registered "de_" prefix from an id; bare ids pass through. Null maps to null. */
+    public static String canonicalKey(String id) {
+        if (id == null) return null;
+        if (id.startsWith("de_")) return id.substring(3);
+        return id;
+    }
+
     // ── main() — on-demand gate, exit-code contract ───────────────────────
 
     /**

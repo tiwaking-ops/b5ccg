@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Player {
     private final String  name;
-    private final Faction faction;
+    private final Race race;
     private final boolean isHuman;
 
     private int influence = 4;
@@ -59,11 +59,11 @@ public class Player {
      *  constructor (faction must be assigned first). */
     private int unrest = 1;
 
-    public Player(String name, Faction faction, boolean isHuman) {
+    public Player(String name, Race race, boolean isHuman) {
         this.name     = name;
-        this.faction  = faction;
+        this.race     = race;
         this.isHuman  = isHuman;
-        this.unrest   = faction == Faction.NON_ALIGNED ? 2 : 1;   // B5-0691 (:278, :888)
+        this.unrest   = race == Race.NON_ALIGNED ? 2 : 1;   // B5-0691 (:278, :888)
     }
 
     // ── Influence ────────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ public class Player {
 
     // ── Identity ─────────────────────────────────────────────────────────────
     public String  getName()    { return name; }
-    public Faction getFaction() { return faction; }
+    public Race getRace() { return race; }
     public boolean isHuman()    { return isHuman; }
 
     // ── Ambassador ───────────────────────────────────────────────────────────
@@ -367,20 +367,20 @@ public class Player {
         return effectiveStat(cardId, stat, printedBase, false);
     }
 
-    public int effectiveStat(String cardId, StatKey stat, int printedBase, boolean includeFaction) {
+    public int effectiveStat(String cardId, StatKey stat, int printedBase, boolean includeRace) {
         int bonus = 0;
         int floor = 0;
         boolean psiUnlocked = false;
         if (stat == StatKey.PSI && printedBase == 0) {
             for (StatBonus b : bonuses) {
-                if (b.stat == StatKey.PSI && b.psiFromZero && appliesTo(b, cardId, includeFaction)) {
+                if (b.stat == StatKey.PSI && b.psiFromZero && appliesTo(b, cardId, includeRace)) {
                     psiUnlocked = true;
                     break;
                 }
             }
         }
         for (StatBonus b : bonuses) {
-            if (stat == b.stat && appliesTo(b, cardId, includeFaction)) {
+            if (stat == b.stat && appliesTo(b, cardId, includeRace)) {
                 if (stat != StatKey.PSI || printedBase != 0 || psiUnlocked) bonus += b.delta;
                 if (b.floor > floor) floor = b.floor;
             }
@@ -392,10 +392,10 @@ public class Player {
         return raw;
     }
 
-    private boolean appliesTo(StatBonus b, String cardId, boolean includeFaction) {
+    private boolean appliesTo(StatBonus b, String cardId, boolean includeRace) {
         if (b.scope == BonusScope.ATTACHED)
             return b.targetCardId != null && b.targetCardId.equals(cardId);
-        return includeFaction && b.scope == BonusScope.FACTION && name != null && name.equals(b.ownerName);
+        return includeRace && b.scope == BonusScope.RACE && name != null && name.equals(b.ownerName);
     }
 
     /**
@@ -570,6 +570,6 @@ public class Player {
 
     @Override
     public String toString() {
-        return name + " (" + faction + ") INF=" + influence;
+        return name + " (" + race + ") INF=" + influence;
     }
 }

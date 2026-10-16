@@ -13,6 +13,15 @@ public class GameState {
     private       Player       winner;
     private final Set<Player> conflictsInitiatedThisTurn = new HashSet<Player>();
 
+    // B5-0008 (WP-07/A5): game-level RNG seed. 0 = unseeded (legacy behaviour);
+    // non-zero makes GameController derive per-AIPlayer streams (seed + i*1000L,
+    // B5-0349 precedent) and lets harnesses seed per-player decks deliberately.
+    // Recorded in the replay header (ReplayRecorder.setSeed). Set BEFORE
+    // constructing the GameController.
+    private long seed = 0L;
+    public long getSeed()       { return seed; }
+    public void setSeed(long s) { seed = s; }
+
     // ── Non-player forces (B5-0340 + 0428) ───────────────────────────────
     //    Shadow/Vorlon ratings and condition-2 state live on the station
     //    (B5-0340 + 0428 proposal); see Babylon5Station for the full surface.
@@ -139,8 +148,8 @@ public class GameState {
     /** B5-0691: Civil War machine per race — created on first dual-race entry
      *  attempt; absent for single-faction races, so the standard game never
      *  allocates one. */
-    private final Map<Faction, CivilWarState> civilWars =
-            new LinkedHashMap<Faction, CivilWarState>();
+    private final Map<Race, CivilWarState> civilWars =
+            new LinkedHashMap<Race, CivilWarState>();
     public TensionMatrix getTensionMatrix()               { return tensionMatrix; }
 
     // ── B5-0691: Civil War machinery (rulebook :990–:1009; B5-0669 proposal
@@ -165,11 +174,11 @@ public class GameState {
         }
     }
 
-    /** Raise same-race tension source→target (same Faction players only),
+    /** Raise same-race tension source→target (same Race players only),
      *  clamped 1..5. No-op across different races or for self. */
     public void raiseSameRaceTension(Player source, Player target, int delta) {
         if (source == null || target == null || source == target
-                || source.getFaction() != target.getFaction()) return;
+                || source.getRace() != target.getRace()) return;
         sameRaceRow(source);
         Map<String, Integer> row = sameRaceTension.get(source.getName());
         Integer cur = row.get(target.getName());
@@ -180,7 +189,7 @@ public class GameState {
     /** Current same-race tension source→target (start value 2 when unset, :972). */
     public int getSameRaceTension(Player source, Player target) {
         if (source == null || target == null || source == target
-                || source.getFaction() != target.getFaction()) return 0;
+                || source.getRace() != target.getRace()) return 0;
         Map<String, Integer> row = sameRaceTension.get(source.getName());
         Integer v = row == null ? null : row.get(target.getName());
         return v == null ? 2 : v.intValue();
@@ -189,24 +198,24 @@ public class GameState {
     /** Rulebook :974 — Non-Aggression auto-state between same-race factions
      *  while same-race tension <= 3 and the race is not in Civil War. */
     public boolean isNonAggression(Player a, Player b) {
-        if (a == null || b == null || a.getFaction() != b.getFaction()) return false;
-        CivilWarState cws = civilWarOfRace(a.getFaction());
+        if (a == null || b == null || a.getRace() != b.getRace()) return false;
+        CivilWarState cws = civilWarOfRace(a.getRace());
         if (cws != null && cws.getPhase() == CivilWarState.Phase.CIVIL_WAR) return false;
         return getSameRaceTension(a, b) <= 3;
     }
 
     /** The Civil War machine of one race, or null when the race has never
      *  had one built (single-faction races never do). */
-    public CivilWarState civilWarOfRace(Faction race) { return civilWars.get(race); }
+    public CivilWarState civilWarOfRace(Race race) { return civilWars.get(race); }
 
     /** All races currently in Civil War (read-only view). */
-    public Set<Faction> civilWarRaces() { return Collections.unmodifiableSet(civilWars.keySet()); }
+    public Set<Race> civilWarRaces() { return Collections.unmodifiableSet(civilWars.keySet()); }
 
     /** All players of one race (synthetic dual-race boards expressible). */
-    public List<Player> playersOfRace(Faction race) {
+    public List<Player> playersOfRace(Race race) {
         List<Player> out = new ArrayList<Player>();
         for (Player p : players) {
-            if (p.getFaction() == race) out.add(p);
+            if (p.getRace() == race) out.add(p);
         }
         return out;
     }
@@ -218,7 +227,7 @@ public class GameState {
      * race at the end of a turn. On entry: unrest +1 for every faction of the
      * race (:994) and the race-level tension snapshot per :1000.
      */
-    public boolean enterCivilWarIfTriggered(Faction race, int round) {
+    public boolean enterCivilWarIfTriggered(Race race, int round) {
         List<Player> racePlayers = playersOfRace(race);
         if (racePlayers.size() < 2) return false;
         CivilWarState cws = civilWars.get(race);
@@ -235,8 +244,8 @@ public class GameState {
         }
         if (!cws.enterCivilWar(round, atFive)) return false;
         cws.raiseUnrestOfRace();
-        Map<Faction, Integer> snapshot = new LinkedHashMap<Faction, Integer>();
-        for (Faction f : Faction.values()) {
+        Map<Race, Integer> snapshot = new LinkedHashMap<Race, Integer>();
+        for (Race f : Race.values()) {
             if (f != race) snapshot.put(f, Integer.valueOf(tensionMatrix.getTension(race, f)));
         }
         cws.snapshotSplitTensions(snapshot);
@@ -251,7 +260,7 @@ public class GameState {
      * race, currently UNIFIED. On entry: unrest +1 per faction (:994) and the
      * :1000 race-level tension snapshot.
      */
-    public boolean forceCivilWarEntry(Faction race, int round) {
+    public boolean forceCivilWarEntry(Race race, int round) {
         List<Player> racePlayers = playersOfRace(race);
         if (racePlayers.size() < 2) return false;
         CivilWarState cws = civilWars.get(race);
@@ -261,8 +270,8 @@ public class GameState {
         }
         if (!cws.enterByDeclaration(round)) return false;
         cws.raiseUnrestOfRace();
-        Map<Faction, Integer> snapshot = new LinkedHashMap<Faction, Integer>();
-        for (Faction f : Faction.values()) {
+        Map<Race, Integer> snapshot = new LinkedHashMap<Race, Integer>();
+        for (Race f : Race.values()) {
             if (f != race) snapshot.put(f, Integer.valueOf(tensionMatrix.getTension(race, f)));
         }
         cws.snapshotSplitTensions(snapshot);
@@ -276,13 +285,13 @@ public class GameState {
      * matrix per target race (:1000). Returns the merged map (empty when the
      * race was not in Civil War).
      */
-    public Map<Faction, Integer> exitCivilWarByWarEnd(Faction race) {
+    public Map<Race, Integer> exitCivilWarByWarEnd(Race race) {
         CivilWarState cws = civilWars.get(race);
         if (cws == null || cws.getPhase() != CivilWarState.Phase.CIVIL_WAR) {
             return Collections.emptyMap();
         }
-        Map<Faction, Integer> merged = cws.exitByWarEnd();
-        for (Map.Entry<Faction, Integer> e : merged.entrySet()) {
+        Map<Race, Integer> merged = cws.exitByWarEnd();
+        for (Map.Entry<Race, Integer> e : merged.entrySet()) {
             tensionMatrix.raiseTension(race, e.getKey(),
                     e.getValue().intValue() - tensionMatrix.getTension(race, e.getKey()));
         }
@@ -294,12 +303,12 @@ public class GameState {
      * Rulebook :1006 — exit by unconditional surrender leaving one faction of
      * the race: unrest −1, no merge (the survivor's split row governs).
      */
-    public Map<Faction, Integer> exitCivilWarBySurrender(Faction race, Player survivor) {
+    public Map<Race, Integer> exitCivilWarBySurrender(Race race, Player survivor) {
         CivilWarState cws = civilWars.get(race);
         if (cws == null || cws.getPhase() != CivilWarState.Phase.CIVIL_WAR) {
             return Collections.emptyMap();
         }
-        Map<Faction, Integer> row = cws.exitBySurrender(survivor);
+        Map<Race, Integer> row = cws.exitBySurrender(survivor);
         if (!row.isEmpty()) {
             log(race + " leaves Civil War by unconditional surrender; unrest -1; no tension merge.");
         }
@@ -314,14 +323,14 @@ public class GameState {
      */
     public void applyRaceJointInfluenceLoss(Player loser, int amount) {
         if (amount <= 0) return;
-        CivilWarState cws = civilWarOfRace(loser.getFaction());
+        CivilWarState cws = civilWarOfRace(loser.getRace());
         if (cws != null && cws.getPhase() == CivilWarState.Phase.CIVIL_WAR) {
             if (isPlayerActive(loser)) {
                 loser.loseInfluence(amount);
             }
             return;
         }
-        List<Player> racePlayers = playersOfRace(loser.getFaction());
+        List<Player> racePlayers = playersOfRace(loser.getRace());
         for (Player p : racePlayers) {
             if (isPlayerActive(p)) {
                 p.loseInfluence(amount);
@@ -338,12 +347,12 @@ public class GameState {
         return p != null && !p.hasForfeited() && !p.hasSurrendered();
     }
 
-    public boolean        isAtWar(Faction a, Faction b)   { return tensionMatrix.isAtWar(a, b); }
-    public boolean isAtWar(Faction faction) {
+    public boolean        isAtWar(Race a, Race b)   { return tensionMatrix.isAtWar(a, b); }
+    public boolean isAtWar(Race faction) {
         // true when faction is at war with any other faction
         for (Player p : players) {
-            if (p.getFaction() != null && p.getFaction() != faction
-                    && tensionMatrix.isAtWar(faction, p.getFaction())) return true;
+            if (p.getRace() != null && p.getRace() != faction
+                    && tensionMatrix.isAtWar(faction, p.getRace())) return true;
         }
         return false;
     }
@@ -358,7 +367,7 @@ public class GameState {
         }
         return count;
     }
-    public void raiseTension(Faction source, Faction target, int delta) {
+    public void raiseTension(Race source, Race target, int delta) {
         tensionMatrix.raiseTension(source, target, delta);
     }
     /** Returns the player who controls the given location, or null. */

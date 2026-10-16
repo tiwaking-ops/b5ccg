@@ -3,7 +3,7 @@ package b5ccg.engine;
 import b5ccg.model.GameState;
 import b5ccg.model.Babylon5Station;
 import b5ccg.model.Player;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +36,8 @@ public class HeadlessStationVictoryTest {
 
     public static void main(String[] args) {
         RulesEngine rules = new RulesEngine();
-        Player leader = new Player("Station Leader", Faction.NARN, false);
-        Player rival = new Player("Rival", Faction.MINBARI, false);
+        Player leader = new Player("Station Leader", Race.NARN, false);
+        Player rival = new Player("Rival", Race.MINBARI, false);
         GameState game = state(leader, rival);
 
         leader.gainInfluence(1); // 5 to 4: strict lead, below player victory threshold.

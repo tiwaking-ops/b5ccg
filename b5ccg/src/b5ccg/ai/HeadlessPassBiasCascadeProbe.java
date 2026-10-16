@@ -59,10 +59,10 @@ public class HeadlessPassBiasCascadeProbe {
 
     /** A player with an ambassador seated in the Inner Circle and a stocked
      *  deck, so the offer builder has real material to scan every turn. */
-    private static Player player(String name, Faction f, List<Card> deckCards) {
+    private static Player player(String name, Race f, List<Card> deckCards) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name, "Amb " + name,
-                "CHARACTER_" + f, Rarity.FIXED, f, CardSet.PREMIERE, "x", "text",
+                "CHARACTER_" + f, Rarity.FIXED, Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 3, 3, 3, 3, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);
@@ -72,23 +72,23 @@ public class HeadlessPassBiasCascadeProbe {
     }
 
     private static EventCard event(String id, String title) {
-        return new EventCard(id, title, "EVENT", Rarity.COMMON, Faction.ANY,
+        return new EventCard(id, title, "EVENT", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text");
     }
 
     private static GroupCard group(String id, String title) {
-        return new GroupCard(id, title, "GROUP", Rarity.COMMON, Faction.ANY,
+        return new GroupCard(id, title, "GROUP", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text");
     }
 
     private static LocationCard location(String id, String title) {
-        return new LocationCard(id, title, "LOCATION", Rarity.COMMON, Faction.ANY,
+        return new LocationCard(id, title, "LOCATION", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text", 1);
     }
 
     private static CharacterCard character(String id, String title) {
         return new CharacterCard(id, title, "CHARACTER_ANY", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
     }
 
     /** Deck contents: a mix of card types so the builder's generic play path,
@@ -152,8 +152,8 @@ public class HeadlessPassBiasCascadeProbe {
     public static void main(String[] args) {
         System.out.println("=== B5-2523 pass-bias cascade audit probe (" + TURNS + " EASY turns) ===");
 
-        final Player p     = player("CascadeNarn", Faction.NARN, deckCards());
-        final Player rival = player("CascadeMinbari", Faction.MINBARI, deckCards());
+        final Player p     = player("CascadeNarn", Race.NARN, deckCards());
+        final Player rival = player("CascadeMinbari", Race.MINBARI, deckCards());
         final GameState st = state(p, rival);
         final AIPlayer easy = new AIPlayer(p, AIDifficulty.EASY);
         seed(easy, 2523L);

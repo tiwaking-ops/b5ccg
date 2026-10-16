@@ -13,7 +13,7 @@ public class ConflictCard extends Card {
     private Participation participation;
 
     public ConflictCard(String id, String title, String subtype,
-                        Rarity rarity, Faction faction, CardSet cardSet,
+                        Rarity rarity, Loyalty faction, CardSet cardSet,
                         String imageKey, String text,
                         ConflictType conflictType, int influenceReward) {
         super(id, title, CardType.CONFLICT, subtype, rarity, faction,

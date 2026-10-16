@@ -40,18 +40,18 @@ public class HeadlessLeadFleetScenarioProbe {
     }
 
     public static void main(String[] args) throws Exception {
-        Player owner = new Player("Lead Probe", Faction.NARN, false);
-        Player rival = new Player("Rival", Faction.MINBARI, false);
+        Player owner = new Player("Lead Probe", Race.NARN, false);
+        Player rival = new Player("Rival", Race.MINBARI, false);
         GameState game = state(owner, rival);
 
         CharacterCard leader = new CharacterCard("probe_leader", "Probe Leader",
-                "CHARACTER_NARN", Rarity.COMMON, Faction.NARN,
+                "CHARACTER_NARN", Rarity.COMMON, Loyalty.NARN,
                 CardSet.PREMIERE, "x", "", 1, 1, 0, 4, false);
         CharacterCard otherLeader = new CharacterCard("probe_other_leader",
-                "Other Leader", "CHARACTER_NARN", Rarity.COMMON, Faction.NARN,
+                "Other Leader", "CHARACTER_NARN", Rarity.COMMON, Loyalty.NARN,
                 CardSet.PREMIERE, "x", "", 1, 1, 0, 2, false);
         FleetCard fleet = new FleetCard("probe_fleet", "Probe Fleet", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "", 3);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "", 3);
         owner.getInnerCircle().add(leader);
         owner.getInnerCircle().add(otherLeader);
         owner.getFleets().add(fleet);
@@ -102,7 +102,7 @@ public class HeadlessLeadFleetScenarioProbe {
         // The 0486 floor pass originally iterated owner.getBonuses() outside
         // the owner guard and NPE'd on exactly this shape — pinned here.
         FleetCard orphan = new FleetCard("probe_orphan_fleet", "Orphan Fleet",
-                "FLEET_NARN", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                "FLEET_NARN", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "", 2);
         check("owner-less fleet reads base Military with no registry or crash",
                 orphan.getEffectiveMilitary() == 2 && orphan.getGreatestAbility() == 2);

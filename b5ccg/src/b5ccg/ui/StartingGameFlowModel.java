@@ -6,7 +6,8 @@ import b5ccg.model.Deck;
 import b5ccg.model.GameState;
 import b5ccg.model.Player;
 import b5ccg.model.enums.CardType;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
+import b5ccg.model.enums.Loyalty;
 import b5ccg.model.enums.StatKey;
 
 import java.util.ArrayList;
@@ -63,8 +64,8 @@ public final class StartingGameFlowModel {
      * species ambassador, which this flow does not build, so offering it would be
      * a control that promises something this window cannot deliver.
      */
-    public static final Faction[] PLAYER_RACES = new Faction[] {
-        Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN
+    public static final Race[] PLAYER_RACES = new Race[] {
+        Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN
     };
 
     /**
@@ -109,11 +110,11 @@ public final class StartingGameFlowModel {
         this.random = (seed == 0L) ? new Random() : new Random(seed);
     }
 
-    // ── Faction select (rulebook :208, delegated to MainWindow) ───────────────
+    // ── Race select (rulebook :208, delegated to MainWindow) ───────────────
 
     /** The races a seat may be given. */
-    public List<Faction> offeredRaces() {
-        List<Faction> out = new ArrayList<Faction>();
+    public List<Race> offeredRaces() {
+        List<Race> out = new ArrayList<Race>();
         for (int i = 0; i < PLAYER_RACES.length; i++) out.add(PLAYER_RACES[i]);
         return out;
     }
@@ -123,14 +124,14 @@ public final class StartingGameFlowModel {
      * {@link MainWindow#validateSetup} rather than reimplemented. Returns an empty
      * list when the proposed setup is legal.
      */
-    public List<String> setupProblems(Faction[] races, int[] startingInfluence) {
+    public List<String> setupProblems(Race[] races, int[] startingInfluence) {
         List<String> problems = new ArrayList<String>();
         String verdict = MainWindow.validateSetup(races, startingInfluence);
         if (verdict != null) problems.add(verdict);
         return problems;
     }
 
-    public static boolean isPlayerRace(Faction race) {
+    public static boolean isPlayerRace(Race race) {
         for (int i = 0; i < PLAYER_RACES.length; i++) {
             if (PLAYER_RACES[i] == race) return true;
         }
@@ -146,11 +147,11 @@ public final class StartingGameFlowModel {
      * authority on that card's stats. NON_ALIGNED returns null because :884 says
      * there is no single ambassador for the League.
      */
-    public static String ambassadorName(Faction race) {
-        if (race == Faction.HUMAN)    return "Jeffrey Sinclair";
-        if (race == Faction.CENTAURI) return "Londo Mollari";
-        if (race == Faction.MINBARI)  return "Delenn";
-        if (race == Faction.NARN)     return "G'Kar";
+    public static String ambassadorName(Race race) {
+        if (race == Race.HUMAN)    return "Jeffrey Sinclair";
+        if (race == Race.CENTAURI) return "Londo Mollari";
+        if (race == Race.MINBARI)  return "Delenn";
+        if (race == Race.NARN)     return "G'Kar";
         return null;
     }
 
@@ -161,7 +162,7 @@ public final class StartingGameFlowModel {
      * exists -- a named lookup that reports failure beats a fallback that quietly
      * seats the wrong leader.
      */
-    public static CharacterCard resolveAmbassador(Faction race, List<Card> candidates) {
+    public static CharacterCard resolveAmbassador(Race race, List<Card> candidates) {
         if (race == null || candidates == null) return null;
         String wanted = ambassadorName(race);
         CharacterCard fallback = null;
@@ -170,7 +171,7 @@ public final class StartingGameFlowModel {
             if (!(c instanceof CharacterCard)) continue;
             CharacterCard ch = (CharacterCard) c;
             if (!ch.isAmbassador()) continue;
-            if (ch.getFaction() != race) continue;
+            if (ch.getLoyalty() != Loyalty.fromRace(race)) continue;
             if (wanted != null && wanted.equals(ch.getTitle())) return ch;
             if (fallback == null) fallback = ch;
         }
@@ -189,7 +190,7 @@ public final class StartingGameFlowModel {
      * distinct playable types. It never pads by repeating a type: a short result
      * is the honest one, and {@link #typedRestProblems} will reject the hand.
      */
-    public List<Card> proposeTypedRest(Faction race, List<Card> candidates, CharacterCard ambassador) {
+    public List<Card> proposeTypedRest(Race race, List<Card> candidates, CharacterCard ambassador) {
         List<Card> chosen = new ArrayList<Card>();
         if (candidates == null) return chosen;
 
@@ -214,13 +215,13 @@ public final class StartingGameFlowModel {
         return false;
     }
 
-    private static Card firstOfType(List<Card> candidates, CardType type, Faction race,
+    private static Card firstOfType(List<Card> candidates, CardType type, Race race,
                                     CharacterCard ambassador, List<Card> chosen) {
         for (int i = 0; i < candidates.size(); i++) {
             Card c = candidates.get(i);
             if (c.getType() != type) continue;
             if (c == ambassador) continue;
-            if (race != null && c.getFaction() != null && !c.getFaction().isPlayableBy(race)) continue;
+            if (race != null && c.getLoyalty() != null && !c.getLoyalty().isPlayableBy(race)) continue;
             boolean taken = false;
             for (int j = 0; j < chosen.size(); j++) {
                 if (chosen.get(j) == c) taken = true;
@@ -486,14 +487,14 @@ public final class StartingGameFlowModel {
         // Inner Circle member. GameController.setupGame already seats it; this
         // only fills the gap when it did not, and never seats a second one.
         if (p.getAmbassador() == null) {
-            CharacterCard amb = resolveAmbassador(p.getFaction(), hand);
+            CharacterCard amb = resolveAmbassador(p.getRace(), hand);
             if (amb != null) {
                 p.setAmbassador(amb);
                 p.getInnerCircle().add(amb);
                 lines.add(p.getName() + ": ambassador seated from hand -- " + amb.getTitle());
             } else {
                 lines.add(p.getName() + ": NO ambassador found in hand for "
-                    + ambassadorName(p.getFaction()) + "; hand left as dealt");
+                    + ambassadorName(p.getRace()) + "; hand left as dealt");
                 return lines;
             }
         }
@@ -503,7 +504,7 @@ public final class StartingGameFlowModel {
         // never from the library -- this flow reconciles a hand somebody was dealt,
         // and quietly substituting better cards would be a second dealing
         // mechanism competing with the boot path's.
-        List<Card> typed = proposeTypedRest(p.getFaction(), hand, p.getAmbassador());
+        List<Card> typed = proposeTypedRest(p.getRace(), hand, p.getAmbassador());
         List<String> typedProblems = typedRestProblems(typed);
         for (int k = 0; k < typedProblems.size(); k++) {
             lines.add(p.getName() + ": " + typedProblems.get(k));

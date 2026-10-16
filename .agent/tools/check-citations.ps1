@@ -120,42 +120,188 @@ Write-Output ("[B5-1925] refs scanned: {0}" -f $total)
 Write-Output ("[B5-1925] skipped: {0} glob, {1} lossy (`?` or NTFS-illegal char, unresolvable by construction)" -f $globs, ($lossy + $unresolvable))
 Write-Output ""
 
-if ($dangling.Count -eq 0) {
-    Write-Output "[B5-1925] PASS: every resolvable REPORTS/PATTERNS citation resolves to a file on disk."
-    exit 0
+# ------------------------------------------------------------- WP-18b ----
+# Rule-ID phase. A citation is one of two forms and neither is rewritten here:
+#   RB:<chapter>/<slug>   must exist in docs/RULE_INDEX.md;
+#   RB:<chapter>/<slug>#n additionally needs n inside the row's block count;
+#   RB:<line>             legacy form; valid for all history, resolved by range.
+# The index is the authority for both, which is why a missing index is a tools
+# failure (exit 2) and never an empty pass.
+$indexPath = Join-Path $repoRoot 'docs/RULE_INDEX.md'
+if (-not (Test-Path -LiteralPath $indexPath)) {
+    Write-Output ("[WP-18b] EXIT 2: rule index not found: {0}" -f $indexPath)
+    Write-Output "[WP-18b] generate it with task B5-0022: powershell -File .agent/tools/build-rule-index.ps1"
+    exit 2
 }
 
-Write-Output ("[B5-1925] FAIL: {0} dangling citation(s)." -f $dangling.Count)
-Write-Output ""
-foreach ($d in $dangling) {
-    Write-Output ("  {0}:{1}" -f $d.Source, $d.Line)
-    Write-Output ("    ref     : {0}" -f $d.Ref)
-    if (-not $Quiet) {
-        $t = $d.Text
-        if ($t.Length -gt 150) { $t = $t.Substring(0, 150) + '...' }
-        Write-Output ("    context : {0}" -f $t)
+$indexRows = New-Object System.Collections.Generic.List[object]
+foreach ($row in @([System.IO.File]::ReadAllLines($indexPath) | Where-Object { $_ -match '^\| RB:' })) {
+    $cells = ($row -split '\|')
+    for ($k = 0; $k -lt $cells.Count; $k++) { $cells[$k] = $cells[$k].Trim() }
+    if ($cells.Count -lt 6) { continue }
+    # Ranges are written with an en dash and sometimes collapsed to one line.
+    $rangeRaw = $cells[3] -replace "[\u2012\u2013\u2014\u2015]", '-'
+    if ($rangeRaw -match '^(\d+)-(\d+)$')      { $start = [int]$Matches[1]; $end = [int]$Matches[2] }
+    elseif ($rangeRaw -match '^(\d+)$')        { $start = [int]$Matches[1]; $end = [int]$Matches[1] }
+    else { continue }
+    $blocks = 0
+    if ($cells[4] -match '^\d+$') { $blocks = [int]$cells[4] }
+    $null = $indexRows.Add([pscustomobject]@{
+        Id = $cells[1]; Heading = $cells[2]; Start = $start; End = $end; Blocks = $blocks
+    })
+}
+if ($indexRows.Count -eq 0) {
+    Write-Output ("[WP-18b] EXIT 2: {0} carries no rows starting with '| RB:'" -f $indexPath)
+    exit 2
+}
+
+$byId = @{}
+foreach ($r in $indexRows) { $byId[$r.Id] = $r }
+$maxLine = ($indexRows | Measure-Object -Property End -Maximum).Maximum
+
+$legacyPattern  = '^RB:(\d+)$'
+$ordinalPattern = '#(\d+)$'
+# Ordered longest-first. Written shortest-first ("I|II|III|IV|V|VI") this matched
+# the first roman character it could and STOPPED, so RB:III/conflict-round was
+# scanned as RB:I and RB:IV/nope resolved against RB:IV -- invalid IDs passed
+# silently, which is the one failure this phase exists to prevent. The trailing
+# lookahead keeps a malformed token from being silently shortened to a valid
+# prefix of itself.
+$rbPattern = 'RB:(?:(?:VI|IV|V|III|II|I|FM|GL|BM)(?:/[a-z0-9]+(?:-[a-z0-9]+)*)?(?:#\d+)?|\d+)(?![A-Za-z0-9/-])'
+
+$rbTotal     = 0
+$legacyOk    = New-Object System.Collections.Generic.List[object]
+$ruleBroken  = New-Object System.Collections.Generic.List[object]
+
+foreach ($a in $abs) {
+    $rel = $a
+    if ($a.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $rel = $a.Substring($repoRoot.Length + 1) -replace '\\', '/'
     }
-    # Name the likely intended target so the fix does not require a manual search:
-    # same basename, anywhere under .agent/.
-    $leaf = Split-Path ($d.Ref -replace '/', '\') -Leaf
-    $stem = $leaf -replace '\.md$', ''
-    $hits = @()
-    foreach ($base in @('.agent/REPORTS', '.agent/PATTERNS')) {
-        $baseAbs = Join-Path $repoRoot ($base -replace '/', '\')
-        if (Test-Path -LiteralPath $baseAbs) {
-            $hits += @(Get-ChildItem -LiteralPath $baseAbs -Recurse -File -Filter ('*' + $stem + '*') -ErrorAction SilentlyContinue)
+    $rbLineNo = 0
+    foreach ($line in (Get-Content -LiteralPath $a -Encoding UTF8)) {
+        $rbLineNo++
+        foreach ($m in [regex]::Matches($line, $rbPattern)) {
+            $rbTotal++
+            $ref = $m.Value
+
+            if ($ref -match $legacyPattern) {
+                $n = [int]$Matches[1]
+                $hit = $null
+                foreach ($r in $indexRows) {
+                    if ($n -ge $r.Start -and $n -le $r.End) { $hit = $r; break }
+                }
+                if ($hit) {
+                    $legacyOk.Add([pscustomobject]@{
+                        Source = $rel; Line = $rbLineNo; Ref = $ref; Id = $hit.Id; Heading = $hit.Heading
+                    })
+                } else {
+                    $ruleBroken.Add([pscustomobject]@{
+                        Source = $rel; Line = $rbLineNo; Ref = $ref; Text = $line.Trim()
+                        Reason = ('legacy line number resolves to no entry (pinned file covers 1-' + $maxLine + ')')
+                    })
+                }
+                continue
+            }
+
+            $base = $ref -replace '#\d+$', ''
+            if (-not $byId.ContainsKey($base)) {
+                $nearest = ($indexRows | Where-Object { $_.Id.Split('/')[0] -eq $base.Split('/')[0] } | Select-Object -First 3)
+                $ruleBroken.Add([pscustomobject]@{
+                    Source = $rel; Line = $rbLineNo; Ref = $ref; Text = $line.Trim()
+                    Reason = ('not in docs/RULE_INDEX.md' + $(if ($nearest) { ' (same division: ' + (($nearest | ForEach-Object { $_.Id }) -join ', ') + ')' } else { '' }))
+                })
+                continue
+            }
+
+            if ($ref -match $ordinalPattern) {
+                $n = [int]$Matches[1]
+                $row = $byId[$base]
+                if ($row.Blocks -gt 0 -and ($n -lt 1 -or $n -gt $row.Blocks)) {
+                    $ruleBroken.Add([pscustomobject]@{
+                        Source = $rel; Line = $rbLineNo; Ref = $ref; Text = $line.Trim()
+                        Reason = ('ordinal #' + $n + ' outside 1-' + $row.Blocks + ' for ' + $base)
+                    })
+                }
+            }
         }
     }
-    if ($hits.Count -eq 1) {
-        $rp = $hits[0].FullName.Substring($repoRoot.Length + 1) -replace '\\', '/'
-        Write-Output ("    likely target (1 basename match): {0}" -f $rp)
-    } elseif ($hits.Count -gt 1) {
-        Write-Output ("    basename '{0}' matches {1} files -- disambiguate manually:" -f $stem, $hits.Count)
-        foreach ($h in $hits) { Write-Output ("       {0}" -f ($h.FullName.Substring($repoRoot.Length + 1) -replace '\\', '/')) }
-    } else {
-        Write-Output ("    NO file with basename '{0}' anywhere under .agent/ -- the artifact was likely never filed." -f $stem)
+}
+
+Write-Output ("[WP-18b] rule index: {0} ({1} rows, lines 1-{2})" -f $indexPath, $indexRows.Count, $maxLine)
+Write-Output ("[WP-18b] RB: refs scanned: {0}" -f $rbTotal)
+Write-Output ("[WP-18b] legacy RB:<line> resolved by range: {0}" -f $legacyOk.Count)
+if ($legacyOk.Count -gt 0) {
+    foreach ($l in $legacyOk) {
+        Write-Output ("    {0}:{1}  {2} -> {3}  ({4})" -f $l.Source, $l.Line, $l.Ref, $l.Id, $l.Heading)
     }
+}
+Write-Output ("[WP-18b] unresolved RB: refs: {0}" -f $ruleBroken.Count)
+Write-Output ""
+
+if ($dangling.Count -eq 0) {
+    Write-Output "[B5-1925] PASS: every resolvable REPORTS/PATTERNS citation resolves to a file on disk."
     Write-Output ""
 }
 
-exit 1
+# Only entered when there is something to report. Removing the `exit 0` that used
+# to guard this made the header print even on a clean run, which is exactly the
+# false alarm the RECORDS line above is meant to prevent.
+if ($dangling.Count -gt 0) {
+    Write-Output ("[B5-1925] FAIL: {0} dangling citation(s)." -f $dangling.Count)
+    Write-Output ""
+    foreach ($d in $dangling) {
+        Write-Output ("  {0}:{1}" -f $d.Source, $d.Line)
+        Write-Output ("    ref     : {0}" -f $d.Ref)
+        if (-not $Quiet) {
+            $t = $d.Text
+            if ($t.Length -gt 150) { $t = $t.Substring(0, 150) + '...' }
+            Write-Output ("    context : {0}" -f $t)
+        }
+        # Name the likely intended target so the fix does not require a manual search:
+        # same basename, anywhere under .agent/.
+        $leaf = Split-Path ($d.Ref -replace '/', '\') -Leaf
+        $stem = $leaf -replace '\.md$', ''
+        $hits = @()
+        foreach ($base in @('.agent/REPORTS', '.agent/PATTERNS')) {
+            $baseAbs = Join-Path $repoRoot ($base -replace '/', '\')
+            if (Test-Path -LiteralPath $baseAbs) {
+                $hits += @(Get-ChildItem -LiteralPath $baseAbs -Recurse -File -Filter ('*' + $stem + '*') -ErrorAction SilentlyContinue)
+            }
+        }
+        if ($hits.Count -eq 1) {
+            $rp = $hits[0].FullName.Substring($repoRoot.Length + 1) -replace '\\', '/'
+            Write-Output ("    likely target (1 basename match): {0}" -f $rp)
+        } elseif ($hits.Count -gt 1) {
+            Write-Output ("    basename '{0}' matches {1} files -- disambiguate manually:" -f $stem, $hits.Count)
+            foreach ($h in $hits) { Write-Output ("       {0}" -f ($h.FullName.Substring($repoRoot.Length + 1) -replace '\\', '/')) }
+        } else {
+            Write-Output ("    NO file with basename '{0}' anywhere under .agent/ -- the artifact was likely never filed." -f $stem)
+        }
+        Write-Output ""
+    }
+}
+
+# One verdict for both phases. A defect in either is a failure; neither phase can
+# be silenced by the other passing.
+if ($ruleBroken.Count -gt 0) {
+    Write-Output ("[WP-18b] FAIL: {0} unresolved RB: citation(s)." -f $ruleBroken.Count)
+    Write-Output ""
+    foreach ($d in $ruleBroken) {
+        Write-Output ("  {0}:{1}" -f $d.Source, $d.Line)
+        Write-Output ("    ref    : {0}" -f $d.Ref)
+        Write-Output ("    reason : {0}" -f $d.Reason)
+        if (-not $Quiet) {
+            $t = $d.Text
+            if ($t.Length -gt 150) { $t = $t.Substring(0, 150) + '...' }
+            Write-Output ("    context: {0}" -f $t)
+        }
+        Write-Output ""
+    }
+} else {
+    Write-Output "[WP-18b] PASS: every RB: citation resolves in docs/RULE_INDEX.md."
+}
+
+if ($dangling.Count -gt 0 -or $ruleBroken.Count -gt 0) { exit 1 }
+
+exit 0

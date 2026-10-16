@@ -3,7 +3,7 @@ package b5ccg.engine;
 import b5ccg.model.GameAction;
 import b5ccg.model.GameState;
 import b5ccg.model.Player;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
 import b5ccg.model.enums.GamePhase;
 
 import java.io.File;
@@ -66,8 +66,8 @@ public class B51975ReplayProbe {
         System.out.println("Replay file: " + path);
 
         List<Player> players = new ArrayList<Player>();
-        players.add(new Player("Human Player", Faction.NARN, true));
-        players.add(new Player("Minbari Ally",  Faction.MINBARI, false));
+        players.add(new Player("Human Player", Race.NARN, true));
+        players.add(new Player("Minbari Ally",  Race.MINBARI, false));
         GameState game = new GameState(players);
 
         RulesEngine rules = new RulesEngine();
@@ -263,8 +263,8 @@ public class B51975ReplayProbe {
         ReplayRecorder rec = null;
         try {
             List<Player> players = new ArrayList<Player>();
-            players.add(new Player("Quote \"Q\" Back\\Slash", Faction.HUMAN, false));
-            players.add(new Player("Tab\tNewline\nPlayer", Faction.CENTAURI, false));
+            players.add(new Player("Quote \"Q\" Back\\Slash", Race.HUMAN, false));
+            players.add(new Player("Tab\tNewline\nPlayer", Race.CENTAURI, false));
             GameState g = new GameState(players);
             g.setPhase(GamePhase.ACTION);
 

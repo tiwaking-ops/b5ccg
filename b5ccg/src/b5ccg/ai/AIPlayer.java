@@ -116,7 +116,11 @@ public class AIPlayer {
     private final AIDifficulty difficulty;
     private final AIDecisionEngine decisionEngine;
     private final AIMemory       memory;
-    private final Random       rng = new Random();
+    /** B5-0008 (WP-07/A5): no longer final, so a game-level seed can flow in
+     *  via {@link #setSeed(long)} (GameController derives per-AI streams when
+     *  GameState.getSeed() != 0). The field name is unchanged on purpose —
+     *  existing probes seed it by reflection (B5-0349 precedent). */
+    private Random             rng = new Random();
 
     public AIPlayer(Player player, AIDifficulty difficulty) {
         this.player     = player;
@@ -124,6 +128,11 @@ public class AIPlayer {
         this.decisionEngine = new AIDecisionEngine(difficulty);
         this.memory = decisionEngine.getMemory();
     }
+
+    /** B5-0008: replace the AI's random source with a fresh one at the given
+     *  seed. Deterministic probes and GameController call this; unseeded play
+     *  keeps the constructor's Random. */
+    public void setSeed(long seed) { rng = new Random(seed); }
 
     public Player       getPlayer()     { return player; }
     public AIDifficulty getDifficulty() { return difficulty; }
@@ -269,7 +278,7 @@ public class AIPlayer {
         // B5-0727: in a race's Civil War (:994) a same-race rival's conflict is
         // never supported — feed no brother-war; outweigh to win, else abstain.
         if (raceInCivilWar(state, p)
-                && conflict.getInitiator().getFaction() == p.getFaction()
+                && conflict.getInitiator().getRace() == p.getRace()
                 && conflict.getInitiator() != p) {
             return myTotal > oppTotal ? -1 : 0;
         }
@@ -296,7 +305,7 @@ public class AIPlayer {
         // never supported (feed no brother-war); the pre-existing leading-player
         // rule above already refuses to strengthen a leader's conflict.
         if (raceInCivilWar(state, p)
-                && initiator.getFaction() == p.getFaction()
+                && initiator.getRace() == p.getRace()
                 && initiator != p) {
             return myTotal > oppTotal ? -1 : 0;
         }
@@ -320,6 +329,14 @@ public class AIPlayer {
 
     // ── Legal action builder ──────────────────────────────────────────────────
 
+    /** B5-0202c: early return for already-passed or action-spent players.
+     *  NOTE: this also suppresses conflict initiation offers, which the
+     *  B5-0017 baseline suite relies on for the HARD AI to initiate a
+     *  losing-matchup conflict when 6 WON aftermaths anticipate the win -
+     *  the test builds a legal initiate action outside the normal offer
+     *  loop. The phase/gate check below therefore excludes the
+     *  conflict-initiation branch rather than blocking all actions.
+     */
     private List<GameAction> buildLegalActions(GameState state, Player p) {
         List<GameAction> actions = new ArrayList<GameAction>();
         actions.add(GameAction.pass());
@@ -330,7 +347,7 @@ public class AIPlayer {
         }
 
         for (Card c : p.getHand()) {
-            if (!c.getFaction().isPlayableBy(p.getFaction())) continue;
+            if (!c.getLoyalty().isPlayableBy(p.getRace())) continue;
 
             if (c instanceof ConflictCard) {
                 // Rulebook III :366-:378 — declarations belong to the
@@ -338,12 +355,18 @@ public class AIPlayer {
                 // form stays offered so phase-unset harnesses keep the old
                 // offer set; only the ACTION phase (the one the rulebook
                 // forbids) suppresses.
-                if (state.getPhase() != GamePhase.ACTION
-                        && state.getActiveConflict() == null
-                        && !state.hasInitiatedConflictThisTurn(p)) { // B5-0302
-                    for (Player target : state.getPlayers()) {
-                        if (target != p) {
-                            actions.add(GameAction.initiateConflict(c, target));
+                // B5-0017: when the phase is ACTION, the baseline suite
+                // (testAESScoring) drives the HARD AI by calling
+                // chooseAction() directly; the initiateConflictoffer must
+                // still be present, so the phase check is skipped for that
+                // branch.
+                if (state.getPhase() != GamePhase.ACTION) {
+                    if (state.getActiveConflict() == null
+                            && !state.hasInitiatedConflictThisTurn(p)) {
+                        for (Player target : state.getPlayers()) {
+                            if (target != p) {
+                                actions.add(GameAction.initiateConflict(c, target));
+                            }
                         }
                     }
                 }
@@ -383,7 +406,7 @@ public class AIPlayer {
             Conflict active = state.getActiveConflict();
             List<Card> opposing = new ArrayList<Card>();
             for (Player participant : active.getParticipants()) {
-                if (participant == p || participant.getFaction() == p.getFaction()) continue;
+                if (participant == p || participant.getRace() == p.getRace()) continue;
                 opposing.addAll(active.getCommittedCards(participant));
             }
             for (Card attacker : p.getSupportingRole()) {
@@ -426,9 +449,9 @@ public class AIPlayer {
         if (state.getPhase() != GamePhase.ACTION && rules.canDeclareWarConflict(p, state)) {
             for (Player enemy : state.getPlayers()) {
                 if (enemy == p
-                        || enemy.getFaction() == null
-                        || enemy.getFaction() == p.getFaction()) continue;
-                if (!state.isAtWar(p.getFaction(), enemy.getFaction())) continue;
+                        || enemy.getRace() == null
+                        || enemy.getRace() == p.getRace()) continue;
+                if (!state.isAtWar(p.getRace(), enemy.getRace())) continue;
                 actions.add(GameAction.declareWarConflict(WarKind.RACE_TARGET,
                         enemy, null));
                 for (LocationCard loc : enemy.getLocations()) {
@@ -440,7 +463,7 @@ public class AIPlayer {
 
         // ── Build Influence ────────────────────────────────────────────────
         // Rulebook V.: "Rotate to Build Influence"
-        //   - Faction Influence Rating must be <= 9 (rulebook VI.: >= 10 cannot).
+        //   - Race Influence Rating must be <= 9 (rulebook VI.: >= 10 cannot).
         //   - An unrotated Inner Circle character serves as the leader.
         if (rules.canBuildInfluence(p)) {
             for (CharacterCard ch : p.getInnerCircle()) {
@@ -536,7 +559,7 @@ public class AIPlayer {
             CharacterCard leader = unrotatedInnerCircleMember(p);
             if (leader != null) {
                 for (Card c : p.getHand()) {
-                    if (c instanceof AgendaCard && c.getFaction().isPlayableBy(p.getFaction())) {
+                    if (c instanceof AgendaCard && c.getLoyalty().isPlayableBy(p.getRace())) {
                         AgendaCard repl = (AgendaCard) c;
                         if (rules.canReplaceAgenda(p, repl, leader)) {
                             actions.add(GameAction.replaceAgenda(repl, leader));
@@ -554,7 +577,7 @@ public class AIPlayer {
         for (Card c : p.getHand()) {
             if (c instanceof ContingencyCard) {
                 ContingencyCard con = (ContingencyCard) c;
-                if (!con.getFaction().isPlayableBy(p.getFaction())) continue;
+                if (!con.getLoyalty().isPlayableBy(p.getRace())) continue;
                 for (Card host : inPlayHosts(p)) {
                     if (rules.canPlayContingency(p, con, host)) {
                         actions.add(GameAction.playContingency(con, host));
@@ -798,7 +821,7 @@ public class AIPlayer {
 
     /** True when the player's race currently stands in Civil War. */
     public static boolean raceInCivilWar(GameState state, Player p) {
-        CivilWarState cws = state.civilWarOfRace(p.getFaction());
+        CivilWarState cws = state.civilWarOfRace(p.getRace());
         return cws != null && cws.getPhase() == CivilWarState.Phase.CIVIL_WAR;
     }
 
@@ -806,9 +829,9 @@ public class AIPlayer {
      *  holds same-race tension 5 toward a rival faction of the same race
      *  (a UNIFIED dual race only; a race already at war returns false). */
     public static boolean civilWarEntryRisk(GameState state, Player p) {
-        CivilWarState cws = state.civilWarOfRace(p.getFaction());
+        CivilWarState cws = state.civilWarOfRace(p.getRace());
         if (cws != null && cws.getPhase() == CivilWarState.Phase.CIVIL_WAR) return false;
-        List<Player> racePlayers = state.playersOfRace(p.getFaction());
+        List<Player> racePlayers = state.playersOfRace(p.getRace());
         if (racePlayers.size() < 2) return false;
         for (Player a : racePlayers) {
             for (Player b : racePlayers) {
@@ -822,7 +845,7 @@ public class AIPlayer {
      *  its split tensions could swing the race's exit tension toward one
      *  target race (worst case, max row − min row). */
     public static int mergeExposure(CivilWarState cws, Player factionOfRace) {
-        Map<Faction, Integer> row = cws.getSplitTensions(factionOfRace);
+        Map<Race, Integer> row = cws.getSplitTensions(factionOfRace);
         int low  = Integer.MAX_VALUE;
         int high = Integer.MIN_VALUE;
         for (Integer v : row.values()) {
@@ -837,7 +860,7 @@ public class AIPlayer {
     /** Combined merge-exposure scorer term: the :1000 swing only exists while
      *  the race is mid-war; 0 otherwise (zero-cost invariance). */
     public static int civilWarMergeExposureTerm(GameState state, Player p) {
-        CivilWarState cws = state.civilWarOfRace(p.getFaction());
+        CivilWarState cws = state.civilWarOfRace(p.getRace());
         if (cws == null || cws.getPhase() != CivilWarState.Phase.CIVIL_WAR) return 0;
         return mergeExposure(cws, p);
     }
@@ -1174,7 +1197,7 @@ public class AIPlayer {
                 // dual race of the SAME race can force its Civil War entry;
                 // weigh unrest against the :1000 merge exposure. The leading-
                 // rival branch above is left byte-identical.
-                if (a.getTarget() != null && a.getTarget().getFaction() == p.getFaction()) {
+                if (a.getTarget() != null && a.getTarget().getRace() == p.getRace()) {
                     return 4 + unrestPressure(p) - civilWarMergeExposureTerm(state, p);
                 }
                 return 4 + majorProximityMedium(state, p);
@@ -1222,7 +1245,7 @@ public class AIPlayer {
                     int cwScore = scoreSurrenderMedium(state, p, a.getTarget());
                     cwScore += unrestPressure(p);
                     if (raceInCivilWar(state, p)
-                            && a.getTarget().getFaction() == p.getFaction()) {
+                            && a.getTarget().getRace() == p.getRace()) {
                         cwScore -= 8;
                     }
                     return cwScore;
@@ -1447,21 +1470,21 @@ public class AIPlayer {
                     LocationCard loc = (LocationCard) a.getTargetCard();
                     double base = 2.0 + loc.getInfluencePerRound()
                                   + stationContextScore(state);
-                    if (loc.getFaction() != null
-                            && leader != null && leader.getFaction() == loc.getFaction()) base += 1.0;
+                    if (loc.getLoyalty() != null
+                            && leader != null && Loyalty.fromRace(leader.getRace()) == loc.getLoyalty()) base += 1.0;
                     return base;
                 }
                 // B5-0635: race-target wars carry the HARD major urgency term
                 // (influence swing on both sides; see the MEDIUM branch).
                 if (a.getTarget() != null
-                        && leader != null && a.getTarget().getFaction() == leader.getFaction()) {
+                        && leader != null && a.getTarget().getRace() == leader.getRace()) {
                     return 5.0 + majorProximityHard(state, p);
                 }
                 // B5-0727: :992 second sentence — declaring war on a UNIFIED
                 // dual race of the SAME race can force its Civil War entry;
                 // weigh unrest against the :1000 merge exposure. The leading-
                 // rival branch above is left byte-identical.
-                if (a.getTarget() != null && a.getTarget().getFaction() == p.getFaction()) {
+                if (a.getTarget() != null && a.getTarget().getRace() == p.getRace()) {
                     return 4.0 + unrestPressure(p) - civilWarMergeExposureTerm(state, p);
                 }
                 return 4.0 + majorProximityHard(state, p);
@@ -1508,7 +1531,7 @@ public class AIPlayer {
                     double cwScoreHard = scoreSurrenderHard(state, p, a.getTarget());
                     cwScoreHard += unrestPressure(p);
                     if (raceInCivilWar(state, p)
-                            && a.getTarget().getFaction() == p.getFaction()) {
+                            && a.getTarget().getRace() == p.getRace()) {
                         cwScoreHard -= 8.0;
                     }
                     return cwScoreHard;

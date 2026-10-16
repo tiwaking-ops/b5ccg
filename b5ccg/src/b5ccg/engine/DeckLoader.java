@@ -38,7 +38,7 @@ public class DeckLoader {
     // and RETURNS its violations so a builder can show them all at once. The
     // ambassador test differs deliberately -- StarterDeckBuilder requires the
     // card to be the FACTION's ambassador (findAmbassador matches
-    // ch.getFaction() == faction), while :195 only requires the deck to
+    // ch.getLoyalty() == Loyalty.fromRace(f)action), while :195 only requires the deck to
     // CONTAIN one Starting Ambassador. For NON_ALIGNED (:884 -- "there is no
     // single 'ambassador' for the League ... the player chooses a character
     // listed as an ambassador for one of the Non-Aligned species") the
@@ -72,14 +72,14 @@ public class DeckLoader {
      *   <li>Deck size >= 45 (rulebook :128/:193)</li>
      *   <li>Contains at least one Starting Ambassador (rulebook :195)</li>
      *   <li>No more than 3 copies of any card by ID, except FIXED-rarity cards (rulebook :194 + B5-1965)</li>
-     *   <li>Every card's faction is playable by the given player faction via {@link Faction#isPlayableBy} (rulebook Character Cards, B5-1965)</li>
+     *   <li>Every card's loyalty is playable by the given player race via {@link Loyalty#isPlayableBy} (rulebook Character Cards, B5-1965)</li>
      * </ul>
      *
      * @param deck the list of cards to validate
-     * @param playerFaction the faction of the player building the deck; used for
-     *     faction-playability checks. Pass {@code null} to skip faction checks.
+     * @param playerRace the race of the player building the deck; used for
+     *     loyalty-playability checks. Pass {@code null} to skip race checks.
      */
-    public static List<String> validatePlayDeck(List<Card> deck, Faction playerFaction) {
+    public static List<String> validatePlayDeck(List<Card> deck, Race playerRace) {
         List<String> problems = new ArrayList<String>();
         if (deck == null) {
             problems.add("deck is null");
@@ -115,10 +115,10 @@ public class DeckLoader {
             if (prev != null) count = prev.intValue() + 1;
             idCounts.put(id, new Integer(count));
 
-            // Faction playability check (B5-1965).
-            if (playerFaction != null && !c.getFaction().isPlayableBy(playerFaction)) {
-                problems.add("card " + id + " (" + c.getTitle() + ") not playable by faction "
-                    + playerFaction + " (card faction: " + c.getFaction() + ")");
+            // Loyalty playability check (B5-1965).
+            if (playerRace != null && !c.getLoyalty().isPlayableBy(playerRace)) {
+                problems.add("card " + id + " (" + c.getTitle() + ") not playable by race "
+                    + playerRace + " (card loyalty: " + c.getLoyalty() + ")");
             }
         }
         if (!hasAmbassador) {
@@ -150,8 +150,8 @@ public class DeckLoader {
     }
 
     /**
-     * Overload for backward compatibility: validates without faction checks.
-     * @deprecated Use {@link #validatePlayDeck(List, Faction)} for full validation.
+     * Overload for backward compatibility: validates without race checks.
+     * @deprecated Use {@link #validatePlayDeck(List, Race)} for full validation.
      */
     public static List<String> validatePlayDeck(List<Card> deck) {
         return validatePlayDeck(deck, null);
@@ -162,9 +162,9 @@ public class DeckLoader {
         return validatePlayDeck(deck).isEmpty();
     }
 
-    /** Convenience form with faction: true when legal for that faction. */
-    public static boolean isPlayDeckLegal(List<Card> deck, Faction playerFaction) {
-        return validatePlayDeck(deck, playerFaction).isEmpty();
+    /** Convenience form with race: true when legal for that race. */
+    public static boolean isPlayDeckLegal(List<Card> deck, Race playerRace) {
+        return validatePlayDeck(deck, playerRace).isEmpty();
     }
 
     public static List<Card> loadFromResource(String resourcePath) throws IOException {
@@ -395,7 +395,7 @@ public class DeckLoader {
 
         CardType type    = CardType.valueOf(typeStr.toUpperCase());
         Rarity   rarity  = parseRarity(rarStr);
-        Faction  faction = parseFaction(facStr);
+        Loyalty  faction = parseLoyalty(facStr);
         CardSet  cardSet = CardSet.valueOf(setStr.toUpperCase());
 
         // B5-1055: validate that record carries only expected fields for its type
@@ -654,9 +654,9 @@ public class DeckLoader {
         catch (IllegalArgumentException e) { return Rarity.COMMON; }
     }
 
-    private static Faction parseFaction(String s) {
-        try { return Faction.valueOf(s.toUpperCase().replace("-", "_")); }
-        catch (IllegalArgumentException e) { return Faction.ANY; }
+    private static Loyalty parseLoyalty(String s) {
+        try { return Loyalty.valueOf(s.toUpperCase().replace("-", "_")); }
+        catch (IllegalArgumentException e) { return Loyalty.ANY; }
     }
 
     /**

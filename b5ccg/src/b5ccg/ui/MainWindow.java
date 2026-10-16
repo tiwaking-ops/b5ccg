@@ -541,7 +541,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
                         if (!hp.getHand().contains(c)) {
                             statusLabel.setText("Cannot sponsor " + c.getTitle()
                                 + " — it is no longer in hand.");
-                        } else if (!c.getFaction().isPlayableBy(hp.getFaction())) {
+                        } else if (!c.getLoyalty().isPlayableBy(hp.getRace())) {
                             statusLabel.setText("Cannot sponsor " + c.getTitle()
                                 + " — a race-restricted card is playable only "
                                 + "by its own race (:664/:665).");
@@ -582,7 +582,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
                 } else if (!hp.getHand().contains(grp)) {
                     statusLabel.setText("Cannot sponsor " + grp.getTitle()
                         + " — it is no longer in hand.");
-                } else if (!grp.getFaction().isPlayableBy(hp.getFaction())) {
+                } else if (!grp.getLoyalty().isPlayableBy(hp.getRace())) {
                     statusLabel.setText("Cannot sponsor " + grp.getTitle()
                         + " — a race-restricted group is playable only by its "
                         + "own race (:496).");
@@ -1493,7 +1493,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         typeGroupBox.setSelected(true);
         typeLocationBox.setSelected(true);
 
-        // Faction filters
+        // Race filters
         fascHumanBox = makeTinyCheckBox("Human");
         fascMinbariBox = makeTinyCheckBox("Minbari");
         fascCentauriBox = makeTinyCheckBox("Centauri");
@@ -1543,7 +1543,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         filterPanel.add(typeGroupBox);
         filterPanel.add(typeLocationBox);
         filterPanel.add(new JSeparator(JSeparator.VERTICAL));
-        filterPanel.add(new JLabel("Faction:"));
+        filterPanel.add(new JLabel("Race:"));
         filterPanel.add(fascHumanBox);
         filterPanel.add(fascMinbariBox);
         filterPanel.add(fascCentauriBox);
@@ -1829,7 +1829,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             }
         });
         // B5-0348: give HandPanel access to rules + human faction for affordability checks
-        handPanel.setRules(rules, controller.getState().getHumanPlayer().getFaction());
+        handPanel.setRules(rules, controller.getState().getHumanPlayer().getRace());
         add(handPanel, BorderLayout.SOUTH);
 
         // B5-0348: wire filter/sort controls
@@ -1861,28 +1861,28 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             @Override public void actionPerformed(ActionEvent e) { handPanel.setTypeFilter(CardType.LOCATION, typeLocationBox.isSelected()); }
         });
         fascHumanBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.HUMAN, fascHumanBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.HUMAN, fascHumanBox.isSelected()); }
         });
         fascMinbariBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.MINBARI, fascMinbariBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.MINBARI, fascMinbariBox.isSelected()); }
         });
         fascCentauriBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.CENTAURI, fascCentauriBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.CENTAURI, fascCentauriBox.isSelected()); }
         });
         fascNarnBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.NARN, fascNarnBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.NARN, fascNarnBox.isSelected()); }
         });
         fascNeutralBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.NEUTRAL, fascNeutralBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.NEUTRAL, fascNeutralBox.isSelected()); }
         });
         fascNonAlignedBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.NON_ALIGNED, fascNonAlignedBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.NON_ALIGNED, fascNonAlignedBox.isSelected()); }
         });
         fascVorlonBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.VORLON, fascVorlonBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.VORLON, fascVorlonBox.isSelected()); }
         });
         fascAnyBox.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { handPanel.setFactionFilter(Faction.ANY, fascAnyBox.isSelected()); }
+            @Override public void actionPerformed(ActionEvent e) { handPanel.setRaceFilter(Loyalty.ANY, fascAnyBox.isSelected()); }
         });
         sortUnsorted.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) { handPanel.setSortMode(0); }
@@ -2185,7 +2185,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         }
         GameState gs = MainWindow.this.controller.getState();
         // Only available when at war
-        if (!gs.isAtWar(human.getFaction())) {
+        if (!gs.isAtWar(human.getRace())) {
             warTargetSelector.setEnabled(false);
             declareWarButton.setEnabled(false);
             warStatusLabel.setText("Not at war — no war conflicts available.");
@@ -2195,15 +2195,15 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         java.util.ArrayList<String> targets = new java.util.ArrayList<String>();
         java.util.ArrayList<String> targetTypes = new java.util.ArrayList<String>();
         for (Player p : gs.getPlayers()) {
-            if (p == human || p.getFaction() == null) continue;
-            if (gs.isAtWar(human.getFaction(), p.getFaction())) {
+            if (p == human || p.getRace() == null) continue;
+            if (gs.isAtWar(human.getRace(), p.getRace())) {
                 targets.add(p.getName());
                 targetTypes.add("race");
             }
         }
         for (Player p : gs.getPlayers()) {
-            if (p == human || p.getFaction() == null) continue;
-            if (!gs.isAtWar(human.getFaction(), p.getFaction())) continue;
+            if (p == human || p.getRace() == null) continue;
+            if (!gs.isAtWar(human.getRace(), p.getRace())) continue;
             for (LocationCard loc : p.getLocations()) {
                 targets.add(loc.getTitle());
                 targetTypes.add("location");
@@ -2634,7 +2634,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         for (Card c : hp.getHand()) {
             // Skip characters - they have sponsor/promote costs handled in B5-0326 section
             if (c instanceof CharacterCard) continue;
-            if (!c.getFaction().isPlayableBy(hp.getFaction())) continue;
+            if (!c.getLoyalty().isPlayableBy(hp.getRace())) continue;
             int cost = c.getCost();
             if (cost > 0 && hp.getAppliedPool() < cost) {
                 // B5-1038: affordability precheck - card is in hand but cannot afford the cost
@@ -4526,22 +4526,22 @@ public class MainWindow extends JFrame implements RoundEndCallback {
      *  builds its AI seats from the same four, and offering a fifth selectable
      *  race the surrounding setup path cannot seat would be a control that
      *  promises something the window cannot deliver. */
-    static final Faction[] PLAYER_RACES = new Faction[] {
-        Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN
+    static final Race[] PLAYER_RACES = new Race[] {
+        Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN
     };
 
     /** Human-readable race name for the combo boxes (rulebook :208/:212). */
-    static String raceLabel(Faction race) {
+    static String raceLabel(Race race) {
         if (race == null) return "(none)";
-        if (race == Faction.HUMAN)      return "Earth Alliance";
-        if (race == Faction.MINBARI)    return "Minbari Federation";
-        if (race == Faction.CENTAURI)   return "Centauri Republic";
-        if (race == Faction.NARN)       return "Narn Regime";
+        if (race == Race.HUMAN)      return "Earth Alliance";
+        if (race == Race.MINBARI)    return "Minbari Federation";
+        if (race == Race.CENTAURI)   return "Centauri Republic";
+        if (race == Race.NARN)       return "Narn Regime";
         return race.name();
     }
 
     /** True when the faction is one of the four Premier player races. */
-    static boolean isPlayerRace(Faction race) {
+    static boolean isPlayerRace(Race race) {
         if (race == null) return false;
         for (int i = 0; i < PLAYER_RACES.length; i++) {
             if (PLAYER_RACES[i] == race) return true;
@@ -4557,19 +4557,19 @@ public class MainWindow extends JFrame implements RoundEndCallback {
      * level" and only diverge later in play. A race toward itself has no
      * tension axis and reads 0.
      */
-    static int initialTension(Faction a, Faction b) {
+    static int initialTension(Race a, Race b) {
         if (a == null || b == null || a == b) return 0;
         boolean pair =
-            (a == Faction.NARN     && b == Faction.CENTAURI) ||
-            (a == Faction.CENTAURI && b == Faction.NARN);
+            (a == Race.NARN     && b == Race.CENTAURI) ||
+            (a == Race.CENTAURI && b == Race.NARN);
         if (pair) return 4;
         pair =
-            (a == Faction.HUMAN    && b == Faction.CENTAURI) ||
-            (a == Faction.CENTAURI && b == Faction.HUMAN);
+            (a == Race.HUMAN    && b == Race.CENTAURI) ||
+            (a == Race.CENTAURI && b == Race.HUMAN);
         if (pair) return 1;
         pair =
-            (a == Faction.HUMAN    && b == Faction.MINBARI) ||
-            (a == Faction.MINBARI  && b == Faction.HUMAN);
+            (a == Race.HUMAN    && b == Race.MINBARI) ||
+            (a == Race.MINBARI  && b == Race.HUMAN);
         if (pair) return 3;
         return 2;
     }
@@ -4584,7 +4584,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
      * <p>Duplicate races are rejected here, not merely flagged: rulebook :208
      * is a hard uniqueness rule and the dialog's whole job is to enforce it.
      */
-    static String validateSetup(Faction[] races, int[] startingInfluence) {
+    static String validateSetup(Race[] races, int[] startingInfluence) {
         if (races == null || races.length < 2) {
             return "A game needs at least two seats.";
         }
@@ -4620,7 +4620,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
      * are symmetric. Never throws: an unusable array yields a short reason
      * rather than an exception, because this is a rendering path.
      */
-    static String buildInitialTensionReport(Faction[] races) {
+    static String buildInitialTensionReport(Race[] races) {
         if (races == null || races.length < 2) return "(pick at least two races)";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < races.length; i++) {
@@ -4640,16 +4640,16 @@ public class MainWindow extends JFrame implements RoundEndCallback {
 
     /** B5-2008: an immutable proposed setup. */
     public static final class SetupConfig {
-        private final Faction[] races;
+        private final Race[] races;
         private final int[]    startingInfluence;
 
-        SetupConfig(Faction[] races, int[] startingInfluence) {
+        SetupConfig(Race[] races, int[] startingInfluence) {
             this.races            = races.clone();
             this.startingInfluence = startingInfluence.clone();
         }
 
         public int    size()                  { return races.length; }
-        public Faction getRace(int seat)      { return races[seat]; }
+        public Race getRace(int seat)      { return races[seat]; }
         public int    getStartingInfluence(int seat) { return startingInfluence[seat]; }
 
         /** One receipt line per seat plus the validation verdict. */
@@ -4694,7 +4694,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
                 for (int r = 0; r < PLAYER_RACES.length; r++) {
                     raceBox.addItem(raceLabel(PLAYER_RACES[r]));
                 }
-                Faction seeded = seed != null ? seed.getRace(i) : null;
+                Race seeded = seed != null ? seed.getRace(i) : null;
                 raceBox.setSelectedIndex(indexOfPlayerRace(seeded));
                 raceSelectors[i] = raceBox;
 
@@ -4728,7 +4728,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             init();
         }
 
-        private int indexOfPlayerRace(Faction race) {
+        private int indexOfPlayerRace(Race race) {
             if (race != null) {
                 for (int i = 0; i < PLAYER_RACES.length; i++) {
                     if (PLAYER_RACES[i] == race) return i;
@@ -4747,8 +4747,8 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             return 0;
         }
 
-        private Faction[] collectRaces() {
-            Faction[] races = new Faction[raceSelectors.length];
+        private Race[] collectRaces() {
+            Race[] races = new Race[raceSelectors.length];
             for (int i = 0; i < races.length; i++) {
                 races[i] = PLAYER_RACES[raceSelectors[i].getSelectedIndex()];
             }
@@ -4983,11 +4983,11 @@ public class MainWindow extends JFrame implements RoundEndCallback {
     public SetupConfig currentSetupConfig() {
         List<Player> players = controller.getState().getPlayers();
         int seats = players.size();
-        Faction[] races = new Faction[seats];
+        Race[] races = new Race[seats];
         int[] influence = new int[seats];
         for (int i = 0; i < seats; i++) {
             Player p = players.get(i);
-            races[i] = p.getFaction();
+            races[i] = p.getRace();
             influence[i] = p.getInfluence();
         }
         return new SetupConfig(races, influence);
@@ -5021,25 +5021,25 @@ public class MainWindow extends JFrame implements RoundEndCallback {
      *  the League of Non-Aligned worlds ... may cast one vote to break any
      *  tie."). Listed for DISPLAY; which seats are actually filled is read from
      *  the live game, never assumed. */
-    static final Faction[] COUNCIL_RACES = new Faction[] {
-        Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN,
-        Faction.VORLON, Faction.NON_ALIGNED
+    static final Race[] COUNCIL_RACES = new Race[] {
+        Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN,
+        Race.VORLON, Race.NON_ALIGNED
     };
 
     /** Display name per Council seat, including the League's special name. */
-    static String councilSeatLabel(Faction race) {
-        if (race == Faction.NON_ALIGNED) return "League of Non-Aligned Worlds";
+    static String councilSeatLabel(Race race) {
+        if (race == Race.NON_ALIGNED) return "League of Non-Aligned Worlds";
         return raceLabel(race);
     }
 
     /** The player seated at `race` in the live game, or null when that race is
      *  not in play this game. Identity is by faction, not seat index. */
-    static Player councilSeatHolder(Faction race, GameState state) {
+    static Player councilSeatHolder(Race race, GameState state) {
         if (state == null || race == null) return null;
         List<Player> players = state.getPlayers();
         for (int i = 0; i < players.size(); i++) {
             Player p = players.get(i);
-            if (p != null && p.getFaction() == race) return p;
+            if (p != null && p.getRace() == race) return p;
         }
         return null;
     }
@@ -5106,7 +5106,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
      * point rather than in a separate file.
      *
      * <p>The dialog exists to close a dead seam rather than to add a screen.
-     * {@link DeckLoader#validatePlayDeck(List, Faction)} had ZERO callers
+     * {@link DeckLoader#validatePlayDeck(List, Race)} had ZERO callers
      * tree-wide (B5-2183 finding L1), so the rulebook's own deck contract --
      * the 45-card floor (rulebook :128/:193), the one Starting Ambassador
      * (:195), the max-3-copies limit (:194) with its FIXED-rarity exemption,
@@ -5165,9 +5165,9 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             // The player faction drives both the pool and the faction
             // playability check, so it is chosen first and everything else
             // refreshes from it. ANY and NEUTRAL are card-side values, not
-            // races a human plays, so DeckBuilderModel.playableFactions()
+            // races a human plays, so DeckBuilderModel.playableRaces()
             // does not offer them.
-            List<Faction> offered = DeckBuilderModel.playableFactions();
+            List<Race> offered = DeckBuilderModel.playableRaces();
             for (int i = 0; i < offered.size(); i++) {
                 factionBox.addItem(offered.get(i));
             }
@@ -5175,7 +5175,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (model != null) {
-                        model.setFaction(chosenFaction());
+                        model.setRace(chosenRace());
                         refreshPool();
                         refreshValidation();
                     }
@@ -5304,7 +5304,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         private void loadModel() {
             try {
                 model = DeckBuilderModel.fromShippedSets();
-                model.setFaction(chosenFaction());
+                model.setRace(chosenRace());
             } catch (java.io.IOException e) {
                 problemArea.setText("Card pool could not be loaded: " + e.getMessage());
                 return;
@@ -5312,9 +5312,9 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             refreshPool();
         }
 
-        private Faction chosenFaction() {
+        private Race chosenRace() {
             Object sel = factionBox.getSelectedItem();
-            return (sel instanceof Faction) ? (Faction) sel : Faction.HUMAN;
+            return (sel instanceof Race) ? (Race) sel : Race.HUMAN;
         }
 
         // ---- B5-1980 pool filters -------------------------------------------------
@@ -5408,7 +5408,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
          *
          * <p>Note what is NOT touched: the deck and the faction. Filtering the pool
          * must never remove cards the player already picked, which is the same
-         * non-destructive property setFaction documents.
+         * non-destructive property setRace documents.
          */
         private void applyFiltersToModel() {
             if (model == null) return;
@@ -5618,7 +5618,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             roster.add(whoCol);
 
             for (int i = 0; i < COUNCIL_RACES.length; i++) {
-                Faction race = COUNCIL_RACES[i];
+                Race race = COUNCIL_RACES[i];
                 JLabel seat = new JLabel(councilSeatLabel(race));
                 seat.setForeground(new Color(220, 200, 140));
                 seat.setFont(new Font("Monospaced", Font.PLAIN, 11));
@@ -5817,8 +5817,8 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             + (problem == null ? " -- valid." : " -- REJECTED: " + problem));
     }
 
-    private static Faction[] raceArrayOf(SetupConfig config) {
-        Faction[] races = new Faction[config.size()];
+    private static Race[] raceArrayOf(SetupConfig config) {
+        Race[] races = new Race[config.size()];
         for (int i = 0; i < races.length; i++) races[i] = config.getRace(i);
         return races;
     }
@@ -5880,7 +5880,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         int leaderCount  = 0;
         for (Player p : players) {
             if (!state.isPlayerActive(p)) continue;
-            String seat = p.getName() + " (" + p.getFaction() + ")";
+            String seat = p.getName() + " (" + p.getRace() + ")";
             String[] row = new String[] {
                 seat,
                 String.valueOf(p.getInfluence()),

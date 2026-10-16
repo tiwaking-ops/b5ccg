@@ -12,7 +12,7 @@ public class ContingencyCard extends Card {
     private boolean revealed;
 
     public ContingencyCard(String id, String title, String subtype, Rarity rarity,
-                           Faction faction, CardSet cardSet, String imageKey,
+                           Loyalty faction, CardSet cardSet, String imageKey,
                            String text, String validTargetType,
                            String validTargetRace, String triggerCondition) {
         super(id, title, CardType.CONTINGENCY, subtype, rarity, faction,

@@ -53,9 +53,9 @@ public class HeadlessWarConflictProbe {
 
     private static void scenarioDeclarationLegality() {
         System.out.println("== S1: DECLARE_WAR_CONFLICT legality (at peace -> at war -> wrong target) ==");
-        Player narn     = player("Narn", Faction.NARN);
-        Player minbari  = player("Minbari", Faction.MINBARI);
-        Player centauri = player("Centauri", Faction.CENTAURI);
+        Player narn     = player("Narn", Race.NARN);
+        Player minbari  = player("Minbari", Race.MINBARI);
+        Player centauri = player("Centauri", Race.CENTAURI);
         GameState st = state(narn, minbari, centauri);
 
         // (a) at peace: cannot declare any war conflict.
@@ -63,7 +63,7 @@ public class HeadlessWarConflictProbe {
         check("S1 cannot declare vs race not at war", !rules.canInitiateWarConflict(narn, WarKind.RACE_TARGET, minbari, null, st));
 
         // (b) at war: both sides may declare.
-        st.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        st.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         check("S1 can declare war conflict when at war", rules.canDeclareWarConflict(narn, st));
         check("S1 war partner can also declare", rules.canDeclareWarConflict(minbari, st));
 
@@ -90,9 +90,9 @@ public class HeadlessWarConflictProbe {
         check("S1 initiator can join own war conflict", war.canJoinConflict(narn));
         check("S1 at-war target can join", war.canJoinConflict(minbari));
         check("S1 peaceful third party cannot join", !war.canJoinConflict(centauri));
-        st.getTensionMatrix().enterWar(Faction.NARN, Faction.CENTAURI);
+        st.getTensionMatrix().enterWar(Race.NARN, Race.CENTAURI);
         check("S1 third party joins once at war", war.canJoinConflict(centauri));
-        st.getTensionMatrix().exitWar(Faction.NARN, Faction.CENTAURI);
+        st.getTensionMatrix().exitWar(Race.NARN, Race.CENTAURI);
 
         // (f) declaring against a race no longer at war is refused.
         Conflict invalid = rules.declareWarConflict(narn, WarKind.RACE_TARGET, centauri, null, st);
@@ -103,12 +103,12 @@ public class HeadlessWarConflictProbe {
 
     private static void scenarioTensionIncrementClamped() {
         System.out.println("== S2: tension increment on uncontested outcome, clamped at 5 ==");
-        Player narn     = player("Narn", Faction.NARN);
-        Player minbari  = player("Minbari", Faction.MINBARI);
+        Player narn     = player("Narn", Race.NARN);
+        Player minbari  = player("Minbari", Race.MINBARI);
         GameState st = state(narn, minbari);
-        st.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        st.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         check("S2 tension starts at 0",
-                st.getTensionMatrix().getTension(Faction.MINBARI, Faction.NARN) == 0);
+                st.getTensionMatrix().getTension(Race.MINBARI, Race.NARN) == 0);
 
         // First uncontested race war: target -1, winner +1, tension +1.
         Conflict war = rules.declareWarConflict(narn, WarKind.RACE_TARGET, minbari, null, st);
@@ -127,16 +127,16 @@ public class HeadlessWarConflictProbe {
         } else {
             check("S2 uncontested race war raises the winner's influence by 1", true);
         }
-        boolean tensionOne = st.getTensionMatrix().getTension(Faction.MINBARI, Faction.NARN) == 1;
+        boolean tensionOne = st.getTensionMatrix().getTension(Race.MINBARI, Race.NARN) == 1;
         check("S2 tension target->initiator incremented to 1", tensionOne);
 
         // Clamp: drive tension to the cap, then resolve again — must stay 5.
-        st.raiseTension(Faction.MINBARI, Faction.NARN, 4);
+        st.raiseTension(Race.MINBARI, Race.NARN, 4);
         check("S2 pre-clamp tension raised to 5",
-                st.getTensionMatrix().getTension(Faction.MINBARI, Faction.NARN) == 5);
+                st.getTensionMatrix().getTension(Race.MINBARI, Race.NARN) == 5);
         Conflict war2 = rules.declareWarConflict(narn, WarKind.RACE_TARGET, minbari, null, st);
         rules.resolveConflict(war2, st);
-        boolean clamped = st.getTensionMatrix().getTension(Faction.MINBARI, Faction.NARN) == 5;
+        boolean clamped = st.getTensionMatrix().getTension(Race.MINBARI, Race.NARN) == 5;
         check("S2 tension increment clamped at 5 (not 6)", clamped);
     }
 
@@ -144,23 +144,23 @@ public class HeadlessWarConflictProbe {
 
     private static void scenarioLocationCaptureAndRecapture(List<Card> pool) {
         System.out.println("== S3: LOCATION_TARGET capture + recapture on real loaded location ==");
-        LocationCard loc = firstLocationOfFaction(pool, Faction.CENTAURI);
+        LocationCard loc = firstLocationOfRace(pool, Race.CENTAURI);
         if (loc == null) {
-            loc = firstLocationOfFaction(pool, Faction.MINBARI);
+            loc = firstLocationOfRace(pool, Race.MINBARI);
         }
         if (loc == null) {
-            loc = firstLocationOfFaction(pool, Faction.HUMAN);
+            loc = firstLocationOfRace(pool, Race.HUMAN);
         }
         if (loc == null) {
             fail("no LOCATION card with a faction among NARN/MINBARI/CENTAURI/HUMAN in loaded data");
             return;
         }
 
-        Player narn     = player("Narn", Faction.NARN);
-        Player locOwner = player("Centauri owner", loc.getFaction());
-        Player minbari  = player("Minbari", Faction.MINBARI);
+        Player narn     = player("Narn", Race.NARN);
+        Player locOwner = player("Centauri owner", loc.getLoyalty().toRace());
+        Player minbari  = player("Minbari", Race.MINBARI);
         GameState st = state(narn, locOwner, minbari);
-        st.getTensionMatrix().enterWar(locOwner.getFaction(), Faction.NARN);
+        st.getTensionMatrix().enterWar(locOwner.getRace(), Race.NARN);
 
         locOwner.getLocations().add(loc);
         int origIncome = loc.getInfluencePerRound();
@@ -186,7 +186,7 @@ public class HeadlessWarConflictProbe {
         check("S3 captured location income suppressed to 0", loc.getInfluencePerRound() == 0);
         check("S3 captured location military suppressed to 0", loc.getMilitary() == 0);
         check("S3 LOCATION_TARGET tension runs toward printed-faction owner",
-                st.getTensionMatrix().getTension(loc.getFaction(), Faction.NARN) > 0);
+                st.getTensionMatrix().getTension(loc.getLoyalty().toRace(), Race.NARN) > 0);
 
         // (c) recapture by the printed-faction owner (winner faction == loc faction).
         check("S3 owner may declare recapture against the occupier",
@@ -207,10 +207,10 @@ public class HeadlessWarConflictProbe {
         System.out.println("== S4: uncontested read both ways (opposers vs attack) ==");
 
         // (a) truly uncontested: empty opposition, no attack -> swing applies.
-        Player narn = player("Narn", Faction.NARN);
-        Player minbari = player("Minbari", Faction.MINBARI);
+        Player narn = player("Narn", Race.NARN);
+        Player minbari = player("Minbari", Race.MINBARI);
         GameState stA = state(narn, minbari);
-        stA.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        stA.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         Conflict warA = rules.declareWarConflict(narn, WarKind.RACE_TARGET, minbari, null, stA);
         int narnA = narn.getInfluence();
         int minA = minbari.getInfluence();
@@ -219,10 +219,10 @@ public class HeadlessWarConflictProbe {
         check("S4a uncontested read: winner gains 1", narn.getInfluence() == narnA + 1);
 
         // (b) contested by OPPOSERS while the initiator still wins: no swing.
-        Player narnB = player("Narn", Faction.NARN);
-        Player minB  = player("Minbari", Faction.MINBARI);
+        Player narnB = player("Narn", Race.NARN);
+        Player minB  = player("Minbari", Race.MINBARI);
         GameState stB = state(narnB, minB);
-        stB.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        stB.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         Conflict warB = rules.declareWarConflict(narnB, WarKind.RACE_TARGET, minB, null, stB);
         FleetCard sup1 = fleetCard("s4b_sup1", 3);
         FleetCard sup2 = fleetCard("s4b_sup2", 3);
@@ -245,10 +245,10 @@ public class HeadlessWarConflictProbe {
 
         // (c) contested by an ATTACK (real engine path marks the conflict):
         //     initiator wins on support but the attack makes it contested.
-        Player narnC = player("Narn", Faction.NARN);
-        Player minC  = player("Minbari", Faction.MINBARI);
+        Player narnC = player("Narn", Race.NARN);
+        Player minC  = player("Minbari", Race.MINBARI);
         GameState stC = state(narnC, minC);
-        stC.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        stC.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         Conflict warC = rules.declareWarConflict(narnC, WarKind.RACE_TARGET, minC, null, stC);
         FleetCard cSup1 = fleetCard("s4c_sup1", 3);
         FleetCard cSup2 = fleetCard("s4c_sup2", 3);
@@ -286,11 +286,11 @@ public class HeadlessWarConflictProbe {
     private static void scenarioForfeitedRaceMemberJointLoss() {
         System.out.println("== S5: Forfeited race member excluded from joint influence loss ==");
         // Three players: two Narn (same race), one Minbari
-        Player narn1 = player("Narn1", Faction.NARN);
-        Player narn2 = player("Narn2", Faction.NARN);
-        Player minbari = player("Minbari", Faction.MINBARI);
+        Player narn1 = player("Narn1", Race.NARN);
+        Player narn2 = player("Narn2", Race.NARN);
+        Player minbari = player("Minbari", Race.MINBARI);
         GameState st = state(narn1, narn2, minbari);
-        st.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        st.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
 
         // Narn1 initiates uncontested race war against Minbari
         Conflict war = rules.declareWarConflict(narn1, WarKind.RACE_TARGET, minbari, null, st);
@@ -311,11 +311,11 @@ public class HeadlessWarConflictProbe {
                 narn2.getInfluence() == narn2Before);
 
         // Also test surrendered player in same scenario (initiator wins, target is surrendered race member)
-        Player narn3 = player("Narn3", Faction.NARN);
-        Player narn4 = player("Narn4", Faction.NARN);
-        Player minbari2 = player("Minbari2", Faction.MINBARI);
+        Player narn3 = player("Narn3", Race.NARN);
+        Player narn4 = player("Narn4", Race.NARN);
+        Player minbari2 = player("Minbari2", Race.MINBARI);
         GameState st2 = state(narn3, narn4, minbari2);
-        st2.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        st2.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         Conflict war2 = rules.declareWarConflict(narn3, WarKind.RACE_TARGET, minbari2, null, st2);
         int narn3Before = narn3.getInfluence();
         int narn4Before = narn4.getInfluence();
@@ -334,17 +334,17 @@ public class HeadlessWarConflictProbe {
 
     // ── Helpers (mirror HeadlessConformanceTest.player/state) ─────────────────
 
-    private static Player player(String name, Faction f) {
+    private static Player player(String name, Race f) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name, "Amb " + name,
-                "CHARACTER_" + f, Rarity.FIXED, f, CardSet.PREMIERE, "x", "text",
+                "CHARACTER_" + f, Rarity.FIXED, Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 3, 3, 3, 3, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);
         List<Card> filler = new ArrayList<Card>();
         for (int i = 0; i < 5; i++) {
             filler.add(new EventCard("deck_" + name + "_" + i, "Deck " + i,
-                    "EVENT", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text"));
+                    "EVENT", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text"));
         }
         p.setDeck(new Deck(filler));
         return p;
@@ -360,16 +360,16 @@ public class HeadlessWarConflictProbe {
     }
 
     private static FleetCard fleetCard(String id, int military) {
-        return new FleetCard(id, id, "FLEET", Rarity.COMMON, Faction.ANY,
+        return new FleetCard(id, id, "FLEET", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text", military);
     }
 
     /** First real loaded LOCATION whose printed faction matches f, else null. */
-    private static LocationCard firstLocationOfFaction(List<Card> pool, Faction f) {
+    private static LocationCard firstLocationOfRace(List<Card> pool, Race f) {
         for (Card c : pool) {
             if (c instanceof LocationCard) {
                 LocationCard loc = (LocationCard) c;
-                if (loc.getFaction() == f) return loc;
+                if (loc.getLoyalty() == Loyalty.fromRace(f)) return loc;
             }
         }
         return null;

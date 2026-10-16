@@ -95,6 +95,9 @@ public class ReplayRecorder {
     /** The previous round's snapshot, null before the first round record. */
     private Map<String, Object> previous;
 
+    /** B5-0008: game seed stamped into the header (setSeed); 0 = unseeded. */
+    private long seed = 0L;
+
     public ReplayRecorder(String path, String taskId) throws IOException {
         this.file = new File(path);
         this.taskId = taskId;
@@ -111,6 +114,16 @@ public class ReplayRecorder {
         if (headerWritten) return;
         roster.clear();
         for (Player p : players) roster.add(p.getName());
+    }
+
+    /** B5-0008: game seed recorded in the header for reproducibility. Must be
+     *  called before the header is written (i.e. before the first round
+     *  record); 0 means unseeded. Additive header field — readers of older
+     *  schema-1 files (and older readers of new files) are unaffected, since
+     *  MiniJson ignores unknown JSON keys. */
+    public void setSeed(long seed) {
+        if (headerWritten) return;
+        this.seed = seed;
     }
 
     /** Queues an action for the round currently being played. */
@@ -155,6 +168,10 @@ public class ReplayRecorder {
         sb.append(",\"schemaVersion\":").append(SCHEMA_VERSION);
         sb.append(",\"task\":\"").append(esc(taskId)).append("\"");
         sb.append(",\"writtenUtc\":\"").append(nowUtc()).append("\"");
+        // B5-0008: additive header field (see setSeed). schemaVersion stays 1:
+        // MiniJson-based readers ignore keys they do not know, so old readers
+        // read this file unchanged and this reader reads old files unchanged.
+        sb.append(",\"seed\":").append(seed);
         sb.append(",\"players\":[");
         for (int i = 0; i < roster.size(); i++) {
             if (i > 0) sb.append(',');
@@ -379,6 +396,9 @@ public class ReplayRecorder {
         public int                      schemaVersion;
         public String                   task      = "";
         public String                   writtenUtc = "";
+        /** B5-0008: the game seed from the header; 0 when absent (older
+         *  schema-1 files written before the field existed) or unseeded. */
+        public long                     seed      = 0L;
         public final List<String>       players   = new ArrayList<String>();
         public final List<ReplayRound>  rounds    = new ArrayList<ReplayRound>();
     }
@@ -417,6 +437,10 @@ public class ReplayRecorder {
                     }
                     replay.task      = str(obj.get("task"));
                     replay.writtenUtc = str(obj.get("writtenUtc"));
+                    // B5-0008: optional header seed; absent on pre-B5-0008
+                    // schema-1 files, which load unchanged.
+                    Object s = obj.get("seed");
+                    if (s instanceof Number) replay.seed = ((Number) s).longValue();
                     List<?> ps = (List<?>) obj.get("players");
                     if (ps != null) for (Object p : ps) replay.players.add(str(p));
                 } else if (REC_ROUND.equals(kind)) {

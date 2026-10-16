@@ -30,8 +30,8 @@ import java.util.*;
 public class HeadlessStallSoakProbe {
 
     private static final String[] NAMES = {"Alpha", "Beta", "Gamma", "Delta"};
-    private static final Faction[] FACTIONS =
-        {Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN};
+    private static final Race[] FACTIONS =
+        {Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN};
     private static final AIDifficulty[] DIFFICULTIES =
         {AIDifficulty.EASY, AIDifficulty.MEDIUM, AIDifficulty.HARD, AIDifficulty.MEDIUM};
 
@@ -150,7 +150,7 @@ public class HeadlessStallSoakProbe {
         List<AIPlayer> aiPlayers = new ArrayList<AIPlayer>();
         for (int i = 0; i < NAMES.length; i++) {
             Player p = new Player(NAMES[i], FACTIONS[i], false);
-            List<Card> deckCards = buildFactionDeck(allCards, FACTIONS[i]);
+            List<Card> deckCards = buildRaceDeck(allCards, FACTIONS[i]);
             if (deckCards.isEmpty()) {
                 throw new IllegalStateException("no cards for faction " + FACTIONS[i]);
             }
@@ -279,8 +279,8 @@ public class HeadlessStallSoakProbe {
 
     // ── Deck construction (verbatim HeadlessMultiRoundTest helpers) ──────────
 
-    /** Faction deck: starter decks when available, heuristic fallback. */
-    private static List<Card> buildFactionDeck(List<Card> all, Faction faction) {
+    /** Race deck: starter decks when available, heuristic fallback. */
+    private static List<Card> buildRaceDeck(List<Card> all, Race faction) {
         if (StarterDeckBuilder.isAvailable()) {
             try {
                 return StarterDeckBuilder.build(faction, all);
@@ -292,7 +292,7 @@ public class HeadlessStallSoakProbe {
         List<Card> deck = new ArrayList<Card>();
         for (int i = 0; i < all.size() && deck.size() < 60; i++) {
             Card c = all.get(i);
-            if (c.getFaction() == faction) deck.add(c);
+            if (c.getLoyalty() == Loyalty.fromRace(faction)) deck.add(c);
         }
         int conflicts = 0;
         for (int i = 0; i < all.size() && conflicts < 12; i++) {
@@ -306,20 +306,20 @@ public class HeadlessStallSoakProbe {
         }
         for (int i = 0; i < all.size() && deck.size() < 60; i++) {
             Card c = all.get(i);
-            Faction f = c.getFaction();
-            if (f == Faction.ANY || f == Faction.NEUTRAL || f == Faction.NON_ALIGNED) {
+            Loyalty f = c.getLoyalty();
+            if (f == Loyalty.ANY || f == Loyalty.NEUTRAL || f == Loyalty.NON_ALIGNED) {
                 deck.add(c);
             }
         }
         return deck;
     }
 
-    private static CharacterCard findAmbassadorCard(List<Card> deckCards, Faction faction) {
+    private static CharacterCard findAmbassadorCard(List<Card> deckCards, Race faction) {
         for (int i = 0; i < deckCards.size(); i++) {
             Card c = deckCards.get(i);
             if (c instanceof CharacterCard) {
                 CharacterCard ch = (CharacterCard) c;
-                if (ch.isAmbassador() && ch.getFaction() == faction) return ch;
+                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(faction)) return ch;
             }
         }
         return null;

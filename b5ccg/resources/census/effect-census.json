@@ -1,0 +1,4360 @@
+{
+ "schema_version": 1,
+ "task": "B5-0005",
+ "method": "LLM first pass over effective text (Deluxe governs dual titles, D5); covered = named by >=1 CardEffects behaviour literal; starter = member of premiere-starter-decks",
+ "taxonomy": [
+  "VANILLA",
+  "TRAIT_ONLY",
+  "STAT_MODIFIER",
+  "ONE_SHOT",
+  "CONFLICT_VARIANT",
+  "TRIGGERED",
+  "RESTRICTION",
+  "COST_MODIFIER",
+  "MARK",
+  "STATE",
+  "VOTE",
+  "AGENDA_WIN",
+  "DECK_HAND",
+  "BESPOKE"
+ ],
+ "records": [
+  {
+   "title": "A Brighter Future",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "A Good Bluff",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "A Rising Power",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Accident",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Adira Tyree",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Affirm Alliance",
+   "type": "EVENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Affirmation of Peace",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Affirmation of Power",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Alliance",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Alliance of Races",
+   "type": "AGENDA",
+   "printing": "PREMIERE_ONLY",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Approval of the Grey",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Armed Resistance",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Armistice",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "As It Was Meant To Be",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Ashan",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Assault Troops",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Assigning Blame",
+   "type": "AFTERMATH",
+   "printing": "PREMIERE_ONLY",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Attacking Pawns",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Avert Incident",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Babylon 5 Unrest",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "COST_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Backroom Dealing",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Balance",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Battle Tested",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Bester",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Bio-Weapon Discovery",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Black Market",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Blockade",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Blood Oath",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Book of G'Quan",
+   "type": "ENHANCEMENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Border Raid",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Campaign for Support",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Carn Mollari",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Carpe Diem",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "BESPOKE",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Casualty Reports",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Catherine Sakai",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Censure",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Centauri Agent",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Centauri Aide",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Centauri Captain",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Centauri Prime",
+   "type": "LOCATION",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Centauri Telepath",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Change of Plans",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Changing Opinion",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Chaos Reigns",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Chrysalis",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "BESPOKE",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Colonial Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Colonial Fleet (Human)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Colonial Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Colonial Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Combat Experience",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Commerce Raiding",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Commercial Telepaths",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Compatible Goals",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Competing Interests",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Complete Support",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Concealed Weapon",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Concentrated Effort",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Condemn Deportations",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Conflicting Desires",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Conflicting Loyalties",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Confusion in Chaos",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Consolidated Position",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Contact with Shadows",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Contact with Vorlons",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Coordinated Fire",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Counterintelligence",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Court the Rebellious",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Covert Allies",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Crisis of Self",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Crusade",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Crystal Cities",
+   "type": "ENHANCEMENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Cut Supply Lines",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Cynthia Torqueman",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Damage Control Team",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Dan Randall",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Decisive Tactics",
+   "type": "EVENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Declaration of War",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Deep Space Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Deep Space Fleet (Human)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Deep Space Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Deep Space Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Defame Ambassador",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Defense in Depth",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Delenn",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Delenn Transformed",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Demonstrative Victory",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Despair",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Destiny Fulfilled",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Develop Relationship",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Dhaliri",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "COST_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Diplomatic Advantage",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Diplomatic Blunder",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Diplomatic Corps",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Diplomatic Immunity",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Disaffected Centauri",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [
+    "STAT_MODIFIER",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Disaffected Human",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [
+    "STAT_MODIFIER",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Disaffected Minbari",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [
+    "STAT_MODIFIER",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Disaffected Narn",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [
+    "STAT_MODIFIER",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Disenchantment",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Disgrace",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Dishonor",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Draal",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND",
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Draft",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Drazi Sunhawk",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Drigo",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Du'Nar",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Du'Rog",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Durlan",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Early Warning",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Earth",
+   "type": "LOCATION",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Elric",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "BESPOKE",
+   "tags": [
+    "DECK_HAND",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Emergency Military Aid",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Emperor Turhan",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Energy Mines",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Enrage",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "BESPOKE",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Establish Base",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Euphrates Treaty",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Expeditionary Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Expeditionary Fleet (Human)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Expeditionary Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Expeditionary Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Exploit Opportunities",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Exploitation",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Exploration",
+   "type": "EVENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Extended Contacts",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Extreme Sanction",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Finish the War",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "First Battle Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "First Battle Fleet (Human)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "First Battle Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "First Battle Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Fixed in Their Ways",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "COST_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Fleet Support Base",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Fleet of the Line",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Fleets on the Border",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Focus Your Efforts",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "For My People",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "For the Common Good",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "For the Good of All",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Forced Commitment",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Forced Evolution",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "COST_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Forced Impairment",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Forces Collide",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Frederick Lantz",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Free the Souls",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "G'Drog",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "G'Kar",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "G'Sten",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Garrison Fleet",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "General Franklin",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "General Hague",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Glory",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Government Opposition",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Grey Council Fleet",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Grievance",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Growth in Chaos",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Guilt",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Gunboat Diplomacy",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Harvest Souls",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Hate Crime",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Heavy Fleet",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Hedronn",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "COST_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Hidden Agent",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Hidden Knowledge",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Higher Calling",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Hire Raiders",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Homeworld Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Homeworld Fleet (Human)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Homeworld Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Homeworld Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "PREMIERE_ONLY",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Hour of the Wolf",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "COST_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Human Agent",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Human Aide",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Human Captain",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Humanitarian Aid",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Hunted",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Hunter, Prey",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "ISN",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Immolan V",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Immortality Serum",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Imperial Telepaths",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Imperialism",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "In the Line of Duty",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Inevitable Destiny",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Infiltrate and Exploit",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Influential Lords",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Internal Strife",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Interstellar Corporation",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Intolerable Interference",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Intrigues Mature",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Ipsha Battleglobe",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Isolated",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Isolationism",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "It Will Be His Undoing",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Ja'Doc",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Jason Ironheart",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Jeffrey Sinclair",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Jha'Dur",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "John Sheridan",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Judgment by Success",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Kalain",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Kha'Mak",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Kidnapping",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Knowledge is Power",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Knowledge of Shadows",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Knowledge of the Soul",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Ko'Dath",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Kosh Naranek",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lack of Subtlety",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lady Ladira",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lady Morella",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Lamentations",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Latent Telepath",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Leading the Races",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Learning Experience",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Left Vulnerable",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lennier",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Level the Playing Field 3+9",
+   "type": "EVENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Limited Strike",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Liquidating Assets",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lockdown",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Londo Mollari",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Long Term Investment",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lord Kiro",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lord Refa",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lord Valo",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Loss of Face",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Loss of Support",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND",
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Lovell",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Luis Santiago",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Luxuries of Homeworld",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lyndisty",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Lyta Alexander",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Maintain the Peace",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Marcus Cole",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Markab Fleet",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Mars Colony",
+   "type": "LOCATION",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Martyr",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Mary Ann Cramer",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Mass Drivers",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Meddling with Others",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Medical Assistance",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Meditation",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Merchandising B5",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Miagi Hidoshi",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Michael Garibaldi",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Military Cadre",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Military Telepaths",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Minbar",
+   "type": "LOCATION",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Minbari Agent",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Minbari Aide",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Minbari Captain",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Minbari Protectorate",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Minbari Telepath",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Mines",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Minister Malachi",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Moral Quandary",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Morden",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Motivated Leaders",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Mr. Adams",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "COST_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Muddy the Waters",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "N'Grath",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND",
+    "TRAIT_ONLY"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Na'Far",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Na'Ka'Leen Feeder",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Na'Kal",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Na'Toth",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Narn Agent",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Narn Aide",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Narn Captain",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Narn Homeworld",
+   "type": "LOCATION",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Narn Rabble",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Negotiated Surrender",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Neroon",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Neutrality Treaty",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Never Again",
+   "type": "AGENDA",
+   "printing": "PREMIERE_ONLY",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "News of Defeat",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "News of Galactic Import",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Nightmares",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "No Escape",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Non-Aggression Pact",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Non-Aligned Support",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Not Meant to Be",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Observers",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Older but Wiser",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Order Above All",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Overworked",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Parliament of Dreams",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Paying for Sins",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Peace In Our Time",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Peacekeeping",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Personal Enemies",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Personal Involvement",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Personal Protection",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Personal Sacrifice",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Picket Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Picket Fleet (Human)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Picket Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Picket Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Planetary Defenses",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Political Realignment",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Popular Support",
+   "type": "EVENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Power Politics",
+   "type": "AGENDA",
+   "printing": "PREMIERE_ONLY",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Power Posturing",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Precision Strike",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Prolonged Talks",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Prophecy",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Protests",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Proxima III",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Psi Attack",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Psi Bodyguard",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Psi Corps Intelligence",
+   "type": "GROUP",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Psi Interrogation",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Public Apology",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Pulling Strings",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Purge the Disloyal",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Quadrant 14",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Quadrant 37",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Rabble Rousers",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Racial Hatred",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Ragesh III",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Raid Shipping",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Rally the People",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Rally to the Cause",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Ramming",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Ranger Strike Team",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Rangers Surveillance",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Rathenn",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Recalled to Service",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Refugees",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Religious Caste",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Renowned Victory",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Repairing the Past",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Rescue",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Reserve Fleet",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Retribution",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Revenge",
+   "type": "AGENDA",
+   "printing": "PREMIERE_ONLY",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Reverse Advances",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Rise of the Republic",
+   "type": "AGENDA",
+   "printing": "PREMIERE_ONLY",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Rise to Power",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Rivalry",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Rogue Soul Hunter",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND",
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Saber Rattling",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sabotage",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Salvage Yard",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sanctions",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sandra Hiroshi",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sarah",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Second Battle Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Second Battle Fleet (Human)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Second Battle Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Second Battle Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Secondary Control",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Secondary Experience",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Secret Police",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Secret Strike",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Secret Vorlon Aid",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Security Training",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Seduction",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "BESPOKE",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Seizing Advantage",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Self Doubt",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Senator Voudreau",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Servants of Order",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Shadow Assault",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Shadow Strike",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Shakat",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Shal Mayan",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Short Term Goals",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Short Term Investment",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Shunned",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Skeletons in the Closet",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sleeper Personality",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Sleeping Z'ha'dum",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "RESTRICTION",
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sneak Attack",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sortie",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Soul Hunter",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "COST_MODIFIER",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Special Ops",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Spin Doctors",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "BESPOKE",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Sponsor Rebels",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Stealth Technology",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Stephen Franklin",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Stop Hostilities",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Strafing Run",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Strategic Reassignment",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Strength in Adversity",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Strike Fleet",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Subliminal Influence",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Successful Manipulation",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Supplement Security",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Support Babylon 5",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Support of the Mighty",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Susan Ivanova",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Ta'Lon",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Talia Winters",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Technological Espionage",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Telepathic Scan",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Temptations",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Terrorist Bombings",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Test Their Mettle",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "The Eye",
+   "type": "ENHANCEMENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "The Great Machine",
+   "type": "CONFLICT",
+   "printing": "PREMIERE_ONLY",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "The Hope of Peace",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "TRIGGERED"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "The Opposition Rises",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "The Price of Power",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Thenta Makur",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Third Battle Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Third Battle Fleet (Minbari)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Total War",
+   "type": "AGENDA",
+   "printing": "DUAL",
+   "class": "AGENDA_WIN",
+   "tags": [
+    "RESTRICTION",
+    "STAT_MODIFIER"
+   ],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Trade Pact",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Trade Windfall",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Transfer Point Io",
+   "type": "LOCATION",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Triluminary",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Tu'Pari",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Under Pressure",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Underworld Connections",
+   "type": "EVENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "United Front",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "Universe Today Feature",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Unrecognized Data",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Upgraded Defenses",
+   "type": "ENHANCEMENT",
+   "printing": "PREMIERE_ONLY",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Urza Jaddo",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Utility Fleet (Centauri)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Utility Fleet (Human)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Utility Fleet (Narn)",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "VANILLA",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Vendetta",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Victory in My Grasp",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Vir Cotto",
+   "type": "CHARACTER",
+   "printing": "PREMIERE_ONLY",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Vital Interests",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Vorlon Enhancement",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": true
+  },
+  {
+   "title": "Vorlon Rescue",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Vree Saucers",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "TRAIT_ONLY"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "War College",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "War Hero",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": true,
+   "covered": true
+  },
+  {
+   "title": "War by Popular Decree",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "RESTRICTION",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Warleader Shakiri",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Warleader's Fleet",
+   "type": "FLEET",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Warren Keffer",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRAIT_ONLY",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Warrior Caste",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Wear and Tear",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "What Do You Want?",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "DECK_HAND",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Who Are You?",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Wind Swords",
+   "type": "GROUP",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Witness Protection",
+   "type": "CONFLICT",
+   "printing": "DUAL",
+   "class": "CONFLICT_VARIANT",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Working Relationship",
+   "type": "ENHANCEMENT",
+   "printing": "DUAL",
+   "class": "STAT_MODIFIER",
+   "tags": [
+    "RESTRICTION"
+   ],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "Wounded",
+   "type": "AFTERMATH",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": false,
+   "covered": false
+  },
+  {
+   "title": "You Are Not Ready",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "You Know My Reputation",
+   "type": "EVENT",
+   "printing": "DUAL",
+   "class": "ONE_SHOT",
+   "tags": [
+    "RESTRICTION",
+    "STAT_MODIFIER"
+   ],
+   "starter": true,
+   "covered": false
+  },
+  {
+   "title": "Zack Allan",
+   "type": "CHARACTER",
+   "printing": "DUAL",
+   "class": "TRIGGERED",
+   "tags": [
+    "DECK_HAND"
+   ],
+   "starter": false,
+   "covered": false
+  }
+ ]
+}

@@ -20,7 +20,7 @@ public class EnhancementCard extends Card {
     private final Map<MarkType, Integer> marks = new HashMap<MarkType, Integer>();
 
     public EnhancementCard(String id, String title, String subtype,
-                           Rarity rarity, Faction faction, CardSet cardSet,
+                           Rarity rarity, Loyalty faction, CardSet cardSet,
                            String imageKey, String text,
                            int diplomacyBonus, int intrigueBonus,
                            int psiBonus, int militaryBonus, int leadershipBonus) {

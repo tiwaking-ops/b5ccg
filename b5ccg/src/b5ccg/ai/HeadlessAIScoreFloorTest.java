@@ -33,9 +33,9 @@ public class HeadlessAIScoreFloorTest {
 
     // ── fixtures ──────────────────────────────────────────────────────────────
 
-    private static CharacterCard character(String id, Faction f) {
+    private static CharacterCard character(String id, Race f) {
         return new CharacterCard(id, "Card " + id, "CHARACTER", Rarity.COMMON,
-                f, CardSet.PREMIERE, "x", "text", 3, 3, 3, 3, false);
+                Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text", 3, 3, 3, 3, false);
     }
 
     /** A bare AI is enough: both methods under test read only their arguments
@@ -47,7 +47,7 @@ public class HeadlessAIScoreFloorTest {
     /** p owns two unrotated Inner-Circle characters, influence 4 and an
      *  applied pool of 4, so RulesEngine.canBuildInfluence(p) is true and a
      *  refusal can only come from the guard a given case is isolating. */
-    private static Player player(String name, Faction f) {
+    private static Player player(String name, Race f) {
         Player p = new Player(name, f, false);
         CharacterCard leader = character("ic_" + name, f);
         CharacterCard second = character("ic2_" + name, f);
@@ -59,11 +59,11 @@ public class HeadlessAIScoreFloorTest {
     public static void main(String[] args) {
         System.out.println("== B5-4136 AI scoring-floor sentinel ==");
 
-        Player p   = player("narnOne", Faction.NARN);
+        Player p   = player("narnOne", Race.NARN);
         AIPlayer ai = ai(p);
         CharacterCard leader = p.getInnerCircle().get(0);
         CharacterCard second = p.getInnerCircle().get(1);
-        CharacterCard outsider = character("outsider", Faction.NARN);
+        CharacterCard outsider = character("outsider", Race.NARN);
 
         // ── evaluateBuildInfluence refusals ───────────────────────────────────
         check("build: null player is refused with the sentinel",
@@ -82,7 +82,7 @@ public class HeadlessAIScoreFloorTest {
                 ai.evaluateBuildInfluence(p, leader) == FLOOR);
         leader.setRotated(false);
 
-        Player rich = player("richNarn", Faction.NARN);
+        Player rich = player("richNarn", Race.NARN);
         rich.gainInfluence(6);                       // influence 4 -> 10
         CharacterCard richLeader = rich.getInnerCircle().get(0);
         check("build: influence above 9 is refused with the sentinel even though "
@@ -111,7 +111,7 @@ public class HeadlessAIScoreFloorTest {
                 ai.evaluateCharacterCardPromotion(p, leader) == FLOOR);
 
         // ── evaluateCharacterCardPromotion acceptance ─────────────────────────
-        CharacterCard understudy = character("understudy", Faction.NARN);
+        CharacterCard understudy = character("understudy", Race.NARN);
         p.getSupportingRole().add(understudy);
         int promoScore = ai.evaluateCharacterCardPromotion(p, understudy);
         check("promotion: an accepted pair never returns the sentinel",

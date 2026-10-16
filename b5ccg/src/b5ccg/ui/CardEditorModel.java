@@ -2,7 +2,7 @@ package b5ccg.ui;
 
 import b5ccg.model.enums.CardType;
 import b5ccg.model.enums.CardSet;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Loyalty;
 import b5ccg.model.enums.MarkType;
 import b5ccg.model.enums.Rarity;
 
@@ -39,7 +39,7 @@ public final class CardEditorModel {
     private CardType type;                // §3: Card Type
     private String subtype;
     private Rarity rarity;
-    private Faction faction;
+    private Loyalty faction;
     private CardSet cardSet;              // JSON key: "set"
     private String imageKey;
     private String text;                  // §5: Effects (card effect text)
@@ -70,7 +70,7 @@ public final class CardEditorModel {
     public CardEditorModel() {
         this.type = CardType.CHARACTER;
         this.rarity = Rarity.COMMON;
-        this.faction = Faction.ANY;
+        this.faction = Loyalty.ANY;
         this.cardSet = CardSet.PREMIERE;
         this.cost = 0;
         this.mercenary = false;
@@ -98,8 +98,8 @@ public final class CardEditorModel {
     public Rarity getRarity()                   { return rarity; }
     public void setRarity(Rarity rarity)        { this.rarity = rarity != null ? rarity : Rarity.COMMON; }
 
-    public Faction getFaction()                 { return faction; }
-    public void setFaction(Faction faction)     { this.faction = faction != null ? faction : Faction.ANY; }
+    public Loyalty getLoyalty()                 { return faction; }
+    public void setLoyalty(Loyalty faction)     { this.faction = faction != null ? faction : Loyalty.ANY; }
 
     public CardSet getSet()                     { return cardSet; }
     public void setSet(CardSet cardSet)         { this.cardSet = cardSet != null ? cardSet : CardSet.PREMIERE; }
@@ -294,7 +294,7 @@ public final class CardEditorModel {
 
         model.subtype = m.get("subtype");
         model.rarity = parseRarity(m.get("rarity"));
-        model.faction = parseFaction(m.get("faction"));
+        model.faction = parseLoyalty(m.get("faction"));
         model.cardSet = parseCardSet(m.get("set"));
         model.imageKey = m.get("imageKey");
         model.text = m.get("text");
@@ -725,12 +725,12 @@ public final class CardEditorModel {
         }
     }
 
-    private static Faction parseFaction(String s) {
-        if (s == null) return Faction.ANY;
+    private static Loyalty parseLoyalty(String s) {
+        if (s == null) return Loyalty.ANY;
         try {
-            return Faction.valueOf(s.toUpperCase().replace("-", "_"));
+            return Loyalty.valueOf(s.toUpperCase().replace("-", "_"));
         } catch (IllegalArgumentException e) {
-            return Faction.ANY;
+            return Loyalty.ANY;
         }
     }
 

@@ -151,17 +151,17 @@ public class HeadlessConformanceTest {
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private static Player player(String name, Faction f) {
+    private static Player player(String name, Race f) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name, "Amb " + name,
-                "CHARACTER_" + f, Rarity.FIXED, f, CardSet.PREMIERE, "x", "text",
+                "CHARACTER_" + f, Rarity.FIXED, Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 3, 3, 3, 3, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);
         List<Card> filler = new ArrayList<Card>();
         for (int i = 0; i < 10; i++) {
             filler.add(new EventCard("deck_" + name + "_" + i, "Deck " + i,
-                    "EVENT", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text"));
+                    "EVENT", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text"));
         }
         p.setDeck(new Deck(filler));
         return p;
@@ -207,12 +207,12 @@ public class HeadlessConformanceTest {
     }
 
     private static EventCard event(String id) {
-        return new EventCard(id, id, "EVENT", Rarity.COMMON, Faction.ANY,
+        return new EventCard(id, id, "EVENT", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text");
     }
 
     private static AftermathCard aftermath(String id, String trigger) {
-        return new AftermathCard(id, id, "AFTERMATH", Rarity.COMMON, Faction.ANY,
+        return new AftermathCard(id, id, "AFTERMATH", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text", trigger);
     }
 
@@ -221,44 +221,44 @@ public class HeadlessConformanceTest {
     private static ConflictCard conflictCard(String id, ConflictType t,
                                              Participation part) {
         ConflictCard cc = new ConflictCard(id, id, "CONFLICT_" + t,
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text", t, 1);
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text", t, 1);
         cc.setParticipation(part);
         return cc;
     }
 
     private static FleetCard fleetCard(String id, String fleetClass) {
-        FleetCard f = new FleetCard(id, id, "FLEET", Rarity.COMMON, Faction.ANY,
+        FleetCard f = new FleetCard(id, id, "FLEET", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text", 3);
         f.setFleetClass(fleetClass);
         return f;
     }
 
     private static CharacterCard leaderCard(String id, int leadership) {
-        return new CharacterCard(id, id, "CHARACTER_NARN", Rarity.RARE, Faction.NARN,
+        return new CharacterCard(id, id, "CHARACTER_NARN", Rarity.RARE, Loyalty.NARN,
                 CardSet.PREMIERE, "x", "text", 2, 2, 0, leadership, false);
     }
 
     /** B5-0631 helper: event card with subtype (trigger condition) and text. */
-    private static EventCard eventCard(String id, Faction faction, CardSet cardSet,
+    private static EventCard eventCard(String id, Loyalty faction, CardSet cardSet,
                                        String title, String text, String subtype,
                                        Rarity rarity) {
         return new EventCard(id, title, subtype, rarity, faction, cardSet, "x", text);
     }
 
     /** B5-0631 helper: character card from unpacked stats array
-     *  (diplomacy, intrigue, psi, leadership). The fourth Faction param is
+     *  (diplomacy, intrigue, psi, leadership). The fourth Race param is
      *  unused (left for signature compatibility with the ORD section's call
      *  shape; the card's faction is the third param). */
-    private static CharacterCard characterCard(String id, String title, Faction faction,
-                                               Faction unused, CardSet cardSet,
+    private static CharacterCard characterCard(String id, String title, Race faction,
+                                               Loyalty unused, CardSet cardSet,
                                                Rarity rarity, int[] stats) {
         return new CharacterCard(id, title, "CHARACTER_" + faction,
-                rarity, faction, cardSet, "x", "ORD char",
+                rarity, Loyalty.fromRace(faction), cardSet, "x", "ORD char",
                 stats[0], stats[1], stats[2], stats[3], false);
     }
 
     /** B5-0364 helper: an INFLUENCE_20 agenda, Major or minor, of any faction. */
-    private static AgendaCard agendaCard(String id, boolean major, Faction faction) {
+    private static AgendaCard agendaCard(String id, boolean major, Loyalty faction) {
         return new AgendaCard(id, id, major ? "AGENDA_MAJOR" : "AGENDA",
                 major ? Rarity.RARE : Rarity.COMMON, faction, CardSet.PREMIERE,
                 "x", "text", major, "INFLUENCE_20");
@@ -268,17 +268,17 @@ public class HeadlessConformanceTest {
 
     private static void testD1() {
         System.out.println("D1: aftermath Won/Lost from the initiator's perspective");
-        Player initiator = player("Init", Faction.NARN);
-        Player opposer   = player("Oppo", Faction.MINBARI);
+        Player initiator = player("Init", Race.NARN);
+        Player opposer   = player("Oppo", Race.MINBARI);
         GameState st = state(initiator, opposer);
 
         CharacterCard bigChar = new CharacterCard("big", "Big Opposer Char",
-                "CHARACTER_MINBARI", Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE,
+                "CHARACTER_MINBARI", Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 5, false);
 
         // Conflict 1: opposer commits 5 Leadership vs initiator 3 → initiator LOSES.
         ConflictCard cc = new ConflictCard("conf1", "Loss Strike", "CONFLICT_MILITARY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.MILITARY, 2);
         Conflict lost = new Conflict(cc, initiator);
         lost.commitCard(initiator, initiator.getAmbassador());
@@ -311,7 +311,7 @@ public class HeadlessConformanceTest {
 
         // Conflict 2: initiator commits the big character → initiator WINS.
         ConflictCard cc2 = new ConflictCard("conf2", "Win Strike", "CONFLICT_MILITARY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.MILITARY, 2);
         Conflict wonC = new Conflict(cc2, initiator);
         wonC.commitCard(initiator, initiator.getAmbassador());
@@ -351,12 +351,12 @@ public class HeadlessConformanceTest {
                 !milPar.isEligible(false, true, ConflictType.INTRIGUE));
 
         // One check through the engine path too (card must be in hand).
-        Player p = player("P3", Faction.NARN);
+        Player p = player("P3", Race.NARN);
         GameState st = state(p);
         AftermathCard inHand = aftermath("am_psi2", "WON_PSI");
         p.addToHand(inHand);
         ConflictCard cc = new ConflictCard("c3", "Mil Strike", "CONFLICT_MILITARY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.MILITARY, 1);
         Conflict mil = new Conflict(cc, p);
         mil.commitCard(p, p.getAmbassador());
@@ -373,15 +373,15 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
 
         // PSI conflict: loser discards hand down to 3
-        Player psiWinner = player("PsiWin", Faction.NARN);
-        Player psiLoser = player("PsiLose", Faction.MINBARI);
+        Player psiWinner = player("PsiWin", Race.NARN);
+        Player psiLoser = player("PsiLose", Race.MINBARI);
         GameState psiSt = state(psiWinner, psiLoser);
         // Give loser 5 cards in hand
         for (int i = 0; i < 5; i++) {
             psiLoser.addToHand(event("psi_evt_" + i));
         }
         ConflictCard psiCard = new ConflictCard("conf_psi_test", "Psi Test",
-                "CONFLICT_PSI", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_PSI", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.PSI, 2);
         Conflict psiConflict = new Conflict(psiCard, psiWinner);
         psiConflict.commitCard(psiWinner, psiWinner.getAmbassador());
@@ -396,15 +396,15 @@ public class HeadlessConformanceTest {
                 && psiLoser.getDeck().getDiscardPile().size() == 2);
 
         // PSI conflict: loser with <= 3 cards discards nothing
-        Player psiWinner2 = player("PsiWin2", Faction.NARN);
-        Player psiLoser2 = player("PsiLose2", Faction.MINBARI);
+        Player psiWinner2 = player("PsiWin2", Race.NARN);
+        Player psiLoser2 = player("PsiLose2", Race.MINBARI);
         GameState psiSt2 = state(psiWinner2, psiLoser2);
         // Give loser 2 cards in hand
         for (int i = 0; i < 2; i++) {
             psiLoser2.addToHand(event("psi_evt2_" + i));
         }
         ConflictCard psiCard2 = new ConflictCard("conf_psi_test2", "Psi Test 2",
-                "CONFLICT_PSI", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_PSI", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.PSI, 2);
         Conflict psiConflict2 = new Conflict(psiCard2, psiWinner2);
         psiConflict2.commitCard(psiWinner2, psiWinner2.getAmbassador());
@@ -419,15 +419,15 @@ public class HeadlessConformanceTest {
                 && psiLoser2.getDeck().getDiscardPile().size() == 0);
 
         // INTRIGUE conflict: winner steals agenda from loser
-        Player intrigueWinner = player("IntWin", Faction.CENTAURI);
-        Player intrigueLoser = player("IntLose", Faction.HUMAN);
+        Player intrigueWinner = player("IntWin", Race.CENTAURI);
+        Player intrigueLoser = player("IntLose", Race.HUMAN);
         GameState intSt = state(intrigueWinner, intrigueLoser);
         AgendaCard stolenAgenda = new AgendaCard("agenda_stolen", "Stolen Agenda",
-                "AGENDA_MINOR", Rarity.RARE, Faction.ANY, CardSet.PREMIERE,
+                "AGENDA_MINOR", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", false, "CONDITION_TEST");
         intrigueLoser.setAgenda(stolenAgenda);
         ConflictCard intCard = new ConflictCard("conf_int_test", "Intrigue Test",
-                "CONFLICT_INTRIGUE", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_INTRIGUE", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.INTRIGUE, 2);
         Conflict intConflict = new Conflict(intCard, intrigueWinner);
         intConflict.commitCard(intrigueWinner, intrigueWinner.getAmbassador());
@@ -440,12 +440,12 @@ public class HeadlessConformanceTest {
                 && intrigueWinner.getHand().contains(stolenAgenda));
 
         // INTRIGUE conflict: loser with no agenda - nothing happens
-        Player intrigueWinner2 = player("IntWin2", Faction.CENTAURI);
-        Player intrigueLoser2 = player("IntLose2", Faction.HUMAN);
+        Player intrigueWinner2 = player("IntWin2", Race.CENTAURI);
+        Player intrigueLoser2 = player("IntLose2", Race.HUMAN);
         GameState intSt2 = state(intrigueWinner2, intrigueLoser2);
         // Loser has no agenda
         ConflictCard intCard2 = new ConflictCard("conf_int_test2", "Intrigue Test 2",
-                "CONFLICT_INTRIGUE", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_INTRIGUE", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.INTRIGUE, 2);
         Conflict intConflict2 = new Conflict(intCard2, intrigueWinner2);
         intConflict2.commitCard(intrigueWinner2, intrigueWinner2.getAmbassador());
@@ -468,9 +468,9 @@ public class HeadlessConformanceTest {
 
         // A: one card in deck, draw 2 → the 2nd required draw discards the
         //    non-ambassador Inner Circle character. No forfeit yet.
-        Player rich = player("Rich", Faction.CENTAURI);
+        Player rich = player("Rich", Race.CENTAURI);
         CharacterCard advisor = new CharacterCard("ic1", "Advisor",
-                "CHARACTER_CENTAURI", Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE,
+                "CHARACTER_CENTAURI", Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 1, 1, 0, 2, false);
         rich.getInnerCircle().add(advisor);
         List<Card> one = new ArrayList<Card>();
@@ -489,7 +489,7 @@ public class HeadlessConformanceTest {
                 && rich.getInnerCircle().contains(rich.getAmbassador()));
 
         // C: ambassador is never the discard candidate.
-        Player poor = player("Poor", Faction.HUMAN);
+        Player poor = player("Poor", Race.HUMAN);
         poor.setDeck(new Deck(new ArrayList<Card>()));
         poor.drawCards(1);
         check("D8", "empty deck from the start: forfeit, ambassador never discarded",
@@ -497,16 +497,16 @@ public class HeadlessConformanceTest {
                 && poor.getInnerCircle().contains(poor.getAmbassador()));
 
         // D: checkVictory honours forfeits (last standing wins; none otherwise).
-        Player f1 = player("F1", Faction.NARN);
-        Player f2 = player("F2", Faction.MINBARI);
+        Player f1 = player("F1", Race.NARN);
+        Player f2 = player("F2", Race.MINBARI);
         f2.setDeck(new Deck(new ArrayList<Card>()));
         f2.drawCards(1);
         GameState st2 = state(f1, f2);
         check("D8", "checkVictory returns the last standing player",
                 rules.checkVictory(st2) == f1);
 
-        Player f3 = player("F3", Faction.CENTAURI);
-        Player f4 = player("F4", Faction.HUMAN);
+        Player f3 = player("F3", Race.CENTAURI);
+        Player f4 = player("F4", Race.HUMAN);
         GameState st3 = state(f3, f4);
         check("D8", "checkVictory returns null while no one has forfeited",
                 rules.checkVictory(st3) == null);
@@ -534,9 +534,9 @@ public class HeadlessConformanceTest {
                 !empty.isRestricted());
 
         // 2: backward compatibility — null participation accepts everything.
-        Player init = player("PInit", Faction.NARN);
-        Player tgt  = player("PTgt", Faction.MINBARI);
-        Player out  = player("POut", Faction.CENTAURI);
+        Player init = player("PInit", Race.NARN);
+        Player tgt  = player("PTgt", Race.MINBARI);
+        Player out  = player("POut", Race.CENTAURI);
         GameState st = state(init, tgt, out);
         Conflict open = new Conflict(conflictCard("par_open", ConflictType.DIPLOMACY, null), init);
         check("PAR", "open conflict: any player may join and commit",
@@ -580,7 +580,7 @@ public class HeadlessConformanceTest {
         Participation raid = Participation.parse(
                 "{\"cardTypes\":[\"FLEET\"],\"leadersIncluded\":true}");
         CharacterCard leader = new CharacterCard("par_lead", "Raider Leader",
-                "CHARACTER_NARN", Rarity.RARE, Faction.NARN, CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 2, 2, 0, 3, false);
         Conflict led = new Conflict(conflictCard("par_led", ConflictType.MILITARY, raid), init);
         check("PAR", "leadersIncluded refuses a character with no allowed fleet",
@@ -607,8 +607,8 @@ public class HeadlessConformanceTest {
 
         // 8: mustCommitAmbassador — eligible non-participants are pulled in
         //    opposing and their ambassador commits (Immortality Serum).
-        Player m1 = player("PMust1", Faction.NARN);
-        Player m2 = player("PMust2", Faction.MINBARI);
+        Player m1 = player("PMust1", Race.NARN);
+        Player m2 = player("PMust2", Race.MINBARI);
         GameState mst = state(m1, m2);
         Conflict serum = new Conflict(conflictCard("par_serum", ConflictType.PSI,
                 Participation.parse("{\"mustCommitAmbassador\":true}")), m1);
@@ -632,7 +632,7 @@ public class HeadlessConformanceTest {
                 && machine.getCommittedCards(m2).contains(m2.getAmbassador()));
 
         // 10: mustTakeSide (Complete Support) — every other player joins.
-        Player s2 = player("PSup2", Faction.CENTAURI);
+        Player s2 = player("PSup2", Race.CENTAURI);
         GameState sst = state(m1, s2);
         Conflict support = new Conflict(conflictCard("par_cs", ConflictType.DIPLOMACY,
                 Participation.parse("{\"mustTakeSide\":true}")), m1);
@@ -668,8 +668,8 @@ public class HeadlessConformanceTest {
         System.out.println("FLR (B5-0337): fleet leadership relation + D5 exclusion");
         RulesEngine rules = new RulesEngine();
 
-        Player p  = player("FLRp", Faction.NARN);
-        Player p2 = player("FLRq", Faction.MINBARI);
+        Player p  = player("FLRp", Race.NARN);
+        Player p2 = player("FLRq", Race.MINBARI);
         GameState st = state(p, p2);
 
         CharacterCard ch = leaderCard("flr_ch", 4);   // Leadership 4, in the IC
@@ -748,13 +748,13 @@ public class HeadlessConformanceTest {
         System.out.println("AMT (B5-0338): aftermath targeting + D4 uniqueness");
         RulesEngine rules = new RulesEngine();
 
-        Player init = player("AInit", Faction.NARN);
-        Player part = player("APart", Faction.MINBARI);
-        Player out  = player("AOut", Faction.CENTAURI);
+        Player init = player("AInit", Race.NARN);
+        Player part = player("APart", Race.MINBARI);
+        Player out  = player("AOut", Race.CENTAURI);
         GameState st = state(init, part, out);
 
         ConflictCard cc = new ConflictCard("amt_cc", "AMT Strike", "CONFLICT_MILITARY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.MILITARY, 1);
         Conflict won = new Conflict(cc, init);
         won.commitCard(init, init.getAmbassador(), true);
@@ -798,11 +798,11 @@ public class HeadlessConformanceTest {
                 && !rules.canPlayAftermath(part, plainInHand, won, initWon));
 
         // 5: effect lands on the TARGET, not the player (deterministic site).
-        Player t1 = player("ATgt", Faction.NARN);
-        Player t2 = player("ASrc", Faction.MINBARI);
+        Player t1 = player("ATgt", Race.NARN);
+        Player t2 = player("ASrc", Race.MINBARI);
         GameState tst = state(t1, t2);
         ConflictCard cc2 = new ConflictCard("amt_cc2", "AMT2 Strike", "CONFLICT_MILITARY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.MILITARY, 1);
         Conflict won2 = new Conflict(cc2, t1);
         won2.resolve(t1);
@@ -840,7 +840,7 @@ public class HeadlessConformanceTest {
 
         // 7: the registry starts empty (nothing persists in the current
         //    discard-after-effect flow; D4 becomes authoritative with it).
-        Player fresh = player("AFresh", Faction.HUMAN);
+        Player fresh = player("AFresh", Race.HUMAN);
         GameState fst = state(fresh);
         check("AMT", "a fresh state has no attached aftermaths",
                 fst.getAttachedAftermaths(fresh).isEmpty());
@@ -868,11 +868,11 @@ public class HeadlessConformanceTest {
 
         // Shared fixture: the target initiated and won a resolved conflict;
         // the playing player lost it and holds WON aftermaths to play.
-        Player tgt = player("AMT2T", Faction.CENTAURI);
-        Player ply = player("AMT2P", Faction.NARN);
+        Player tgt = player("AMT2T", Race.CENTAURI);
+        Player ply = player("AMT2P", Race.NARN);
         GameState st = state(tgt, ply);
         ConflictCard ccA = new ConflictCard("amt2_cc", "AMT2 Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         Conflict resolved = new Conflict(ccA, tgt);
         resolved.resolve(tgt);
@@ -910,11 +910,11 @@ public class HeadlessConformanceTest {
         //     cleanup is the pending seam for a persistent variant and the
         //     divergence is recorded in docs/DECISIONS.md, not asserted as
         //     already done here.
-        Player dTgt = player("AMT2DT", Faction.MINBARI);
-        Player dPly = player("AMT2DP", Faction.NARN);
+        Player dTgt = player("AMT2DT", Race.MINBARI);
+        Player dPly = player("AMT2DP", Race.NARN);
         GameState dSt = state(dTgt, dPly);
         ConflictCard ccB = new ConflictCard("amt2d_cc", "AMT2 Discard Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         Conflict dResolved = new Conflict(ccB, dTgt);
         dResolved.resolve(dTgt);
@@ -970,11 +970,11 @@ public class HeadlessConformanceTest {
         System.out.println("AMT3 (B5-0637): aftermath registry-clear seam at the round boundary");
         RulesEngine rules = new RulesEngine();
 
-        Player t = player("AMT3T", Faction.CENTAURI);
-        Player p = player("AMT3P", Faction.NARN);
+        Player t = player("AMT3T", Race.CENTAURI);
+        Player p = player("AMT3P", Race.NARN);
         GameState st = state(t, p);
         ConflictCard cc = new ConflictCard("amt3_cc", "AMT3 Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         Conflict resolved = new Conflict(cc, t);
         resolved.resolve(t);
@@ -1021,8 +1021,8 @@ public class HeadlessConformanceTest {
         System.out.println("AST (B5-0339): ambassador's assistant abilities");
         RulesEngine rules = new RulesEngine();
 
-        Player p  = player("AAst", Faction.NARN);   // ambassador 3/3/3/3 in the IC
-        Player p2 = player("AAst2", Faction.MINBARI);
+        Player p  = player("AAst", Race.NARN);   // ambassador 3/3/3/3 in the IC
+        Player p2 = player("AAst2", Race.MINBARI);
         GameState st = state(p, p2);
         CharacterCard amb = p.getAmbassador();
         CharacterCard ch  = leaderCard("ast_ch", 2);   // a supporting assistant
@@ -1067,16 +1067,16 @@ public class HeadlessConformanceTest {
                 !rules.canUseAssistant(p, ch, amb));
 
         // 4: the sponsor discount — rotate to discount.
-        Player pd = player("ADisc", Faction.NARN);
-        Player pd2 = player("ADisc2", Faction.MINBARI);
+        Player pd = player("ADisc", Race.NARN);
+        Player pd2 = player("ADisc2", Race.MINBARI);
         GameState tstd = state(pd, pd2);
         CharacterCard chd = leaderCard("ast_chd", 2);
         pd.getSupportingRole().add(chd);
         rules.executeAssistantSponsorDiscount(pd, chd, tstd);
         check("AST", "discount path rotates the assistant and grants 1",
                 chd.isRotated() && pd.getSponsorDiscount() == 1);
-        CharacterCard costly = charCard("ast_costly", Faction.MINBARI, 3);
-        CharacterCard free   = charCard("ast_free", Faction.NARN, 0);
+        CharacterCard costly = charCard("ast_costly", Loyalty.MINBARI, 3);
+        CharacterCard free   = charCard("ast_free", Loyalty.NARN, 0);
         check("AST", "recruitCost drops by the discount (other-race 6 to 5)",
                 rules.baseRecruitCost(pd, costly) == 6
                 && rules.recruitCost(pd, costly) == 5);
@@ -1098,7 +1098,7 @@ public class HeadlessConformanceTest {
                 pd.getInfluence() == 5 && pd.getAppliedPool() == 0
                 && pd.getSponsorDiscount() == 0
                 && pd.getSupportingRole().contains(costly));
-        CharacterCard cheap = charCard("ast_cheap", Faction.NARN, 1);
+        CharacterCard cheap = charCard("ast_cheap", Loyalty.NARN, 1);
         check("AST", "the discount is exhausted for further recruits this turn",
                 rules.recruitCost(pd, cheap) == 1
                 && !rules.canRecruit(pd, cheap));
@@ -1117,11 +1117,11 @@ public class HeadlessConformanceTest {
     private static void testAIJoinSide() {
         System.out.println("AIJ (B5-0343): AI join-side strategy + target selection");
 
-        Player p  = player("AJp", Faction.NARN);
-        Player p2 = player("AJq", Faction.MINBARI);
+        Player p  = player("AJp", Race.NARN);
+        Player p2 = player("AJq", Race.MINBARI);
         GameState st = state(p, p2);
         CharacterCard bigChar = new CharacterCard("aj_big", "AJ Big",
-                "CHARACTER_NARN", Rarity.RARE, Faction.NARN, CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 5, 0, 0, 0, false);   // Diplomacy 5
         p.getInnerCircle().add(bigChar);
 
@@ -1129,7 +1129,7 @@ public class HeadlessConformanceTest {
         // conflictTotal(DIPLOMACY) — MILITARY totals are fleet-only since
         // B5-0337, which these checks must respect.
         ConflictCard cc = new ConflictCard("aj_cc", "AJ Strike", "CONFLICT_DIPLOMACY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.DIPLOMACY, 1);
 
         // 1: MEDIUM outweighs: oppose; free-ride: support; middle: abstain.
@@ -1138,12 +1138,12 @@ public class HeadlessConformanceTest {
         check("AIJ", "MEDIUM opposes when it outweighs the initiator",
                 med.decideJoinSide(st, p, c1) == -1);
         Conflict c2 = new Conflict(new ConflictCard("aj_cc2", "AJ2 Strike",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 1), p2);
         p.getInnerCircle().remove(bigChar);   // mine back to 3
         // Free-ride state: initiator total 8, mine 3 (3*2 < 8).
         CharacterCard huge = new CharacterCard("aj_huge", "AJ Huge",
-                "CHARACTER_MINBARI", Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE,
+                "CHARACTER_MINBARI", Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 5, 0, 0, 0, false);   // Diplomacy 5
         p2.getInnerCircle().add(huge);        // p2 total 3+5 = 8
         check("AIJ", "MEDIUM supports a sure-winner conflict (free-ride)",
@@ -1185,10 +1185,10 @@ public class HeadlessConformanceTest {
         //    the win-probability terms are equal and the anti-leader penalty
         //    decides (the pre-0343 +3 bonus would have chosen the leader).
         ConflictCard dip = new ConflictCard("aj_dip", "AJ Dip", "CONFLICT_DIPLOMACY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.DIPLOMACY, 1);
-        Player weak = player("AJweak", Faction.CENTAURI);
-        Player strong = player("AJstrong", Faction.HUMAN);
+        Player weak = player("AJweak", Race.CENTAURI);
+        Player strong = player("AJstrong", Race.HUMAN);
         strong.gainInfluence(9);              // strong leads the board (13)
         GameState st2 = state(weak, strong, p);
         p.addToHand(dip);
@@ -1202,8 +1202,8 @@ public class HeadlessConformanceTest {
 
     private static void testRotateAI() {
         System.out.println("ROT-AI (B5-0366): AI rotate-for-effect offers + scoring");
-        Player p = player("ROTai", Faction.NARN);
-        Player r = player("ROTaiR", Faction.MINBARI);
+        Player p = player("ROTai", Race.NARN);
+        Player r = player("ROTaiR", Race.MINBARI);
         GameState st = state(p, r);
         CharacterCard amb = p.getAmbassador();
         CharacterCard ch = leaderCard("rot_ai_ch", 2);
@@ -1286,8 +1286,8 @@ public class HeadlessConformanceTest {
         // Fixture: one Narn player with a single unled fleet and two IC
         // characters whose Leadership values differ. The AI should pick the
         // higher-Leadership character deterministically in both tiers.
-        Player p = player("LAIfp", Faction.NARN);
-        Player r = player("LAIfr", Faction.MINBARI);
+        Player p = player("LAIfp", Race.NARN);
+        Player r = player("LAIfr", Race.MINBARI);
         GameState st = state(p, r);
         FleetCard fl = fleetCard("lAIfl", "FRIGATE");   // Military 3, no leader
         p.getFleets().add(fl);
@@ -1367,14 +1367,14 @@ public class HeadlessConformanceTest {
         //    replacement's net score (9 - 1 = 8 MEDIUM, 9 - 1.0 = 8.0 HARD)
         //    beats keeping the current agenda (no REPLACE action exists for
         //    "keep"; the only agenda action is REPLACE with the closer card).
-        Player p = player("AGLAIf", Faction.NARN);
-        Player r = player("AGLAIr", Faction.MINBARI);
+        Player p = player("AGLAIf", Race.NARN);
+        Player r = player("AGLAIr", Race.MINBARI);
         GameState st = state(p, r);
-        AgendaCard current = agendaCard("AGLAImcurr", false, Faction.ANY);
+        AgendaCard current = agendaCard("AGLAImcurr", false, Loyalty.ANY);
         p.setAgenda(current);
         p.gainInfluence(10);   // rating 10 blocks Build Influence
         p.getHand().clear();              // remove any other hand cards
-        AgendaCard better = agendaCard("AGLAIbetter", false, Faction.ANY);
+        AgendaCard better = agendaCard("AGLAIbetter", false, Loyalty.ANY);
         p.getHand().add(better);   // at influence 10, proximity = 5 (10/2)
         CharacterCard leader = leaderCard("AGLAILd", 2);
         p.getInnerCircle().add(leader);   // unrotated, ready — replace legal
@@ -1402,9 +1402,9 @@ public class HeadlessConformanceTest {
         //    to block Build Influence (rating >= 10 blocks). Both tiers score
         //    DISCARD low (1 MEDIUM / 0.5 HARD) but it is the only non-pass
         //    action, so it wins.
-        Player p2 = player("AGLAIp2", Faction.NARN);
+        Player p2 = player("AGLAIp2", Race.NARN);
         GameState st2 = state(p2, r);
-        AgendaCard minor = agendaCard("AGLAImin", false, Faction.ANY);
+        AgendaCard minor = agendaCard("AGLAImin", false, Loyalty.ANY);
         p2.setAgenda(minor);
         p2.gainInfluence(10);   // rating 10 blocks Build Influence
         p2.getHand().clear();
@@ -1427,9 +1427,9 @@ public class HeadlessConformanceTest {
         //    activates it (rulebook :520). Both tiers score it by proximity
         //    (same helper as the sponsor path). Setup: hidden INFLUENCE_20
         //    agenda at influence 18 (proximity 9). No other actions.
-        Player p3 = player("AGLAIp3", Faction.NARN);
+        Player p3 = player("AGLAIp3", Race.NARN);
         GameState st3 = state(p3, r);
-        AgendaCard hidden = agendaCard("AGLAIhid", false, Faction.ANY);
+        AgendaCard hidden = agendaCard("AGLAIhid", false, Loyalty.ANY);
         hidden.setFaceDown(true);
         p3.setAgenda(hidden);
         p3.gainInfluence(18);   // proximity = 9
@@ -1465,13 +1465,13 @@ public class HeadlessConformanceTest {
         //    Setup: ambassador host + one hand contingency, nothing else.
         //    The only non-pass action is PLAY_CONTINGENCY (score 2 MEDIUM,
         //    1.5 HARD). Both tiers pick it.
-        Player pA = player("CONAIpA", Faction.NARN);
+        Player pA = player("CONAIpA", Race.NARN);
         GameState sA = state(pA);
         CharacterCard hostA = pA.getAmbassador();
         pA.getHand().clear();
         ContingencyCard conA = new ContingencyCard(
                 "CONAIfix", "AI Fixture Contingency", "CHARACTER", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "fixture",
+                Loyalty.ANY, CardSet.PREMIERE, "x", "fixture",
                 "CHARACTER", "NARN", "WHEN_REVEALED_FIXTURE");
         pA.addToHand(conA);
         // Clear everything else so PLAY_CONTINGENCY is the only action.
@@ -1499,12 +1499,12 @@ public class HeadlessConformanceTest {
         //    legal host. Setup: contingency already placed under the ambassador,
         //    nothing else in play. The only non-pass action is REVEAL.
         //    Reveal scores 2 MEDIUM / 2.0 HARD.
-        Player pB = player("CONAIpB", Faction.NARN);
+        Player pB = player("CONAIpB", Race.NARN);
         GameState sB = state(pB);
         CharacterCard hostB = pB.getAmbassador();
         ContingencyCard conB = new ContingencyCard(
                 "CONAIbFix", "AI Fixture Contingency 2", "CHARACTER", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "fixture",
+                Loyalty.ANY, CardSet.PREMIERE, "x", "fixture",
                 "CHARACTER", "NARN", "WHEN_REVEALED_FIXTURE");
         pB.addToHand(conB);
         pB.getHand().clear();
@@ -1550,16 +1550,16 @@ public class HeadlessConformanceTest {
         //    HARD) are offered simultaneously, MEDIUM ties at 2→ picks the
         //    first in list order (PLAY comes before REVEAL in the builder],
         //    HARD picks REVEAL (2.0 > 1.5).
-        Player pC = player("CONAIpC", Faction.NARN);
+        Player pC = player("CONAIpC", Race.NARN);
         GameState sC = state(pC);
         CharacterCard hostC = pC.getAmbassador();
         ContingencyCard conC_play = new ContingencyCard(
                 "CONAIcPlay", "AI Play Contingency", "CHARACTER", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "fixture",
+                Loyalty.ANY, CardSet.PREMIERE, "x", "fixture",
                 "CHARACTER", "NARN", "WHEN_REVEALED_FIXTURE");
         ContingencyCard conC_rev = new ContingencyCard(
                 "CONAIcRev", "AI Reveal Contingency", "CHARACTER", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "fixture",
+                Loyalty.ANY, CardSet.PREMIERE, "x", "fixture",
                 "CHARACTER", "NARN", "WHEN_REVEALED_FIXTURE");
         pC.addToHand(conC_play);
         pC.addToHand(conC_rev);
@@ -1618,7 +1618,7 @@ public class HeadlessConformanceTest {
         // ── A: solo player, one offered mercenary, no competition.
         //    The only non-pass action is a bid of the minimal winning
         //    increment (no rival bids, so inc = 1). Both tiers pick it.
-        Player pA = player("MERAIpA", Faction.NARN);
+        Player pA = player("MERAIpA", Race.NARN);
         GameState sA = state(pA);
         EventCard mercA = event("mer_ai_fixture");
         mercA.setMercenary(true);
@@ -1662,8 +1662,8 @@ public class HeadlessConformanceTest {
         //    (2); the AI's offer must be exactly bestOther + 1 = 3, and both
         //    tiers take it (win probability outweighs the cost at these
         //    amounts).
-        Player pB = player("MERAIpB", Faction.NARN);
-        Player rB = player("MERAIrB", Faction.MINBARI);
+        Player pB = player("MERAIpB", Race.NARN);
+        Player rB = player("MERAIrB", Race.MINBARI);
         GameState sB = state(pB, rB);
         EventCard mercB = event("mer_ai_fixture_b");
         mercB.setMercenary(true);
@@ -1693,8 +1693,8 @@ public class HeadlessConformanceTest {
         //    pool (drained to 1); canBidOnMercenary refuses, so NO bid offer
         //    exists and both tiers pass. A partial bid can never win (ties
         //    crown nobody), so offering one would waste pool by design.
-        Player pC = player("MERAIpC", Faction.NARN);
-        Player rC = player("MERAIrC", Faction.MINBARI);
+        Player pC = player("MERAIpC", Race.NARN);
+        Player rC = player("MERAIrC", Race.MINBARI);
         GameState sC = state(pC, rC);
         EventCard mercC = event("mer_ai_fixture_c");
         mercC.setMercenary(true);
@@ -1720,7 +1720,7 @@ public class HeadlessConformanceTest {
         // ── D: hold while strictly leading. p already holds the strictly
         //    highest cumulative bid, so the offer loop must NOT re-bid
         //    (extending a won auction only drains the pool); both tiers pass.
-        Player pD = player("MERAIpD", Faction.NARN);
+        Player pD = player("MERAIpD", Race.NARN);
         GameState sD = state(pD);
         EventCard mercD = event("mer_ai_fixture_d");
         mercD.setMercenary(true);
@@ -1748,9 +1748,9 @@ public class HeadlessConformanceTest {
     private static void testAgendaInstallLog() {
         System.out.println("AGL-LOG (B5-0464): face-up agenda install emits the parser token");
 
-        Player p = player("AGLLOG-1", Faction.CENTAURI);
+        Player p = player("AGLLOG-1", Race.CENTAURI);
         GameState st = state(p);
-        AgendaCard ag = agendaCard("agl_log_a", false, Faction.CENTAURI);
+        AgendaCard ag = agendaCard("agl_log_a", false, Loyalty.CENTAURI);
         p.getHand().clear();
         p.getHand().add(ag);
 
@@ -1786,7 +1786,7 @@ public class HeadlessConformanceTest {
 
         EnhancementCard ec = new EnhancementCard(
                 "enh_seam_1", "Censure Test", "ENHANCEMENT",
-                Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0,  // diplomacy, intrigue
                 0,   // psi
                 -2,  // military (fleet penalty)
@@ -1834,7 +1834,7 @@ public class HeadlessConformanceTest {
         }
 
         // Player.hasAttachedBonusFrom probe: grants the bonus and asserts it.
-        Player owner = player("ENHSEAM-1", Faction.CENTAURI);
+        Player owner = player("ENHSEAM-1", Race.CENTAURI);
         GameState st = state(owner);
         owner.grantBonus(bonus);
         check("ENH-SEAM", "bonus present after grant",
@@ -1851,7 +1851,7 @@ public class HeadlessConformanceTest {
         // identically — no explicit target, null bonus.
         EnhancementCard legacy = new EnhancementCard(
                 "enh_legacy", "Legacy Test", "ENHANCEMENT",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 1, 1, 1, 1, 1);
         check("ENH-SEAM", "legacy enhancement has no explicit target",
                 !legacy.hasExplicitTarget());
@@ -1864,13 +1864,13 @@ public class HeadlessConformanceTest {
         System.out.println("MINES (B5-0528): reactive mines/energy-mines damage-on-attack at resolution site");
 
         // ── Scenario 1: faction-held enh_mines triggers +1 return damage ───────
-        Player attackerP = player("MINES-A", Faction.CENTAURI);
-        Player defenderP = player("MINES-B", Faction.NARN);
+        Player attackerP = player("MINES-A", Race.CENTAURI);
+        Player defenderP = player("MINES-B", Race.NARN);
         RulesEngine rules = new RulesEngine();
 
         EnhancementCard mines = new EnhancementCard(
                 "enh_mines", "Mines Wire Test", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 0, 0);
         defenderP.getEnhancements().add(mines);
 
@@ -1879,7 +1879,7 @@ public class HeadlessConformanceTest {
         defFleet.setOwner(defenderP);
 
         CharacterCard attackCard = new CharacterCard("minfleet_attacker", "Character",
-                "CHARACTER", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "CHARACTER", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 2, false);
         attackerP.getSupportingRole().add(attackCard);
         attackCard.setOwner(attackerP);
@@ -1922,14 +1922,14 @@ public class HeadlessConformanceTest {
                 CardEffects.attackMines("enh_mines") == CardEffects.damageOnAttack("enh_mines"));
 
         // ── Scenario 2: non-mines enhancement does NOT trigger reactive damage ─
-        Player att2 = player("MINES-2A", Faction.CENTAURI);
-        Player def2 = player("MINES-2B", Faction.NARN);
+        Player att2 = player("MINES-2A", Race.CENTAURI);
+        Player def2 = player("MINES-2B", Race.NARN);
         RulesEngine rules2 = new RulesEngine();
 
         def2.getEnhancements().clear();
         EnhancementCard legacy = new EnhancementCard(
                 "enh_legacy_mines_test", "Legacy Fleet Test", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 1, 0);
         def2.getEnhancements().add(legacy);
 
@@ -1938,7 +1938,7 @@ public class HeadlessConformanceTest {
         fleet2.setOwner(def2);
 
         CharacterCard attCard2 = new CharacterCard("minfleet_att2", "Character",
-                "CHARACTER", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "CHARACTER", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 1, false);
         att2.getSupportingRole().add(attCard2);
         attCard2.setOwner(att2);
@@ -1960,14 +1960,14 @@ public class HeadlessConformanceTest {
                 logContains(st2, "1 damage; 3 damage returned"));
 
         // ── Scenario 3: round-trip through processAction ──────────────────────
-        Player rtAttacker = player("MINES-RT-A", Faction.CENTAURI);
-        Player rtDefender = player("MINES-RT-B", Faction.NARN);
+        Player rtAttacker = player("MINES-RT-A", Race.CENTAURI);
+        Player rtDefender = player("MINES-RT-B", Race.NARN);
         GameState rtSt = state(rtAttacker, rtDefender);
         RulesEngine rtRules = new RulesEngine();
 
         EnhancementCard rtMines = new EnhancementCard(
                 "enh_mines_rt", "Mines Round-Trip Test", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 0, 0);
         rtAttacker.addToHand(rtMines);
         rtDefender.getEnhancements().add(rtMines);
@@ -1977,7 +1977,7 @@ public class HeadlessConformanceTest {
         rtFleet.setOwner(rtDefender);
 
         CharacterCard rtAttCard = new CharacterCard("minfleet_rt_attacker", "Character",
-                "CHARACTER", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "CHARACTER", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 2, false);
         rtAttacker.getSupportingRole().add(rtAttCard);
         rtAttCard.setOwner(rtAttacker);
@@ -2028,13 +2028,13 @@ public class HeadlessConformanceTest {
         // enhancement and the attacker has committed a fleet into a military conflict.
         // The attacker still has its full starting action allowance (1), so we can
         // observe whether the reactive resolution consumed it.
-        Player attackerP = player("TRG-A", Faction.CENTAURI);
-        Player defenderP = player("TRG-B", Faction.NARN);
+        Player attackerP = player("TRG-A", Race.CENTAURI);
+        Player defenderP = player("TRG-B", Race.NARN);
         RulesEngine rules = new RulesEngine();
 
         EnhancementCard mines = new EnhancementCard(
                 "enh_mines_trg", "Mines Wire Test", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 0, 0);
         defenderP.getEnhancements().add(mines);
 
@@ -2043,7 +2043,7 @@ public class HeadlessConformanceTest {
         defFleet.setOwner(defenderP);
 
         CharacterCard attCard = new CharacterCard("trg_att_char", "Character",
-                "CHARACTER", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "CHARACTER", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 2, false);
         attackerP.getSupportingRole().add(attCard);
         attCard.setOwner(attackerP);
@@ -2102,13 +2102,13 @@ public class HeadlessConformanceTest {
         // passed for the turn. Passing does not shield a player from triggered effects
         // that target them — the reactive half is a resolution-site hook, not an
         // action-round offer, so the passed flag is irrelevant to whether it fires.
-        Player passedDefender = player("TRG-passDef", Faction.NARN);
-        Player passedAttacker = player("TRG-passAtt", Faction.CENTAURI);
+        Player passedDefender = player("TRG-passDef", Race.NARN);
+        Player passedAttacker = player("TRG-passAtt", Race.CENTAURI);
         RulesEngine rules2 = new RulesEngine();
 
         EnhancementCard mines2 = new EnhancementCard(
                 "enh_mines_trg2", "Mines Wire Test 2", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 0, 0);
         passedDefender.getEnhancements().add(mines2);
 
@@ -2117,7 +2117,7 @@ public class HeadlessConformanceTest {
         defFleet2.setOwner(passedDefender);
 
         CharacterCard attCard2 = new CharacterCard("trg_att_char2", "Character 2",
-                "CHARACTER", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "CHARACTER", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 2, false);
         passedAttacker.getSupportingRole().add(attCard2);
         attCard2.setOwner(passedAttacker);
@@ -2142,13 +2142,13 @@ public class HeadlessConformanceTest {
         // ── F. A reactive effect still resolves when the reacting player has ZERO
         // actions left. The reactive hook is not gated on the reacting player having
         // an action to spend — it is not itself an action and does not require one.
-        Player zeroDef = player("TRG-zeroDef", Faction.NARN);
-        Player zeroAtt = player("TRG-zeroAtt", Faction.CENTAURI);
+        Player zeroDef = player("TRG-zeroDef", Race.NARN);
+        Player zeroAtt = player("TRG-zeroAtt", Race.CENTAURI);
         RulesEngine rules3 = new RulesEngine();
 
         EnhancementCard mines3 = new EnhancementCard(
                 "enh_mines_trg3", "Mines Wire Test 3", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 0, 0);
         zeroDef.getEnhancements().add(mines3);
 
@@ -2157,7 +2157,7 @@ public class HeadlessConformanceTest {
         defFleet3.setOwner(zeroDef);
 
         CharacterCard attCard3 = new CharacterCard("trg_att_char3", "Character 3",
-                "CHARACTER", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "CHARACTER", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 2, false);
         zeroAtt.getSupportingRole().add(attCard3);
         attCard3.setOwner(zeroAtt);
@@ -2338,8 +2338,8 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
 
         // ── 1. Standard Victory (Condition 1): 20+ power and strictly leading ──
-        Player v1 = player("VIC-1A", Faction.CENTAURI);
-        Player v2 = player("VIC-1B", Faction.NARN);
+        Player v1 = player("VIC-1A", Race.CENTAURI);
+        Player v2 = player("VIC-1B", Race.NARN);
         setInfluence(v1, 20);
         setInfluence(v2, 15);
         GameState s1 = state(v1, v2);
@@ -2347,8 +2347,8 @@ public class HeadlessConformanceTest {
                 rules.checkVictory(s1) == v1);
 
         // ── 2. Standard Victory tiebreak (D12): tie produces no winner ─────────
-        Player v3 = player("VIC-2A", Faction.CENTAURI);
-        Player v4 = player("VIC-2B", Faction.NARN);
+        Player v3 = player("VIC-2A", Race.CENTAURI);
+        Player v4 = player("VIC-2B", Race.NARN);
         setInfluence(v3, 22);
         setInfluence(v4, 22);
         GameState s2 = state(v3, v4);
@@ -2356,8 +2356,8 @@ public class HeadlessConformanceTest {
                 rules.checkVictory(s2) == null);
 
         // ── 3. Threshold gate: power < 20 produces no winner ───────────────────
-        Player v5 = player("VIC-3A", Faction.CENTAURI);
-        Player v6 = player("VIC-3B", Faction.NARN);
+        Player v5 = player("VIC-3A", Race.CENTAURI);
+        Player v6 = player("VIC-3B", Race.NARN);
         setInfluence(v5, 19);
         setInfluence(v6, 10);
         GameState s3 = state(v5, v6);
@@ -2365,8 +2365,8 @@ public class HeadlessConformanceTest {
                 rules.checkVictory(s3) == null);
 
         // ── 4. Station Victory (Condition 2): 20+ station influence ────────────
-        Player v7 = player("VIC-4A", Faction.CENTAURI);
-        Player v8 = player("VIC-4B", Faction.NARN);
+        Player v7 = player("VIC-4A", Race.CENTAURI);
+        Player v8 = player("VIC-4B", Race.NARN);
         setInfluence(v7, 15);
         setInfluence(v8, 10);
         GameState s4 = state(v7, v8);
@@ -2375,14 +2375,14 @@ public class HeadlessConformanceTest {
                 rules.checkVictory(s4) == v7);
 
         // ── 5. Major Agenda bars Station Victory (revealed) ────────────────────
-        Player v9 = player("VIC-5A", Faction.CENTAURI);
-        Player v10 = player("VIC-5B", Faction.NARN);
-        Player v10b = player("VIC-5C", Faction.MINBARI);
+        Player v9 = player("VIC-5A", Race.CENTAURI);
+        Player v10 = player("VIC-5B", Race.NARN);
+        Player v10b = player("VIC-5C", Race.MINBARI);
         setInfluence(v9, 15);
         setInfluence(v10, 10);
         setInfluence(v10b, 10);
         AgendaCard majorAgenda = new AgendaCard("agenda_major_vic", "Major Agenda",
-                "AGENDA_MAJOR", Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE, "x", "text",
+                "AGENDA_MAJOR", Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text",
                 true, "MOST_INNER_CIRCLE");
         majorAgenda.setFaceDown(false);
         v9.setAgenda(majorAgenda);
@@ -2424,8 +2424,8 @@ public class HeadlessConformanceTest {
         // leading during a Shadow War must NOT be crowned a Standard Victor
         // (:178), yet condition 1 had no guard. 5-point lead: standard-winning,
         // not major-winning, so the only correct answer is null.
-        Player sw1 = player("MJR-SW1", Faction.CENTAURI);
-        Player sw2 = player("MJR-SW2", Faction.NARN);
+        Player sw1 = player("MJR-SW1", Race.CENTAURI);
+        Player sw2 = player("MJR-SW2", Race.NARN);
         setInfluence(sw1, 20);
         setInfluence(sw2, 15);
         GameState swSt = state(sw1, sw2);
@@ -2440,12 +2440,12 @@ public class HeadlessConformanceTest {
         // so the crown can only arrive through the Major path, which makes the
         // 10-vs-9-point boundary observable. His agenda condition is unmet
         // (equal Inner Circles), so the agenda scan stays out of the way.
-        Player m1 = player("MJR-1", Faction.CENTAURI);
-        Player m2 = player("MJR-2", Faction.NARN);
+        Player m1 = player("MJR-1", Race.CENTAURI);
+        Player m2 = player("MJR-2", Race.NARN);
         setInfluence(m1, 20);
         setInfluence(m2, 10);
         AgendaCard mjrBar = new AgendaCard("mjr_bar", "Major Agenda",
-                "AGENDA_MAJOR", Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE,
+                "AGENDA_MAJOR", Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", true, "MOST_INNER_CIRCLE");
         mjrBar.setFaceDown(false);
         m1.setAgenda(mjrBar);
@@ -2460,8 +2460,8 @@ public class HeadlessConformanceTest {
         check("MJR", "20 power tied does not score a Major Victory",
                 rules.checkVictory(state(m1, m2)) == null);
 
-        Player m3 = player("MJR-3", Faction.CENTAURI);
-        Player m4 = player("MJR-4", Faction.NARN);
+        Player m3 = player("MJR-3", Race.CENTAURI);
+        Player m4 = player("MJR-4", Race.NARN);
         setInfluence(m3, 19);
         setInfluence(m4, 0);
         check("MJR", "19 power with a 20-point lead does not score a Major Victory",
@@ -2469,8 +2469,8 @@ public class HeadlessConformanceTest {
 
         // Shadow War admits Major Victory: the same 20/15 pair inside a War —
         // raised to a 10-point lead, the candidate wins BY Major Victory.
-        Player mw1 = player("MJR-MW", Faction.CENTAURI);
-        Player mw2 = player("MJR-MW2", Faction.NARN);
+        Player mw1 = player("MJR-MW", Race.CENTAURI);
+        Player mw2 = player("MJR-MW2", Race.NARN);
         setInfluence(mw1, 30);
         setInfluence(mw2, 15);
         GameState mwSt = state(mw1, mw2);
@@ -2480,14 +2480,14 @@ public class HeadlessConformanceTest {
 
         // Major-agenda holder: barred from Standard (:178) yet crowned by
         // Major Victory (no bar applies to the Major path).
-        Player ma1 = player("MJR-AG", Faction.CENTAURI);
-        Player ma2 = player("MJR-AG2", Faction.NARN);
-        Player ma3 = player("MJR-AG3", Faction.MINBARI);
+        Player ma1 = player("MJR-AG", Race.CENTAURI);
+        Player ma2 = player("MJR-AG2", Race.NARN);
+        Player ma3 = player("MJR-AG3", Race.MINBARI);
         setInfluence(ma1, 30);
         setInfluence(ma2, 20);
         setInfluence(ma3, 10);
         AgendaCard deadAgenda = new AgendaCard("mjr_agenda", "Major Agenda",
-                "AGENDA_MAJOR", Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE,
+                "AGENDA_MAJOR", Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", true, "MOST_INNER_CIRCLE");
         deadAgenda.setFaceDown(false);
         ma1.setAgenda(deadAgenda);
@@ -2500,21 +2500,21 @@ public class HeadlessConformanceTest {
         // standard path is barred by his own revealed major agenda so ONLY the
         // agenda condition can crown anyone.
         AgendaCard metAgenda = new AgendaCard("mjr_agenda_met", "Major Agenda",
-                "AGENDA_MAJOR", Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE,
+                "AGENDA_MAJOR", Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", true, "MOST_INNER_CIRCLE");
         metAgenda.setFaceDown(false);
         AgendaCard mjrBar2 = new AgendaCard("mjr_bar2", "Major Agenda",
-                "AGENDA_MAJOR", Rarity.RARE, Faction.NARN, CardSet.PREMIERE,
+                "AGENDA_MAJOR", Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", true, "MOST_INNER_CIRCLE");
         mjrBar2.setFaceDown(false);
-        Player mg1 = player("MJR-MET", Faction.CENTAURI);
-        Player mg2 = player("MJR-MET2", Faction.NARN);
+        Player mg1 = player("MJR-MET", Race.CENTAURI);
+        Player mg2 = player("MJR-MET2", Race.NARN);
         setInfluence(mg2, 30);
         setInfluence(mg1, 5);
         mg1.setAgenda(metAgenda);
         mg2.setAgenda(mjrBar2);
         mg1.getInnerCircle().add(new CharacterCard("mjr_met_ic", "MJR Aide",
-                "CHARACTER_CENTAURI", Rarity.COMMON, Faction.CENTAURI,
+                "CHARACTER_CENTAURI", Rarity.COMMON, Loyalty.CENTAURI,
                 CardSet.PREMIERE, "x", "text", 1, 1, 1, 1, false));
         check("MJR", "a met agenda condition still wins even against a power leader",
                 rules.checkVictory(state(mg1, mg2)) == mg1);
@@ -2522,8 +2522,8 @@ public class HeadlessConformanceTest {
         // Last standing (rulebook :175) is untouched and still wins outright:
         // drain the draw pile, then the forced draw with no discardable Inner
         // Circle character forfeits (Draw Round Step 3).
-        Player ls1 = player("MJR-LS", Faction.CENTAURI);
-        Player ls2 = player("MJR-LS2", Faction.NARN);
+        Player ls1 = player("MJR-LS", Race.CENTAURI);
+        Player ls2 = player("MJR-LS2", Race.NARN);
         GameState lsSt = state(ls1, ls2);
         while (ls2.getDeck().size() > 0) { ls2.getDeck().draw(); }
         ls2.drawCards(1);
@@ -2567,16 +2567,16 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
 
         // --- No winner → null path (not a sentinel). ---
-        Player nw1 = player("VPS-NW1", Faction.CENTAURI);
-        Player nw2 = player("VPS-NW2", Faction.NARN);
+        Player nw1 = player("VPS-NW1", Race.CENTAURI);
+        Player nw2 = player("VPS-NW2", Race.NARN);
         setInfluence(nw1, 4); setInfluence(nw2, 4);
         VictoryPathResult none = rules.checkVictoryPath(state(nw1, nw2));
         check("VPS", "no winner → null path", none == null);
         check("VPS", "a fresh 2-player state has no winner yet", none == null);
 
         // --- Path 1: last standing (B5-0641 path 1). ---
-        Player ls1 = player("VPS-LS1", Faction.CENTAURI);
-        Player ls2 = player("VPS-LS2", Faction.NARN);
+        Player ls1 = player("VPS-LS1", Race.CENTAURI);
+        Player ls2 = player("VPS-LS2", Race.NARN);
         GameState lsSt = state(ls1, ls2);
         while (ls2.getDeck().size() > 0) { ls2.getDeck().draw(); }
         ls2.drawCards(1);   // forced draw with no discardable IC char → forfeit
@@ -2590,8 +2590,8 @@ public class HeadlessConformanceTest {
         // --- Path 2: station condition 2 (B5-0641 path 2). ---
         // Same pattern as VIC section check 4: station gains 20 influence,
         // exactly one standard-eligible player strictly leads.
-        Player s1 = player("VPS-S1", Faction.CENTAURI);
-        Player s2 = player("VPS-S2", Faction.NARN);
+        Player s1 = player("VPS-S1", Race.CENTAURI);
+        Player s2 = player("VPS-S2", Race.NARN);
         GameState sSt = state(s1, s2);
         setInfluence(s1, 25); setInfluence(s2, 15);
         sSt.getStation().gainInfluence(20);   // station influence = 20
@@ -2611,18 +2611,18 @@ public class HeadlessConformanceTest {
         // Build MILITARY_SUPREMACY agenda directly (agendaCard helper only makes
         // INFLUENCE_20; construct the card explicitly for the different key).
         AgendaCard milSup = new AgendaCard("VPS-MIL", "Military Supremacy",
-                "AGENDA", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "AGENDA", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", false, "MILITARY_SUPREMACY");
         milSup.setFaceDown(false);
-        Player a1 = player("VPS-A1", Faction.CENTAURI);
-        Player a2 = player("VPS-A2", Faction.NARN);
+        Player a1 = player("VPS-A1", Race.CENTAURI);
+        Player a2 = player("VPS-A2", Race.NARN);
         GameState aSt = state(a1, a2);
         setInfluence(a1, 15); setInfluence(a2, 14);
         a1.setAgenda(milSup);
         // MILITARY_SUPREMACY requires the player to have the most Military among
         // non-forfeited players. Give a1 a fleet with military 4 to satisfy it.
         FleetCard a1Fleet = new FleetCard("VPS-FLEET", "VPS Fleet",
-                "FLEET", Rarity.COMMON, Faction.CENTAURI, CardSet.PREMIERE,
+                "FLEET", Rarity.COMMON, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 4);
         a1.getFleets().add(a1Fleet);
         Player aWinner = rules.checkVictory(aSt);
@@ -2636,8 +2636,8 @@ public class HeadlessConformanceTest {
         check("VPS", "agenda condition winner power = 15", aResult.getPower() == 15);
 
         // --- Path 4: major victory (B5-0641 path 4) + Shadow War admits major. ---
-        Player m1 = player("VPS-M1", Faction.CENTAURI);
-        Player m2 = player("VPS-M2", Faction.NARN);
+        Player m1 = player("VPS-M1", Race.CENTAURI);
+        Player m2 = player("VPS-M2", Race.NARN);
         GameState mSt = state(m1, m2);
         setInfluence(m1, 30); setInfluence(m2, 15);
         // Major: 30 vs 15 = 15-point lead, both >= 20. Major wins over standard.
@@ -2655,8 +2655,8 @@ public class HeadlessConformanceTest {
         // --- Shadow War suppresses standard condition 1 (B5-0629) but admits major. ---
         // Same pattern as MJR section: setShadowInfluence to CONDITION_2_THRESHOLD
         // triggers the Shadow War guard in stationVictory and standardVictory.
-        Player sw1 = player("VPS-SW1", Faction.CENTAURI);
-        Player sw2 = player("VPS-SW2", Faction.NARN);
+        Player sw1 = player("VPS-SW1", Race.CENTAURI);
+        Player sw2 = player("VPS-SW2", Race.NARN);
         GameState swSt = state(sw1, sw2);
         setInfluence(sw1, 20); setInfluence(sw2, 15);
         swSt.getStation().setShadowInfluence(Babylon5Station.CONDITION_2_THRESHOLD);
@@ -2672,8 +2672,8 @@ public class HeadlessConformanceTest {
         // Shadow War admits major: a player with 30 vs 15 during Shadow War
         // qualifies for Major (15-point lead >= 10) and Major is NOT barred by
         // the Shadow War.
-        Player swMA1 = player("VPS-SWMA1", Faction.CENTAURI);
-        Player swMA2 = player("VPS-SWMA2", Faction.NARN);
+        Player swMA1 = player("VPS-SWMA1", Race.CENTAURI);
+        Player swMA2 = player("VPS-SWMA2", Race.NARN);
         GameState swMASt = state(swMA1, swMA2);
         setInfluence(swMA1, 30); setInfluence(swMA2, 15);
         swMASt.getStation().setShadowInfluence(Babylon5Station.CONDITION_2_THRESHOLD);
@@ -2687,8 +2687,8 @@ public class HeadlessConformanceTest {
                 swMAResult.getQualifierAsInt() == 15);
 
         // --- Path 5: standard victory (B5-0641 path 5). ---
-        Player st1 = player("VPS-ST1", Faction.CENTAURI);
-        Player st2 = player("VPS-ST2", Faction.NARN);
+        Player st1 = player("VPS-ST1", Race.CENTAURI);
+        Player st2 = player("VPS-ST2", Race.NARN);
         GameState stSt = state(st1, st2);
         setInfluence(st1, 25); setInfluence(st2, 20);
         // Standard: 25 vs 20 = 5-point lead, both >= 20, no major agenda.
@@ -2704,8 +2704,8 @@ public class HeadlessConformanceTest {
         // --- Major+Standard overlap: major wins (path-order precedence). ---
         // 30 vs 15: both major (15-point lead) and standard (strict lead) qualify.
         // checkVictory returns the major winner; the query must report MAJOR.
-        Player ov1 = player("VPS-OV1", Faction.CENTAURI);
-        Player ov2 = player("VPS-OV2", Faction.NARN);
+        Player ov1 = player("VPS-OV1", Race.CENTAURI);
+        Player ov2 = player("VPS-OV2", Race.NARN);
         GameState ovSt = state(ov1, ov2);
         setInfluence(ov1, 30); setInfluence(ov2, 15);
         check("VPS", "30-vs-15: checkVictory returns the leader (major path)",
@@ -2756,8 +2756,8 @@ public class HeadlessConformanceTest {
         System.out.println("MJR-AI (B5-0635): MEDIUM/HARD score influence moves toward the major threshold");
         RulesEngine rules = new RulesEngine();
 
-        Player a1 = player("MJRAI-1", Faction.CENTAURI);
-        Player a2 = player("MJRAI-2", Faction.NARN);
+        Player a1 = player("MJRAI-1", Race.CENTAURI);
+        Player a2 = player("MJRAI-2", Race.NARN);
         GameState st = state(a1, a2);
         setInfluence(a1, 18);
         setInfluence(a2, 14);   // need 10 - 4 = 6 -> MEDIUM band 1, HARD 0.5
@@ -2800,7 +2800,7 @@ public class HeadlessConformanceTest {
         setInfluence(a2, 19);
         while (a2.getDeck().size() > 0) { a2.getDeck().draw(); }
         a2.drawCards(1);   // drained pile + no discardable Inner Circle: forfeit (Draw Round Step 3)
-        Player a3 = player("MJRAI-3", Faction.MINBARI);
+        Player a3 = player("MJRAI-3", Race.MINBARI);
         setInfluence(a3, 9);
         GameState st3 = state(a1, a2, a3);
         check("MJR-AI", "fixture: a2 forfeited, a1 = 18, live rival a3 = 9",
@@ -2814,10 +2814,10 @@ public class HeadlessConformanceTest {
         // sides (+1 own, -1 target), so its score carries the urgency term;
         // a location capture moves no influence and does not. With a1 = 18
         // vs live a3 = 9 the urgency is MEDIUM 3 / HARD 1.5.
-        st3.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
-        st3.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.MINBARI);
+        st3.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
+        st3.getTensionMatrix().enterWar(Race.CENTAURI, Race.MINBARI);
         LocationCard loot = new LocationCard("mjrai_loc", "MJR Province",
-                "LOCATION", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                "LOCATION", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 2);
         a2.getLocations().add(loot);
         AIPlayer med2 = new AIPlayer(a1, AIDifficulty.MEDIUM);
@@ -2846,9 +2846,9 @@ public class HeadlessConformanceTest {
         System.out.println("FLOOR (B5-0486): per-bonus floor field lifts penalty outcome, capped at printed base");
 
         // Hook 1: floor lifts a -2 on printed-1 fleet to exactly 1.
-        Player p1 = player("FLOOR-1", Faction.CENTAURI);
+        Player p1 = player("FLOOR-1", Race.CENTAURI);
         FleetCard fleet1 = new FleetCard("floor_fleet1", "FRIGATE", "FLEET", Rarity.COMMON,
-                Faction.CENTAURI, CardSet.PREMIERE, "x", "text", 1);
+                Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text", 1);
         p1.getFleets().add(fleet1);
         fleet1.setOwner(p1);
         p1.grantBonus(new StatBonus("floor_censure1", StatKey.MILITARY, -2,
@@ -2858,9 +2858,9 @@ public class HeadlessConformanceTest {
                 fleet1.getEffectiveMilitary() == 1);
 
         // Hook 2: floor does NOT lift a -2 on printed-4 fleet (4-2=2 above floor 1).
-        Player p2 = player("FLOOR-2", Faction.CENTAURI);
+        Player p2 = player("FLOOR-2", Race.CENTAURI);
         FleetCard fleet2 = new FleetCard("floor_fleet2", "DESTROYER", "FLEET", Rarity.COMMON,
-                Faction.CENTAURI, CardSet.PREMIERE, "x", "text", 4);
+                Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text", 4);
         p2.getFleets().add(fleet2);
         fleet2.setOwner(p2);
         p2.grantBonus(new StatBonus("floor_censure2", StatKey.MILITARY, -2,
@@ -2870,9 +2870,9 @@ public class HeadlessConformanceTest {
                 fleet2.getEffectiveMilitary() == 2);
 
         // Hook 3: highest-floor-wins with two floored sources.
-        Player p3 = player("FLOOR-3", Faction.CENTAURI);
+        Player p3 = player("FLOOR-3", Race.CENTAURI);
         FleetCard fleet3 = new FleetCard("floor_fleet3", "FRIGATE", "FLEET", Rarity.COMMON,
-                Faction.CENTAURI, CardSet.PREMIERE, "x", "text", 3);
+                Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text", 3);
         p3.getFleets().add(fleet3);
         fleet3.setOwner(p3);
         p3.grantBonus(new StatBonus("floor_low3", StatKey.MILITARY, -2,
@@ -2886,9 +2886,9 @@ public class HeadlessConformanceTest {
                 fleet3.getEffectiveMilitary() == 3);
 
         // Hook 4: floor capped at printed base (floor 5 on printed-1 stays 1).
-        Player p4 = player("FLOOR-4", Faction.CENTAURI);
+        Player p4 = player("FLOOR-4", Race.CENTAURI);
         FleetCard fleet4 = new FleetCard("floor_fleet4", "FRIGATE", "FLEET", Rarity.COMMON,
-                Faction.CENTAURI, CardSet.PREMIERE, "x", "text", 1);
+                Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text", 1);
         p4.getFleets().add(fleet4);
         fleet4.setOwner(p4);
         p4.grantBonus(new StatBonus("floor_caps4", StatKey.MILITARY, 0,
@@ -2899,9 +2899,9 @@ public class HeadlessConformanceTest {
 
         // Hook 5: damage after floor — printed-1 fleet, floor 1, -2 penalty,
         //          then 1 damage token → 0.
-        Player p5 = player("FLOOR-5", Faction.CENTAURI);
+        Player p5 = player("FLOOR-5", Race.CENTAURI);
         FleetCard fleet5 = new FleetCard("floor_fleet5", "FRIGATE", "FLEET", Rarity.COMMON,
-                Faction.CENTAURI, CardSet.PREMIERE, "x", "text", 1);
+                Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text", 1);
         p5.getFleets().add(fleet5);
         fleet5.setOwner(p5);
         p5.grantBonus(new StatBonus("floor_dmg5", StatKey.MILITARY, -2,
@@ -2913,9 +2913,9 @@ public class HeadlessConformanceTest {
                 fleet5.getEffectiveMilitary() == 0);
 
         // Hook 6: default-0 invariance — all existing suite sections green.
-        Player p6 = player("FLOOR-6", Faction.CENTAURI);
+        Player p6 = player("FLOOR-6", Race.CENTAURI);
         FleetCard fleet6 = new FleetCard("floor_fleet6", "FRIGATE", "FLEET", Rarity.COMMON,
-                Faction.CENTAURI, CardSet.PREMIERE, "x", "text", 3);
+                Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text", 3);
         p6.getFleets().add(fleet6);
         fleet6.setOwner(p6);
         p6.grantBonus(new StatBonus("floor_zero6", StatKey.MILITARY, 2,
@@ -2926,11 +2926,11 @@ public class HeadlessConformanceTest {
 
         // Hook 7: composition with B5-0473 wiring — floored bonus granted into
         // the VICTIM registry reads correctly through getEffectiveMilitary.
-        Player owner7 = player("FLOOR-7A", Faction.CENTAURI);
-        Player victim7 = player("FLOOR-7B", Faction.NARN);
+        Player owner7 = player("FLOOR-7A", Race.CENTAURI);
+        Player victim7 = player("FLOOR-7B", Race.NARN);
         GameState st7 = state(owner7, victim7);
         FleetCard oppFleet7 = new FleetCard("floor_opp7", "FRIGATE", "FLEET", Rarity.COMMON,
-                Faction.NARN, CardSet.PREMIERE, "x", "text", 3);
+                Loyalty.NARN, CardSet.PREMIERE, "x", "text", 3);
         victim7.addFleet(oppFleet7);
         oppFleet7.setOwner(victim7);
         victim7.grantBonus(new StatBonus("floor_wire7", StatKey.MILITARY, -2,
@@ -2962,11 +2962,11 @@ public class HeadlessConformanceTest {
         // stats — noted discrepancy, data wins per B5-0311), Lead -2.
         EnhancementCard shunned = new EnhancementCard(
                 "enh_shunned", "Shunned Wire Test", "ENHANCEMENT_CHARACTER",
-                Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 -2, -2, -2, 0, -2);
 
-        Player attacker = player("SHN-A", Faction.CENTAURI);
-        Player victim = player("SHN-B", Faction.NARN);
+        Player attacker = player("SHN-A", Race.CENTAURI);
+        Player victim = player("SHN-B", Race.NARN);
         GameState st = state(attacker, victim);
 
         CharacterCard target = leaderCard("shn_char_w1", 3);
@@ -3022,9 +3022,9 @@ public class HeadlessConformanceTest {
         // 4. Untargeted character enhancement keeps the legacy self path.
         EnhancementCard legacy = new EnhancementCard(
                 "enh_char_legacy_w1", "Legacy Char Test", "ENHANCEMENT_CHARACTER",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 1, 0, 0, 0, 0);
-        Player own = player("SHN-C", Faction.NARN);
+        Player own = player("SHN-C", Race.NARN);
         GameState st2 = state(own, attacker);
         CardEffects.applyPlayEnhancement(st2, own, legacy);
         check("SHN", "untargeted character enhancement keeps the legacy self path",
@@ -3033,7 +3033,7 @@ public class HeadlessConformanceTest {
         // 5. Unresolvable explicit target: held in play, no registry effect.
         EnhancementCard ghost = new EnhancementCard(
                 "de_enh_shunned", "Shunned Ghost Test", "ENHANCEMENT_CHARACTER",
-                Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 -2, -2, -2, 0, -2);
         ghost.setOpponentTarget("char_does_not_exist", "NO_SUCH_PLAYER");
         GameState st3 = state(attacker, victim);
@@ -3048,12 +3048,12 @@ public class HeadlessConformanceTest {
 
         EnhancementCard censure = new EnhancementCard(
                 "enh_censure_w1", "Censure Wire Test", "ENHANCEMENT_FLEET",
-                Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0,
                 -2, 0);
 
-        Player owner = player("ENHWIRE-A", Faction.CENTAURI);
-        Player victim = player("ENHWIRE-B", Faction.NARN);
+        Player owner = player("ENHWIRE-A", Race.CENTAURI);
+        Player victim = player("ENHWIRE-B", Race.NARN);
         GameState st = state(owner, victim);
         FleetCard oppFleet = fleetCard("fleet_opp_wire", null);
         victim.addFleet(oppFleet);
@@ -3084,7 +3084,7 @@ public class HeadlessConformanceTest {
         // 3. No-target fallback: un-targeted enhancement keeps legacy self-fleet path.
         EnhancementCard legacy = new EnhancementCard(
                 "enh_legacy_w1", "Legacy Wire Test", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 1, 0);
         FleetCard ownFleet = fleetCard("fleet_own_wire", null);
         owner.addFleet(ownFleet);
@@ -3097,7 +3097,7 @@ public class HeadlessConformanceTest {
         // 4. Explicit target that cannot resolve: held in play, no registry effect.
         EnhancementCard ghost = new EnhancementCard(
                 "enh_ghost_w1", "Ghost Target Test", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, -1, 0);
         ghost.setOpponentTarget("fleet_does_not_exist", "NoSuchPlayer");
         CardEffects.applyPlayEnhancement(st, owner, ghost);
@@ -3112,7 +3112,7 @@ public class HeadlessConformanceTest {
         // 5. Round-trip through the real pipeline: processAction PLAY_CARD.
         EnhancementCard piped = new EnhancementCard(
                 "enh_pipe_w1", "Pipe Wire Test", "ENHANCEMENT_FLEET",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, -1, 0);
         piped.setOpponentTarget("fleet_opp_wire", victim.getName());
         owner.addToHand(piped);
@@ -3142,10 +3142,10 @@ public class HeadlessConformanceTest {
         System.out.println("STH-AI (B5-0453): MEDIUM/HARD score station ratings, EASY uniform");
         RulesEngine rules = new RulesEngine();
 
-        Player p1 = player("STHAI-1", Faction.CENTAURI);
-        Player p2 = player("STHAI-2", Faction.NARN);
+        Player p1 = player("STHAI-1", Race.CENTAURI);
+        Player p2 = player("STHAI-2", Race.NARN);
         GameState st = state(p1, p2);
-        st.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
+        st.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
 
         // --- stationContextScore returns 0 when all ratings below 15 ---
         AIPlayer med = new AIPlayer(p1, AIDifficulty.MEDIUM);
@@ -3234,8 +3234,8 @@ public class HeadlessConformanceTest {
 
         // ── (2) startRound runs ONCE per turn, before the action phase ──────────────
         // Set up a 2-player state with a rotated leader (simulating post-previous-turn state).
-        Player pS1 = player("ord_s1", Faction.CENTAURI);
-        Player pS2 = player("ord_s2", Faction.MINBARI);
+        Player pS1 = player("ord_s1", Race.CENTAURI);
+        Player pS2 = player("ord_s2", Race.MINBARI);
         GameState stS = state(pS1, pS2);
         CharacterCard rotatedLeader = leaderCard("ord_rotated", 3);
         pS1.addCharacter(rotatedLeader);
@@ -3254,8 +3254,8 @@ public class HeadlessConformanceTest {
         // III Draw Round Step 5), the game would NOT be over after runActionPhase returns.
         // The engine checks after every action (GameController:136-141), so a player at 20+
         // power strictly leading at action-phase start wins immediately on the first check.
-        Player pV1 = player("ord_v1", Faction.HUMAN);
-        Player pV2 = player("ord_v2", Faction.NARN);
+        Player pV1 = player("ord_v1", Race.HUMAN);
+        Player pV2 = player("ord_v2", Race.NARN);
         GameState stV = state(pV1, pV2);
         // Set powers to 20 (pV1) vs 19 (pV2) so pV1 has 20+ and strictly leads.
         // Player has no setInfluence; gainInfluence from the default 4.
@@ -3263,9 +3263,9 @@ public class HeadlessConformanceTest {
         pV2.gainInfluence(15);   // 4 -> 19
         // Give both AI players a trivial hand so the loop runs at least one action.
         // Use an event card (no faction restriction, playable by any race).
-        Card ev1 = eventCard("ord_v_ev1", Faction.ANY, CardSet.PREMIERE, "ORD dummy event 1",
+        Card ev1 = eventCard("ord_v_ev1", Loyalty.ANY, CardSet.PREMIERE, "ORD dummy event 1",
                 "Gain 1 Influence", "TEST_ORD", Rarity.COMMON);
-        Card ev2 = eventCard("ord_v_ev2", Faction.ANY, CardSet.PREMIERE, "ORD dummy event 2",
+        Card ev2 = eventCard("ord_v_ev2", Loyalty.ANY, CardSet.PREMIERE, "ORD dummy event 2",
                 "Gain 1 Influence", "TEST_ORD", Rarity.COMMON);
         pV1.addToHand(ev1);
         pV2.addToHand(ev2);
@@ -3317,14 +3317,14 @@ public class HeadlessConformanceTest {
         // ── (3) A single pass does NOT end the round ────────────────────────────────
         // Run a 2-player action phase where the first player passes and the second acts.
         // The round must NOT end after the first pass (consecutive-pass exit requires both).
-        Player pP1 = player("ord_p1", Faction.CENTAURI);
-        Player pP2 = player("ord_p2", Faction.MINBARI);
+        Player pP1 = player("ord_p1", Race.CENTAURI);
+        Player pP2 = player("ord_p2", Race.MINBARI);
         GameState stP = state(pP1, pP2);
         // Add a character to each hand so the acting player has a legal action.
-        CharacterCard ch1 = characterCard("ord_p_ch1", "ORD P1 Char", Faction.CENTAURI,
-                Faction.HUMAN, CardSet.PREMIERE, Rarity.COMMON, new int[]{1, 0, 0, 0});
-        CharacterCard ch2 = characterCard("ord_p_ch2", "ORD P2 Char", Faction.MINBARI,
-                Faction.HUMAN, CardSet.PREMIERE, Rarity.COMMON, new int[]{1, 0, 0, 0});
+        CharacterCard ch1 = characterCard("ord_p_ch1", "ORD P1 Char", Race.CENTAURI,
+                Loyalty.HUMAN, CardSet.PREMIERE, Rarity.COMMON, new int[]{1, 0, 0, 0});
+        CharacterCard ch2 = characterCard("ord_p_ch2", "ORD P2 Char", Race.MINBARI,
+                Loyalty.HUMAN, CardSet.PREMIERE, Rarity.COMMON, new int[]{1, 0, 0, 0});
         pP1.addToHand(ch1);
         pP2.addToHand(ch2);
         pP1.addCharacter(leaderCard("ord_p_ic1", 2));
@@ -3363,13 +3363,13 @@ public class HeadlessConformanceTest {
         // Use a fresh state, run a full turn through runGame via reflection, and check that
         // roundNumber advances by exactly 1. Inside the action phase, advanceTurn() (called at
         // GameController:143) cycles currentPlayerIndex only — it does NOT touch roundNumber.
-        Player pR1 = player("ord_r1", Faction.HUMAN);
-        Player pR2 = player("ord_r2", Faction.MINBARI);
+        Player pR1 = player("ord_r1", Race.HUMAN);
+        Player pR2 = player("ord_r2", Race.MINBARI);
         GameState stR = state(pR1, pR2);
         // Add trivial cards so the AI loop runs.
-        pR1.addToHand(eventCard("ord_r_ev1", Faction.ANY, CardSet.PREMIERE,
+        pR1.addToHand(eventCard("ord_r_ev1", Loyalty.ANY, CardSet.PREMIERE,
                 "ORD R dummy", "Gain 1 Influence", "TEST_ORD", Rarity.COMMON));
-        pR2.addToHand(eventCard("ord_r_ev2", Faction.ANY, CardSet.PREMIERE,
+        pR2.addToHand(eventCard("ord_r_ev2", Loyalty.ANY, CardSet.PREMIERE,
                 "ORD R dummy", "Gain 1 Influence", "TEST_ORD", Rarity.COMMON));
         pR1.addCharacter(leaderCard("ord_r_ic1", 2));
         pR2.addCharacter(leaderCard("ord_r_ic2", 2));
@@ -3410,8 +3410,8 @@ public class HeadlessConformanceTest {
         // Initiate a conflict through the controller and confirm that resolution + aftermaths
         // complete synchronously within the same processAction call, before the action loop
         // resumes. After the action returns, the active conflict must be null.
-        Player pC1 = player("ord_c1", Faction.HUMAN);
-        Player pC2 = player("ord_c2", Faction.MINBARI);
+        Player pC1 = player("ord_c1", Race.HUMAN);
+        Player pC2 = player("ord_c2", Race.MINBARI);
         GameState stC = state(pC1, pC2);
         ConflictCard cc = conflictCard("ord_c_conflict", ConflictType.DIPLOMACY, null);
         pC1.addToHand(cc);
@@ -3451,8 +3451,8 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
         
         // Set up a simple 2-player game
-        Player p1 = player("P1", Faction.NARN);
-        Player p2 = player("P2", Faction.MINBARI);
+        Player p1 = player("P1", Race.NARN);
+        Player p2 = player("P2", Race.MINBARI);
         GameState st = state(p1, p2);
         
         // Give them some cards so they can take actions
@@ -3536,8 +3536,8 @@ public class HeadlessConformanceTest {
     // pre-collision tree; body below is untouched original content.
     private static void testD6ActionLoop() {
         System.out.println("D6 (B5-0436 R2): action round ends on consecutive passes; no safety cap");
-        Player p1 = player("D6p1", Faction.CENTAURI);
-        Player p2 = player("D6p2", Faction.NARN);
+        Player p1 = player("D6p1", Race.CENTAURI);
+        Player p2 = player("D6p2", Race.NARN);
         GameState st = state(p1, p2);
         List<AIPlayer> ais = new ArrayList<AIPlayer>();
         for (Player p : st.getPlayers()) {
@@ -3603,7 +3603,7 @@ public class HeadlessConformanceTest {
         System.out.println("D7 (B5-0436 R3): Build Influence — rotate IC, spend 3 pool, rating +1");
         RulesEngine rules = new RulesEngine();
 
-        Player p = player("D7p", Faction.HUMAN);
+        Player p = player("D7p", Race.HUMAN);
         GameState st = state(p);
         CharacterCard leader = leaderCard("D7leader", 2);
         p.addCharacter(leader);
@@ -3613,7 +3613,7 @@ public class HeadlessConformanceTest {
         check("D7", "execute rotates the leader, rating 4 to 5, pool 4 to 2 (net -2)",
               leader.isRotated() && p.getInfluence() == 5 && p.getAppliedPool() == 2);
 
-        Player p9 = player("D7p9", Faction.NARN);
+        Player p9 = player("D7p9", Race.NARN);
         GameState st9 = state(p9);
         CharacterCard leader9 = leaderCard("D7leader9", 2);
         p9.addCharacter(leader9);
@@ -3631,7 +3631,7 @@ public class HeadlessConformanceTest {
         check("D7", "execute above the cap is a no-op (rating unchanged)",
               p9.getInfluence() == 10 && p9.getAppliedPool() == 7);
 
-        Player pR = player("D7pR", Faction.CENTAURI);
+        Player pR = player("D7pR", Race.CENTAURI);
         GameState stR = state(pR);
         CharacterCard leaderR = leaderCard("D7leaderR", 2);
         pR.addCharacter(leaderR);
@@ -3662,21 +3662,21 @@ public class HeadlessConformanceTest {
 
         AftermathCard ns = new AftermathCard("aftermath_negotiated_surrender",
                 "Negotiated Surrender", "AFTERMATH_MILITARY_PARTICIPANT",
-                Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "x",
+                Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "x",
                 "Play after a Military conflict. The loser may keep one fleet "
                         + "from being rotated. Gain 1 Influence.",
                 "MILITARY_PARTICIPANT");
 
         // A: loser plays it upon himself (D2 Participant target rule):
         // committed fleet kept ready, influence gained, card in play on target.
-        Player loser = player("NSl", Faction.NARN);
-        Player winner = player("NSw", Faction.MINBARI);
+        Player loser = player("NSl", Race.NARN);
+        Player winner = player("NSw", Race.MINBARI);
         GameState st = state(loser, winner);
         ConflictCard mil = new ConflictCard("ns_conf", "NS Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         FleetCard fleet = new FleetCard("ns_fleet", "NS Fleet", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "text", 3);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 3);
         loser.getFleets().add(fleet);
         Conflict lost = new Conflict(mil, winner);
         lost.commitCard(winner, winner.getAmbassador());
@@ -3699,14 +3699,14 @@ public class HeadlessConformanceTest {
 
         // B: the same aftermath played upon the WINNER never fires:
         // no fleet restored, no influence, no draw.
-        Player l2 = player("NSl2", Faction.NARN);
-        Player w2 = player("NSw2", Faction.MINBARI);
+        Player l2 = player("NSl2", Race.NARN);
+        Player w2 = player("NSw2", Race.MINBARI);
         GameState st2 = state(l2, w2);
         ConflictCard mil2 = new ConflictCard("ns_conf2", "NS Strike 2",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         FleetCard wFleet = new FleetCard("ns_wfleet", "NS Winner Fleet",
-                "FLEET_MINBARI", Rarity.COMMON, Faction.MINBARI, CardSet.PREMIERE,
+                "FLEET_MINBARI", Rarity.COMMON, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 5);
         w2.getFleets().add(wFleet);
         Conflict won = new Conflict(mil2, w2);
@@ -3724,19 +3724,19 @@ public class HeadlessConformanceTest {
         // C: Deluxe text change — the loser also draws 1 card.
         AftermathCard deNs = new AftermathCard("de_am_negotiated_surrender",
                 "Negotiated Surrender", "AFTERMATH_MILITARY_PARTICIPANT",
-                Rarity.RARE, Faction.ANY, CardSet.DELUXE, "x",
+                Rarity.RARE, Loyalty.ANY, CardSet.DELUXE, "x",
                 "Play after a Military conflict. The loser may keep one fleet "
                         + "from being rotated. Gain 1 Influence. (Deluxe text "
                         + "change: loser also draws 1 card.)",
                 "MILITARY_PARTICIPANT");
-        Player l3 = player("NSl3", Faction.NARN);
-        Player w3 = player("NSw3", Faction.MINBARI);
+        Player l3 = player("NSl3", Race.NARN);
+        Player w3 = player("NSw3", Race.MINBARI);
         GameState st3 = state(l3, w3);
         ConflictCard mil3 = new ConflictCard("ns_conf3", "NS Strike 3",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         FleetCard f3 = new FleetCard("ns_fleet3", "NS Fleet 3", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "text", 2);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 2);
         l3.getFleets().add(f3);
         Conflict lost3 = new Conflict(mil3, w3);
         lost3.commitCard(w3, w3.getAmbassador());
@@ -3756,7 +3756,7 @@ public class HeadlessConformanceTest {
         // dispatch entry point itself is a no-op for it (loud no-op lives in
         // the play site's fallback, matching the events rule).
         AftermathCard unknown = new AftermathCard("am_ns_unknown", "Unknown",
-                "AFTERMATH", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", "LOST");
         int infD = l3.getInfluence();
         CardEffects.applyAftermathEffect(st3, lost3, unknown, l3, winner3);
@@ -3768,11 +3768,11 @@ public class HeadlessConformanceTest {
         System.out.println("DA (B5-1051): Diplomatic Advantage aftermath dispatch ?");
         System.out.println("             winner gains 2 influence and draws 1 card");
 
-        Player winner = player("DA-winner", Faction.MINBARI);
-        Player loser = player("DA-loser", Faction.NARN);
+        Player winner = player("DA-winner", Race.MINBARI);
+        Player loser = player("DA-loser", Race.NARN);
         GameState st = state(winner, loser);
         ConflictCard dip = new ConflictCard("da_conf", "DA Diplomacy",
-                "CONFLICT_DIPLOMACY", Rarity.RARE, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 1);
         Conflict resolved = new Conflict(dip, winner);
         resolved.commitCard(winner, winner.getAmbassador());
@@ -3780,7 +3780,7 @@ public class HeadlessConformanceTest {
 
         AftermathCard da = new AftermathCard("aftermath_diplomatic_advantage",
                 "Diplomatic Advantage", "AFTERMATH_WON_DIPLOMACY",
-                Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "x",
+                Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "x",
                 "Play after winning a Diplomacy conflict. Gain 2 Influence and draw 1 card.",
                 "WON_DIPLOMACY");
         int influenceBefore = winner.getInfluence();
@@ -3791,7 +3791,7 @@ public class HeadlessConformanceTest {
                 && winner.getHand().size() == handBefore + 1);
 
         AftermathCard generic = new AftermathCard("aftermath_focus_your_efforts",
-                "Focus Your Efforts", "AFTERMATH_WON", Rarity.UNCOMMON, Faction.ANY,
+                "Focus Your Efforts", "AFTERMATH_WON", Rarity.UNCOMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "Play after winning any conflict. Move one card from your discard pile to your hand.", "WON");
         int influenceGenericBefore = winner.getInfluence();
         int handGenericBefore = winner.getHand().size();
@@ -3814,15 +3814,15 @@ public class HeadlessConformanceTest {
                 + "unchanged, deluxe additionally bars Diplomacy Aftermaths");
         RulesEngine rules = new RulesEngine();
 
-        Player owner    = player("TW-owner", Faction.NARN);
-        Player rival    = player("TW-rival", Faction.MINBARI);
+        Player owner    = player("TW-owner", Race.NARN);
+        Player rival    = player("TW-rival", Race.MINBARI);
         GameState st = state(owner, rival);
 
         // ── A: premiere path unchanged — the already-dispatched fleets +1 ─────
         FleetCard oFleet = new FleetCard("tw_ofleet", "TW Owner Fleet", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "text", 4);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 4);
         FleetCard rFleet = new FleetCard("tw_rfleet", "TW Rival Fleet", "FLEET_MINBARI",
-                Rarity.COMMON, Faction.MINBARI, CardSet.PREMIERE, "x", "text", 4);
+                Rarity.COMMON, Loyalty.MINBARI, CardSet.PREMIERE, "x", "text", 4);
         owner.getFleets().add(oFleet);
         rival.getFleets().add(rFleet);
         // The FACTION-scope bonus is read through the fleet's OWNER registry
@@ -3832,11 +3832,11 @@ public class HeadlessConformanceTest {
         rFleet.setOwner(rival);
 
         AgendaCard premiereTw = new AgendaCard("agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "total_war",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military. You may not play Diplomacy "
                         + "conflict cards.", false, "MILITARY_SUPREMACY");
         AgendaCard deluxeTw = new AgendaCard("de_agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.DELUXE, "total_war",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.DELUXE, "total_war",
                 "Ongoing: Your fleets gain +1 Military. You may not play Diplomacy "
                         + "conflict cards. (Deluxe text change: restriction now also "
                         + "prohibits playing Diplomacy Aftermath cards.)", false,
@@ -3853,11 +3853,11 @@ public class HeadlessConformanceTest {
 
         // B: the deluxe twin keeps the SAME premiere effect — the delta adds a
         // restriction, it does not replace the fleet bonus.
-        Player dOwner = player("TW-downer", Faction.NARN);
-        Player dRival = player("TW-drival", Faction.MINBARI);
+        Player dOwner = player("TW-downer", Race.NARN);
+        Player dRival = player("TW-drival", Race.MINBARI);
         state(dOwner, dRival);
         FleetCard dFleet = new FleetCard("tw_dfleet", "TW Deluxe Fleet", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.DELUXE, "x", "text", 4);
+                Rarity.COMMON, Loyalty.NARN, CardSet.DELUXE, "x", "text", 4);
         dOwner.getFleets().add(dFleet);
         dFleet.setOwner(dOwner);
         int baseDeluxe = dFleet.getEffectiveMilitary();
@@ -3869,7 +3869,7 @@ public class HeadlessConformanceTest {
         // A resolved DIPLOMACY conflict both players participated in, plus a
         // real DIPLOMACY_PARTICIPANT aftermath from the card data.
         ConflictCard dip = new ConflictCard("tw_conf", "TW Diplomacy",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 1);
         Conflict resolved = new Conflict(dip, owner);
         resolved.commitCard(owner, owner.getAmbassador());
@@ -3877,12 +3877,12 @@ public class HeadlessConformanceTest {
         boolean initiatorWon = rules.initiatorWon(resolved, owner);
 
         AftermathCard dipAm = new AftermathCard("aftermath_rivalry", "Rivalry",
-                "AFTERMATH_DIPLOMACY_PARTICIPANT", Rarity.UNCOMMON, Faction.ANY,
+                "AFTERMATH_DIPLOMACY_PARTICIPANT", Rarity.UNCOMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "Play after a Diplomacy conflict.",
                 "DIPLOMACY_PARTICIPANT");
         AftermathCard milAm = new AftermathCard("aftermath_negotiated_surrender",
                 "Negotiated Surrender", "AFTERMATH_MILITARY_PARTICIPANT",
-                Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 "MILITARY_PARTICIPANT");
 
         check("TW-C1", "classification: the trigger vocabulary splits Diplomacy "
@@ -3948,11 +3948,11 @@ public class HeadlessConformanceTest {
 
         // ── A: prior paths unchanged — conf_loss_of_support still loses 1 + discards 1,
         //     conf_hate_crime still loses 2 and no discard ──────────────────────
-        Player aOwner = player("BWD-a-owner", Faction.NARN);
-        Player aRival = player("BWD-a-rival", Faction.MINBARI);
+        Player aOwner = player("BWD-a-owner", Race.NARN);
+        Player aRival = player("BWD-a-rival", Race.MINBARI);
         GameState aSt = state(aOwner, aRival);
         ConflictCard aCard = new ConflictCard("bwd_a_conf", "BWD A Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         Conflict aConflict = new Conflict(aCard, aOwner);
         aConflict.commitCard(aOwner, aOwner.getAmbassador());
@@ -3962,11 +3962,11 @@ public class HeadlessConformanceTest {
         int aRivalHand = aRival.getHand().size();
         rules.resolveConflict(aConflict, aSt);
         // Swap so aRival is the loser this time.
-        Player bOwner = player("BWD-b-owner", Faction.CENTAURI);
-        Player bRival = player("BWD-b-rival", Faction.HUMAN);
+        Player bOwner = player("BWD-b-owner", Race.CENTAURI);
+        Player bRival = player("BWD-b-rival", Race.HUMAN);
         GameState bSt = state(bOwner, bRival);
         ConflictCard bCard = new ConflictCard("bwd_b_conf", "BWD B Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         Conflict bConflict = new Conflict(bCard, bOwner);
         bConflict.commitCard(bOwner, bOwner.getAmbassador());
@@ -3976,16 +3976,16 @@ public class HeadlessConformanceTest {
         rules.resolveConflict(bConflict, bSt);
 
         // ── B: premiere conf_bio_weapon_discovery — discard-2, NO influence loss ─
-        Player pOwner = player("BWD-p-owner", Faction.NARN);
-        Player pRival = player("BWD-p-rival", Faction.MINBARI);
+        Player pOwner = player("BWD-p-owner", Race.NARN);
+        Player pRival = player("BWD-p-rival", Race.MINBARI);
         GameState pSt = state(pOwner, pRival);
         for (int i = 0; i < 5; i++) {
             pRival.getHand().add(new EventCard("bwd_p_fill_" + i, "Fill " + i,
-                    "EVENT", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text"));
+                    "EVENT", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text"));
         }
         ConflictCard pCard = new ConflictCard("conf_bio_weapon_discovery",
                 "Bio-Weapon Discovery", "CONFLICT_INTRIGUE", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text", ConflictType.INTRIGUE, 1);
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text", ConflictType.INTRIGUE, 1);
         Conflict pConflict = new Conflict(pCard, pOwner);
         pConflict.commitCard(pOwner, pOwner.getAmbassador());
         pConflict.commitCard(pRival, pRival.getAmbassador());
@@ -4000,16 +4000,16 @@ public class HeadlessConformanceTest {
                 pOwner.getInfluence() == pOwnerInf + 1);
 
         // ── C: deluxe de_conf_bio_weapon_discovery — discard-2 AND lose 1 influence ─
-        Player dOwner = player("BWD-d-owner", Faction.CENTAURI);
-        Player dRival = player("BWD-d-rival", Faction.HUMAN);
+        Player dOwner = player("BWD-d-owner", Race.CENTAURI);
+        Player dRival = player("BWD-d-rival", Race.HUMAN);
         GameState dSt = state(dOwner, dRival);
         for (int i = 0; i < 5; i++) {
             dRival.getHand().add(new EventCard("bwd_d_fill_" + i, "Fill " + i,
-                    "EVENT", Rarity.COMMON, Faction.ANY, CardSet.DELUXE, "x", "text"));
+                    "EVENT", Rarity.COMMON, Loyalty.ANY, CardSet.DELUXE, "x", "text"));
         }
         ConflictCard dCard = new ConflictCard("de_conf_bio_weapon_discovery",
                 "Bio-Weapon Discovery", "CONFLICT_INTRIGUE", Rarity.COMMON,
-                Faction.ANY, CardSet.DELUXE, "x",
+                Loyalty.ANY, CardSet.DELUXE, "x",
                 "Intrigue conflict. Winner gains 3 Influence. Loser must discard 2 "
                         + "cards. (Deluxe text change: loser also loses 1 Influence.)",
                 ConflictType.INTRIGUE, 1);
@@ -4055,11 +4055,11 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
 
         // ── A: a sponsored agenda's ongoing bonus is live on the fleets ──────
-        Player owner = player("AGO-owner", Faction.NARN);
-        Player rival = player("AGO-rival", Faction.MINBARI);
+        Player owner = player("AGO-owner", Race.NARN);
+        Player rival = player("AGO-rival", Race.MINBARI);
         GameState st = state(owner, rival);
         FleetCard fleet = new FleetCard("ago_fleet", "AGO Fleet", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "text", 4);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 4);
         owner.getFleets().add(fleet);
         // FACTION-scope bonuses are read through the fleet's own owner registry
         // (FleetCard.getEffectiveMilitary), so the seam must be wired.
@@ -4067,7 +4067,7 @@ public class HeadlessConformanceTest {
         int base = fleet.getEffectiveMilitary();
 
         AgendaCard totalWar = new AgendaCard("agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "total_war",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
         owner.setAgenda(totalWar);
@@ -4092,11 +4092,11 @@ public class HeadlessConformanceTest {
         // applyAgendaOnPlay call from GameController's REPLACE_AGENDA branch
         // left the section green. A check that cannot see the defect it names
         // is not a gate, so both paths below go through the real dispatcher.
-        Player gp = player("AGO-gc", Faction.NARN);
-        player("AGO-gc2", Faction.MINBARI);
-        GameState gst = state(gp, player("AGO-gc2", Faction.MINBARI));
+        Player gp = player("AGO-gc", Race.NARN);
+        player("AGO-gc2", Race.MINBARI);
+        GameState gst = state(gp, player("AGO-gc2", Race.MINBARI));
         FleetCard gFleet = new FleetCard("ago_gfleet", "AGO GC Fleet", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "text", 4);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 4);
         gp.getFleets().add(gFleet);
         gFleet.setOwner(gp);
         int gBase = gFleet.getEffectiveMilitary();
@@ -4106,7 +4106,7 @@ public class HeadlessConformanceTest {
         // should be granted on top of it. What is being measured is that the
         // OUTGOING grant is lifted by the replace.
         AgendaCard incumbent = new AgendaCard("agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "total_war",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
         gp.setAgenda(incumbent);
@@ -4121,7 +4121,7 @@ public class HeadlessConformanceTest {
         // both halves in one replace — old grant lifted, new grant landed —
         // makes a regression in either visible.
         AgendaCard fresh = new AgendaCard("agenda_order_above_all",
-                "Order Above All", "AGENDA", Rarity.RARE, Faction.ANY,
+                "Order Above All", "AGENDA", Rarity.RARE, Loyalty.ANY,
                 CardSet.PREMIERE, "order",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
@@ -4141,17 +4141,17 @@ public class HeadlessConformanceTest {
         // AGO-C's replacement agenda just made, and discarding an agenda is not
         // entitled to clear another agenda's bonus. Reusing gp here would have
         // measured the wrong thing and failed for the wrong reason.
-        Player dp = player("AGO-disc", Faction.NARN);
-        player("AGO-disc2", Faction.MINBARI);
-        GameState dgc = state(dp, player("AGO-disc2", Faction.MINBARI));
+        Player dp = player("AGO-disc", Race.NARN);
+        player("AGO-disc2", Race.MINBARI);
+        GameState dgc = state(dp, player("AGO-disc2", Race.MINBARI));
         FleetCard dFleet = new FleetCard("ago_dfleet", "AGO Discard Fleet",
-                "FLEET_NARN", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                "FLEET_NARN", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 4);
         dp.getFleets().add(dFleet);
         dFleet.setOwner(dp);
         int dBase = dFleet.getEffectiveMilitary();
         AgendaCard discardMe = new AgendaCard("agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "total_war",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
         dp.setAgenda(discardMe);
@@ -4164,22 +4164,22 @@ public class HeadlessConformanceTest {
 
         // C3: the teardown must not over-reach — an unrelated bonus the player
         // holds from some other card has to survive an agenda leaving play.
-        Player keep = player("AGO-keep", Faction.NARN);
-        player("AGO-keep2", Faction.MINBARI);
-        GameState kst = state(keep, player("AGO-keep2", Faction.MINBARI));
+        Player keep = player("AGO-keep", Race.NARN);
+        player("AGO-keep2", Race.MINBARI);
+        GameState kst = state(keep, player("AGO-keep2", Race.MINBARI));
         FleetCard kFleet = new FleetCard("ago_kfleet", "AGO Keep Fleet", "FLEET_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "text", 4);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 4);
         keep.getFleets().add(kFleet);
         kFleet.setOwner(keep);
         int kBase = kFleet.getEffectiveMilitary();
         AgendaCard keeper = new AgendaCard("agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "total_war",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
         keep.setAgenda(keeper);
         CardEffects.applyAgendaOnPlay(kst, keep, keeper);
         // A second, unrelated fleet-wide grant from a different source id.
-        keep.grantBonus(StatBonus.faction("some_other_card", StatKey.MILITARY, 1,
+        keep.grantBonus(StatBonus.race("some_other_card", StatKey.MILITARY, 1,
                 keep.getName(), Expiry.WHILE_IN_PLAY, kst.getRoundNumber()));
         int withBoth = kFleet.getEffectiveMilitary();
         keep.getHand().clear();
@@ -4191,16 +4191,16 @@ public class HeadlessConformanceTest {
         // AGO-DIPLO-WIN. resolveConflict is called directly — no GameController,
         // no UI — so before the fix the bonus was simply absent. The winner
         // gains the card's own printed reward PLUS the agenda bonus.
-        Player w = player("AGO-win", Faction.NARN);
-        Player l = player("AGO-lose", Faction.MINBARI);
+        Player w = player("AGO-win", Race.NARN);
+        Player l = player("AGO-lose", Race.MINBARI);
         GameState dst = state(w, l);
         AgendaCard rising = new AgendaCard("agenda_a_rising_power", "A Rising Power",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "rising",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "rising",
                 "Ongoing: If you win a Diplomacy conflict, gain 1 Influence.",
                 false, "INFLUENCE_20");
         w.setAgenda(rising);
         ConflictCard dip = new ConflictCard("ago_dip", "AGO Diplomacy",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 1);
         Conflict dipC = new Conflict(dip, w);
         dipC.commitCard(w, w.getAmbassador());
@@ -4212,8 +4212,8 @@ public class HeadlessConformanceTest {
                 w.getInfluence() - wInf == 1 + 1);
 
         // D2: the LOSER's agenda must not pay — the bonus is the winner's.
-        Player w2 = player("AGO-win2", Faction.NARN);
-        Player l2 = player("AGO-lose2", Faction.MINBARI);
+        Player w2 = player("AGO-win2", Race.NARN);
+        Player l2 = player("AGO-lose2", Race.MINBARI);
         GameState dst2 = state(w2, l2);
         l2.setAgenda(rising);
         Conflict dipC2 = new Conflict(dip, w2);
@@ -4229,12 +4229,12 @@ public class HeadlessConformanceTest {
 
         // D3: a MILITARY conflict pays no Diplomacy bonus — the bonus is keyed
         // to the conflict type, not merely to winning.
-        Player w3 = player("AGO-win3", Faction.NARN);
-        Player l3 = player("AGO-lose3", Faction.MINBARI);
+        Player w3 = player("AGO-win3", Race.NARN);
+        Player l3 = player("AGO-lose3", Race.MINBARI);
         GameState dst3 = state(w3, l3);
         w3.setAgenda(rising);
         ConflictCard mil = new ConflictCard("ago_mil", "AGO Military",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         Conflict milC = new Conflict(mil, w3);
         milC.commitCard(w3, w3.getAmbassador());
@@ -4245,11 +4245,11 @@ public class HeadlessConformanceTest {
                 w3.getInfluence() - w3Inf == 1);
 
         // D4: a FACE-DOWN agenda is inert (:520 / B5-0364) — it pays nothing.
-        Player w4 = player("AGO-win4", Faction.NARN);
-        Player l4 = player("AGO-lose4", Faction.MINBARI);
+        Player w4 = player("AGO-win4", Race.NARN);
+        Player l4 = player("AGO-lose4", Race.MINBARI);
         GameState dst4 = state(w4, l4);
         AgendaCard hidden = new AgendaCard("agenda_a_rising_power", "A Rising Power",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "rising",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "rising",
                 "Ongoing: If you win a Diplomacy conflict, gain 1 Influence.",
                 false, "INFLUENCE_20");
         hidden.setFaceDown(true);
@@ -4266,11 +4266,11 @@ public class HeadlessConformanceTest {
         // applyAgendaStartOfRound is what startRound calls per player, so the
         // round hook is asserted through it, including the servants_of_order
         // prerequisite its own text states.
-        Player ip = player("AGO-inc", Faction.NARN);
-        player("AGO-inc2", Faction.MINBARI);
-        GameState ist = state(ip, player("AGO-inc2", Faction.MINBARI));
+        Player ip = player("AGO-inc", Race.NARN);
+        player("AGO-inc2", Race.MINBARI);
+        GameState ist = state(ip, player("AGO-inc2", Race.MINBARI));
         AgendaCard higher = new AgendaCard("agenda_higher_calling", "Higher Calling",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "higher",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "higher",
                 "Ongoing: At the start of each round, gain 1 Influence.",
                 false, "INFLUENCE_20");
         ip.setAgenda(higher);
@@ -4284,11 +4284,11 @@ public class HeadlessConformanceTest {
         // E2: servants_of_order requires 2+ Inner Circle characters; with one it
         // grants nothing. This is the prerequisite living in the hook, so it is
         // asserted where the hook is.
-        Player sp = player("AGO-serv", Faction.NARN);
-        player("AGO-serv2", Faction.MINBARI);
-        GameState sst = state(sp, player("AGO-serv2", Faction.MINBARI));
+        Player sp = player("AGO-serv", Race.NARN);
+        player("AGO-serv2", Race.MINBARI);
+        GameState sst = state(sp, player("AGO-serv2", Race.MINBARI));
         AgendaCard servants = new AgendaCard("de_agenda_servants_of_order",
-                "Servants of Order", "AGENDA", Rarity.RARE, Faction.ANY,
+                "Servants of Order", "AGENDA", Rarity.RARE, Loyalty.ANY,
                 CardSet.DELUXE, "servants",
                 "Ongoing: At the start of each round, gain 1 Influence if you "
                         + "have 2 or more characters in your Inner Circle.",
@@ -4304,11 +4304,11 @@ public class HeadlessConformanceTest {
                 underPrereq && sp.getInfluence() - spInf == 1);
 
         // E3: a face-down agenda's round income is inert, same rule as D4.
-        Player hp = player("AGO-hid", Faction.NARN);
-        player("AGO-hid2", Faction.MINBARI);
-        GameState hst = state(hp, player("AGO-hid2", Faction.MINBARI));
+        Player hp = player("AGO-hid", Race.NARN);
+        player("AGO-hid2", Race.MINBARI);
+        GameState hst = state(hp, player("AGO-hid2", Race.MINBARI));
         AgendaCard hidInc = new AgendaCard("agenda_higher_calling", "Higher Calling",
-                "AGENDA", Rarity.RARE, Faction.ANY, CardSet.PREMIERE, "higher",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "higher",
                 "Ongoing: At the start of each round, gain 1 Influence.",
                 false, "INFLUENCE_20");
         hidInc.setFaceDown(true);
@@ -4323,14 +4323,14 @@ public class HeadlessConformanceTest {
         System.out.println("D15 (B5-0436 R4): dispatched effect kinds — winner-only influenceReward");
         RulesEngine rules = new RulesEngine();
 
-        Player initiator = player("D15i", Faction.NARN);
-        Player opposer   = player("D15o", Faction.MINBARI);
+        Player initiator = player("D15i", Race.NARN);
+        Player opposer   = player("D15o", Race.MINBARI);
         GameState st = state(initiator, opposer);
         ConflictCard reward = new ConflictCard("d15_reward", "Reward Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 3);
         CharacterCard twoMil = new CharacterCard("d15two", "Two Mil",
-                "CHARACTER_NARN", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 2, false);
         Conflict won = new Conflict(reward, initiator);
         won.commitCard(initiator, initiator.getAmbassador());
@@ -4343,11 +4343,11 @@ public class HeadlessConformanceTest {
               winner == initiator && initiator.getInfluence() == beforeI + 3
               && opposer.getInfluence() == beforeO);
 
-        Player i2 = player("D15i2", Faction.CENTAURI);
-        Player o2 = player("D15o2", Faction.HUMAN);
+        Player i2 = player("D15i2", Race.CENTAURI);
+        Player o2 = player("D15o2", Race.HUMAN);
         GameState st2 = state(i2, o2);
         ConflictCard zero = new ConflictCard("d15_zero", "Plain Strike",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 0);
         Conflict plain = new Conflict(zero, i2);
         plain.commitCard(i2, i2.getAmbassador());
@@ -4358,13 +4358,13 @@ public class HeadlessConformanceTest {
               i2.getInfluence() == b2);
 
         CharacterCard big = new CharacterCard("d15big", "Big Minbari",
-                "CHARACTER_MINBARI", Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE,
+                "CHARACTER_MINBARI", Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 5, false);
-        Player i3 = player("D15i3", Faction.CENTAURI);
-        Player o3 = player("D15o3", Faction.MINBARI);
+        Player i3 = player("D15i3", Race.CENTAURI);
+        Player o3 = player("D15o3", Race.MINBARI);
         GameState st3 = state(i3, o3);
         ConflictCard r3 = new ConflictCard("d15_reward3", "Reward Strike 3",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 2);
         Conflict lost = new Conflict(r3, i3);
         lost.commitCard(i3, i3.getAmbassador());
@@ -4387,8 +4387,8 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
 
         // A: tie at 20 must NOT let the first-indexed player win.
-        Player t1 = player("T1", Faction.NARN);
-        Player t2 = player("T2", Faction.MINBARI);
+        Player t1 = player("T1", Race.NARN);
+        Player t2 = player("T2", Race.MINBARI);
         t1.gainInfluence(16); // 20
         t2.gainInfluence(16); // 20
         GameState st = state(t1, t2);
@@ -4396,8 +4396,8 @@ public class HeadlessConformanceTest {
                 rules.checkVictory(st) == null);
 
         // B: strictly greater wins.
-        Player w = player("W12", Faction.NARN);
-        Player l = player("L12", Faction.MINBARI);
+        Player w = player("W12", Race.NARN);
+        Player l = player("L12", Race.MINBARI);
         w.gainInfluence(16); // 20
         l.gainInfluence(15); // 19
         GameState st2 = state(w, l);
@@ -4411,12 +4411,12 @@ public class HeadlessConformanceTest {
         //    lead the holder is rightly crowned by THAT path (asserted in the
         //    MJR section); this fixture still isolates the standard-path bar,
         //    which is the only thing it ever meant to assert.
-        Player major = player("Maj", Faction.HUMAN);
-        Player other = player("Oth", Faction.CENTAURI);
+        Player major = player("Maj", Race.HUMAN);
+        Player other = player("Oth", Race.CENTAURI);
         major.gainInfluence(17); // 21
         other.gainInfluence(8);  // 12 (B5-0629: was 7; 9-point lead keeps the bar isolated)
         major.setAgenda(new AgendaCard("test_major_mic", "Test Major",
-                "AGENDA_MAJOR", Rarity.RARE, Faction.ANY, CardSet.PREMIERE,
+                "AGENDA_MAJOR", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", true, "MOST_INNER_CIRCLE"));
         GameState st3 = state(major, other);
         check("D12", "major agenda holder at 21 power does not standard-win",
@@ -4425,7 +4425,7 @@ public class HeadlessConformanceTest {
         // D: the same major agenda holder wins via the agenda's own condition
         //    once it IS met (2 vs 1 Inner Circle characters).
         CharacterCard extra = new CharacterCard("mic2", "Extra Advisor",
-                "CHARACTER_HUMAN", Rarity.RARE, Faction.HUMAN, CardSet.PREMIERE,
+                "CHARACTER_HUMAN", Rarity.RARE, Loyalty.HUMAN, CardSet.PREMIERE,
                 "x", "text", 1, 1, 0, 1, false);
         major.getInnerCircle().add(extra);
         check("D12", "major agenda holder wins via the agenda condition",
@@ -4433,12 +4433,12 @@ public class HeadlessConformanceTest {
 
         // E: a NON-major agenda holder with an unmet agenda can still score
         //    the standard victory (agenda is an additional way, not a block).
-        Player s = player("Std", Faction.NARN);
-        Player o = player("Oth2", Faction.MINBARI);
+        Player s = player("Std", Race.NARN);
+        Player o = player("Oth2", Race.MINBARI);
         s.gainInfluence(17); // 21
         o.gainInfluence(3);  // 7
         s.setAgenda(new AgendaCard("test_agenda_mic", "Test Agenda",
-                "AGENDA", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "AGENDA", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", false, "MOST_INNER_CIRCLE"));
         GameState st4 = state(s, o);
         check("D12", "non-major agenda holder standard-wins with strictly-greatest power",
@@ -4450,19 +4450,19 @@ public class HeadlessConformanceTest {
     private static void testD13() {
         System.out.println("D13: NON_ALIGNED as a normal race; NEUTRAL universal");
         check("D13", "NON_ALIGNED card not playable by HUMAN",
-                !Faction.NON_ALIGNED.isPlayableBy(Faction.HUMAN));
+                !Loyalty.NON_ALIGNED.isPlayableBy(Race.HUMAN));
         check("D13", "NON_ALIGNED card playable by NON_ALIGNED",
-                Faction.NON_ALIGNED.isPlayableBy(Faction.NON_ALIGNED));
+                Loyalty.NON_ALIGNED.isPlayableBy(Race.NON_ALIGNED));
         check("D13", "NEUTRAL still playable by every faction",
-                Faction.NEUTRAL.isPlayableBy(Faction.HUMAN)
-                && Faction.NEUTRAL.isPlayableBy(Faction.NON_ALIGNED));
+                Loyalty.NEUTRAL.isPlayableBy(Race.HUMAN)
+                && Loyalty.NEUTRAL.isPlayableBy(Race.NON_ALIGNED));
         check("D13", "ANY playable by every faction",
-                Faction.ANY.isPlayableBy(Faction.HUMAN)
-                && Faction.ANY.isPlayableBy(Faction.NON_ALIGNED));
+                Loyalty.ANY.isPlayableBy(Race.HUMAN)
+                && Loyalty.ANY.isPlayableBy(Race.NON_ALIGNED));
         check("D13", "loyal HUMAN card not playable by NARN",
-                !Faction.HUMAN.isPlayableBy(Faction.NARN));
+                !Loyalty.HUMAN.isPlayableBy(Race.NARN));
         check("D13", "loyal card playable by its own race",
-                Faction.HUMAN.isPlayableBy(Faction.HUMAN));
+                Loyalty.HUMAN.isPlayableBy(Race.HUMAN));
     }
 
     // ── B5-0302: one conflict per faction per turn ─────────────────────────
@@ -4470,18 +4470,18 @@ public class HeadlessConformanceTest {
     private static void testConflictPerTurn() {
         System.out.println("CPT (B5-0302): one conflict per faction per turn");
         RulesEngine rules = new RulesEngine();
-        Player p1 = player("P1", Faction.NARN);
-        Player p2 = player("P2", Faction.MINBARI);
+        Player p1 = player("P1", Race.NARN);
+        Player p2 = player("P2", Race.MINBARI);
         GameState st = state(p1, p2);
 
         ConflictCard c1 = new ConflictCard("cpt1", "First Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         ConflictCard c2 = new ConflictCard("cpt2", "Second Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         ConflictCard c3 = new ConflictCard("cpt3", "Other Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 1);
         p1.addToHand(c1);
         p1.addToHand(c2);
@@ -4515,16 +4515,16 @@ public class HeadlessConformanceTest {
         System.out.println("CSD (B5-0309): initiator wins iff support > opposition");
         RulesEngine rules = new RulesEngine();
 
-        Player init = player("Init", Faction.NARN);
-        Player opp  = player("Oppo", Faction.MINBARI);
+        Player init = player("Init", Race.NARN);
+        Player opp  = player("Oppo", Race.MINBARI);
         CharacterCard oppAmb  = opp.getAmbassador();
         CharacterCard bigChar = new CharacterCard("big", "Big Opposer Char",
-                "CHARACTER_MINBARI", Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE,
+                "CHARACTER_MINBARI", Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 0, 0, 0, 5, false);
 
         GameState st = state(init, opp);
         ConflictCard cc = new ConflictCard("csd1", "Side Strike",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 2);
 
         // 1: initiator alone (support 3 vs opposition 0) wins via the engine.
@@ -4581,8 +4581,8 @@ public class HeadlessConformanceTest {
     private static void scenarioDeckOutDuringWar() {
         System.out.println("WAR-ZERO (B5-1707): real deck-out followed by war declaration and resolution");
         RulesEngine rules = new RulesEngine();
-        Player narn = player("ZeroDeckNarn", Faction.NARN);
-        Player minbari = player("ZeroDeckMinbari", Faction.MINBARI);
+        Player narn = player("ZeroDeckNarn", Race.NARN);
+        Player minbari = player("ZeroDeckMinbari", Race.MINBARI);
         GameState st = state(narn, minbari);
 
         CharacterCard narnAdvisor = leaderCard("zero_narn_advisor", 2);
@@ -4608,7 +4608,7 @@ public class HeadlessConformanceTest {
                 && minbari.getDeck().getDiscardPile().contains(minbariAdvisor)
                 && !narn.hasForfeited() && !minbari.hasForfeited());
 
-        st.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        st.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         rules.startRound(st);
         check("WAR-ZERO", "active zero-deck player may declare war",
                 rules.canDeclareWarConflict(narn, st));
@@ -4621,7 +4621,7 @@ public class HeadlessConformanceTest {
                 winner == narn && war.isResolved() && war.getWinner() == narn);
         check("WAR-ZERO", "uncontested resolution applies the real war outcome",
                 narn.getInfluence() == 5 && minbari.getInfluence() == 3
-                && st.getTensionMatrix().getTension(Faction.MINBARI, Faction.NARN) == 1);
+                && st.getTensionMatrix().getTension(Race.MINBARI, Race.NARN) == 1);
     }
 
     // ── B5-0376 Phase A: war-conflict declaration + resolution ──────────
@@ -4630,9 +4630,9 @@ public class HeadlessConformanceTest {
         System.out.println("WAR (B5-0376): war conflict initiation, participation, card commitment");
         RulesEngine rules = new RulesEngine();
 
-        Player narn = player("Narn", Faction.NARN);
-        Player minbari = player("Minbari", Faction.MINBARI);
-        Player centauri = player("Centauri", Faction.CENTAURI);
+        Player narn = player("Narn", Race.NARN);
+        Player minbari = player("Minbari", Race.MINBARI);
+        Player centauri = player("Centauri", Race.CENTAURI);
         GameState st = state(narn, minbari, centauri);
         rules.startRound(st);   // gives players actions (resetActions) so declarations are legal
 
@@ -4641,7 +4641,7 @@ public class HeadlessConformanceTest {
                 !rules.canDeclareWarConflict(narn, st));
 
         // 2: enter war between Narn and Minbari
-        st.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        st.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
 
         check("WAR", "can declare war conflict when at war with another race",
                 rules.canDeclareWarConflict(narn, st));
@@ -4669,7 +4669,7 @@ public class HeadlessConformanceTest {
                 !warConflict.canJoinConflict(centauri));
 
         // 6: enter war between Narn and Centauri
-        st.getTensionMatrix().enterWar(Faction.NARN, Faction.CENTAURI);
+        st.getTensionMatrix().enterWar(Race.NARN, Race.CENTAURI);
         check("WAR", "third party now at war with initiator can join",
                 warConflict.canJoinConflict(centauri));
 
@@ -4688,7 +4688,7 @@ public class HeadlessConformanceTest {
         // 8: cannot initiate war conflict targeting a race not at war
         Conflict invalidWar = rules.declareWarConflict(narn, WarKind.RACE_TARGET,
                 centauri, null, st);
-        st.getTensionMatrix().exitWar(Faction.NARN, Faction.CENTAURI);
+        st.getTensionMatrix().exitWar(Race.NARN, Race.CENTAURI);
         Conflict invalidWar2 = rules.declareWarConflict(narn, WarKind.RACE_TARGET,
                 centauri, null, st);
         check("WAR", "cannot initiate war conflict against race not at war (after peace)",
@@ -4705,12 +4705,12 @@ public class HeadlessConformanceTest {
         // which the B5-1609 audit measured as finding F-A.
         // A fresh declarer is used so the earlier conflict in this scenario has
         // not consumed this turn's one-conflict allowance for narn.
-        Player forfeitDeclarer = player("ForfeitDeclarer", Faction.NARN);
-        Player surrenderDeclarer = player("SurrenderDeclarer", Faction.NARN);
+        Player forfeitDeclarer = player("ForfeitDeclarer", Race.NARN);
+        Player surrenderDeclarer = player("SurrenderDeclarer", Race.NARN);
         // A dedicated state: GameState.getPlayers() is unmodifiable, so these
         // declarers are supplied at construction rather than added afterwards.
         GameState stStatus = state(minbari, forfeitDeclarer, surrenderDeclarer);
-        stStatus.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        stStatus.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         rules.startRound(stStatus);   // gives each declarer its action
         check("WAR", "control: an active player CAN declare at war",
                 rules.canDeclareWarConflict(forfeitDeclarer, stStatus));
@@ -4749,13 +4749,13 @@ public class HeadlessConformanceTest {
                 narn.getInfluence() == narnBefore10 + 1);
 
         // 11-13 (Phase B): location capture, suppression, tension, recapture
-        Player locOwner = player("LocOwner", Faction.CENTAURI);
+        Player locOwner = player("LocOwner", Race.CENTAURI);
         LocationCard locTarget = new LocationCard("loc_b5", "Caster",
-                "LOCATION_CENTAURI", Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE,
+                "LOCATION_CENTAURI", Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 2, 3);
         locOwner.getLocations().add(locTarget);
         GameState stLoc = state(narn, locOwner, minbari, centauri);
-        stLoc.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
+        stLoc.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
         rules.startRound(stLoc);
         Conflict locWar = rules.declareWarConflict(narn, WarKind.LOCATION_TARGET,
                 null, locTarget, stLoc);
@@ -4768,7 +4768,7 @@ public class HeadlessConformanceTest {
         check("WAR", "captured location military is suppressed to 0",
                 locTarget.getMilitary() == 0);
         check("WAR", "tension incremented for location-target war outcome",
-                stLoc.getTensionMatrix().getTension(Faction.CENTAURI, Faction.NARN) > 0);
+                stLoc.getTensionMatrix().getTension(Race.CENTAURI, Race.NARN) > 0);
 
         // 14: recapture by the original faction owner → effects restored
         Conflict recapture = rules.declareWarConflict(locOwner, WarKind.LOCATION_TARGET,
@@ -4785,7 +4785,7 @@ public class HeadlessConformanceTest {
         // ── Phase C tests (B5-0376): attack integration ─────────────────────
         // 15: a resolved attack marks the conflict contested
         GameState st3 = state(narn, minbari, centauri);
-        st3.getTensionMatrix().enterWar(Faction.NARN, Faction.MINBARI);
+        st3.getTensionMatrix().enterWar(Race.NARN, Race.MINBARI);
         rules.startRound(st3);
         Conflict warC = rules.declareWarConflict(narn, WarKind.RACE_TARGET,
                 minbari, null, st3);
@@ -4825,11 +4825,11 @@ public class HeadlessConformanceTest {
         System.out.println("PRM (B5-0321): Promote Character to the Inner Circle");
         RulesEngine rules = new RulesEngine();
 
-        Player p  = player("Prom", Faction.NARN);
-        Player p2 = player("Prom2", Faction.MINBARI);
+        Player p  = player("Prom", Race.NARN);
+        Player p2 = player("Prom2", Race.MINBARI);
         GameState st = state(p, p2);
         CharacterCard cand = new CharacterCard("cand", "Candidate",
-                "CHARACTER_NARN", Rarity.RARE, Faction.NARN, CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 2, 2, 0, 3, false);
 
         // 1: a faction whose Inner Circle has no member to rotate cannot
@@ -4882,7 +4882,7 @@ public class HeadlessConformanceTest {
         // 8: an empty faction cannot afford a positive promotion cost.
         p2.loseInfluence(p2.getInfluence()); // 0
         CharacterCard cand2 = new CharacterCard("cand2", "Candidate Two",
-                "CHARACTER_MINBARI", Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE,
+                "CHARACTER_MINBARI", Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 1, 1, 0, 1, false);
         p2.getInnerCircle().add(p2.getAmbassador());
         p2.getSupportingRole().add(cand2);
@@ -4908,7 +4908,7 @@ public class HeadlessConformanceTest {
 
         // 12: a second promotion pays the larger IC-size term.
         CharacterCard second = new CharacterCard("second", "Second Candidate",
-                "CHARACTER_NARN", Rarity.RARE, Faction.NARN, CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 2, 2, 0, 2, false);
         p.getSupportingRole().add(second);
         rules.executePromote(p, second, cand, st);
@@ -4920,7 +4920,7 @@ public class HeadlessConformanceTest {
 
     // ── B5-0323: card cost field + recruit/promote cost wiring ──────────
 
-    private static CharacterCard charCard(String id, Faction f, int cost) {
+    private static CharacterCard charCard(String id, Loyalty f, int cost) {
         CharacterCard c = new CharacterCard(id, id, "CHARACTER_" + f,
                 Rarity.RARE, f, CardSet.PREMIERE, "x", "text", 2, 2, 0, 2, false);
         c.setCost(cost);
@@ -4931,15 +4931,15 @@ public class HeadlessConformanceTest {
         System.out.println("CST (B5-0323): card cost field + recruit/promote wiring");
         RulesEngine rules = new RulesEngine();
 
-        Player p = player("Cost", Faction.NARN);
-        CharacterCard freeChar  = charCard("c_free",  Faction.NARN, 0);
-        CharacterCard cheapChar = charCard("c_cheap", Faction.NARN, 2);
-        CharacterCard otherChar = charCard("c_other", Faction.MINBARI, 3);
+        Player p = player("Cost", Race.NARN);
+        CharacterCard freeChar  = charCard("c_free",  Loyalty.NARN, 0);
+        CharacterCard cheapChar = charCard("c_cheap", Loyalty.NARN, 2);
+        CharacterCard otherChar = charCard("c_other", Loyalty.MINBARI, 3);
 
         // 1: the default is 0 and negatives clamp (loader contract for the
         //    current data, which carries no cost key — B5-0311 C1).
         CharacterCard fresh = new CharacterCard("c_fresh", "Fresh",
-                "CHARACTER_NARN", Rarity.RARE, Faction.NARN, CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE,
                 "x", "text", 1, 1, 0, 1, false);
         check("CST", "a card without an explicit cost defaults to 0",
                 fresh.getCost() == 0);
@@ -4953,13 +4953,13 @@ public class HeadlessConformanceTest {
         check("CST", "recruit cost doubles for other-race loyal characters",
                 rules.recruitCost(p, otherChar) == 6);
         check("CST", "neutral characters cost no extra to recruit",
-                rules.recruitCost(p, charCard("c_neut", Faction.NEUTRAL, 3)) == 3);
+                rules.recruitCost(p, charCard("c_neut", Loyalty.NEUTRAL, 3)) == 3);
         check("E1", "double-cost helper identifies a different loyal race",
-                rules.isDoubleCostRequired(otherChar, Faction.NARN));
+                rules.isDoubleCostRequired(otherChar, Race.NARN));
         check("E1", "double-cost helper exempts neutral and matching race",
-                !rules.isDoubleCostRequired(charCard("e1_neut", Faction.NEUTRAL, 3), Faction.NARN)
-                && !rules.isDoubleCostRequired(cheapChar, Faction.NARN));
-        Player discounted = player("Discounted cost", Faction.NARN);
+                !rules.isDoubleCostRequired(charCard("e1_neut", Loyalty.NEUTRAL, 3), Race.NARN)
+                && !rules.isDoubleCostRequired(cheapChar, Race.NARN));
+        Player discounted = player("Discounted cost", Race.NARN);
         discounted.grantSponsorDiscount(1);
         check("E1", "double-cost base composes before assistant discount",
                 rules.baseRecruitCost(discounted, otherChar) == 6
@@ -5024,10 +5024,10 @@ public class HeadlessConformanceTest {
     private static void testFreeParticipantWaiver() {
         System.out.println("E3 (B5-0374): free-participant effect and join path");
         RulesEngine rules = new RulesEngine();
-        Player initiator = player("Free participant initiator", Faction.NARN);
-        Player joiner = player("Free participant joiner", Faction.HUMAN);
+        Player initiator = player("Free participant initiator", Race.NARN);
+        Player joiner = player("Free participant joiner", Race.HUMAN);
         FleetCard nonAlignedFleet = new FleetCard("e3_na_fleet", "Fixture fleet",
-                "FLEET", Rarity.COMMON, Faction.NON_ALIGNED, CardSet.PREMIERE,
+                "FLEET", Rarity.COMMON, Loyalty.NON_ALIGNED, CardSet.PREMIERE,
                 "x", "fixture", 1);
         joiner.addFleet(nonAlignedFleet);
         ConflictCard card = conflictCard("conf_non_aligned_support",
@@ -5052,12 +5052,12 @@ public class HeadlessConformanceTest {
 
     private static void testAppliedInfluencePool() {
         System.out.println("D9 (B5-0369): Rating versus applied influence pool");
-        Player p = player("D9", Faction.NARN);
+        Player p = player("D9", Race.NARN);
         check("D9", "pool starts at the Influence Rating",
                 p.getInfluence() == 4 && p.getAppliedPool() == 4);
         check("D9", "applying the full pool leaves Rating unchanged",
                 p.applyInfluence(4) && p.getInfluence() == 4 && p.getAppliedPool() == 0);
-        new RulesEngine().startRound(state(p, player("D9round", Faction.MINBARI)));
+        new RulesEngine().startRound(state(p, player("D9round", Race.MINBARI)));
         check("D9", "start-round restoration resets pool to Rating", p.getAppliedPool() == 4);
         p.gainInfluence(2);
         check("D9", "permanent gain raises Rating and spendable pool",
@@ -5070,12 +5070,12 @@ public class HeadlessConformanceTest {
         p.gainInfluence(7);
         CharacterCard builder = p.getAmbassador();
         new RulesEngine().executeBuildInfluence(p, builder,
-                state(p, player("D9x", Faction.MINBARI)));
+                state(p, player("D9x", Race.MINBARI)));
         check("D9", "Build Influence applies 3 and permanently raises Rating by 1",
                 p.getInfluence() == 10 && p.getAppliedPool() == 7);
         check("D9", "Rating 10 blocks another Build Influence action",
                 !new RulesEngine().canBuildInfluence(p));
-        Player winner = player("D9win", Faction.NARN);
+        Player winner = player("D9win", Race.NARN);
         winner.gainInfluence(16);
         winner.applyInfluence(4);
         check("D9", "victory reads Rating when applied pool is empty",
@@ -5084,7 +5084,7 @@ public class HeadlessConformanceTest {
 
     private static void testAIScoring() {
         System.out.println("AIS (B5-0324): cost-aware AI scoring");
-        Player aiP = player("AIs", Faction.NARN);
+        Player aiP = player("AIs", Race.NARN);
         aiP.gainInfluence(6); // 10 → Build Influence offers are out of the way
         aiP.gainInfluence(10); // B5-0344 re-anchor: 20 → the INFLUENCE_20
                                // agenda's proximity score is 9, restoring the
@@ -5092,10 +5092,10 @@ public class HeadlessConformanceTest {
         GameState st = state(aiP);
 
         AgendaCard agenda = new AgendaCard("ais_ag", "Test Agenda",
-                "AGENDA", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "AGENDA", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", false, "INFLUENCE_20");
         LocationCard loc = new LocationCard("ais_loc", "Test Location",
-                "LOCATION", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "LOCATION", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", 1);
         aiP.addToHand(agenda);
         aiP.addToHand(loc);
@@ -5133,8 +5133,8 @@ public class HeadlessConformanceTest {
         //    and flips when costs flip.
         aiP.removeFromHand(agenda);
         aiP.removeFromHand(loc);
-        CharacterCard freeChar   = charCard("ais_free",   Faction.NARN, 0);
-        CharacterCard costlyChar = charCard("ais_costly", Faction.NARN, 3);
+        CharacterCard freeChar   = charCard("ais_free",   Loyalty.NARN, 0);
+        CharacterCard costlyChar = charCard("ais_costly", Loyalty.NARN, 3);
         aiP.addToHand(freeChar);
         aiP.addToHand(costlyChar);
         check("AIS", "MEDIUM: prefers the cheaper recruit (5 vs 2)",
@@ -5153,8 +5153,8 @@ public class HeadlessConformanceTest {
 
         // 1: the station starts at the recorded design value (0); nothing in
         //    the engine moves it (B5-0354 research: no card data exists).
-        Player a = player("STA1", Faction.NARN);
-        Player b = player("STA2", Faction.MINBARI);
+        Player a = player("STA1", Race.NARN);
+        Player b = player("STA2", Race.MINBARI);
         GameState st = state(a, b);
         check("STA", "station starts at STATION_START_INFLUENCE (0)",
                 st.getStation().getInfluence() == Babylon5Station.STATION_START_INFLUENCE);
@@ -5182,7 +5182,7 @@ public class HeadlessConformanceTest {
         // 5: a major-agenda holder is standard-ineligible: never crowned by
         //    condition 2, and does not block an eligible leader's crown.
         b.setAgenda(new AgendaCard("sta_major", "Major Agenda", "AGENDA_MAJOR",
-                Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE, "x", "text",
+                Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE, "x", "text",
                 true, "INFLUENCE_20"));
         check("STA", "station 20: major-agenda holder is not crowned",
                 rules.checkVictory(st) != b);
@@ -5211,7 +5211,7 @@ public class HeadlessConformanceTest {
      *  section, line 1835): Centauri-loyal location, influencePerRound 2. */
     private static LocationCard stationHookLoc() {
         return new LocationCard("loc_b5", "Caster",
-                "LOCATION_CENTAURI", Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE,
+                "LOCATION_CENTAURI", Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE,
                 "x", "text", 2, 3);
     }
 
@@ -5219,12 +5219,12 @@ public class HeadlessConformanceTest {
         System.out.println("STH (B5-0437): station-influence card hooks (0428 proposal)");
         RulesEngine rules = new RulesEngine();
 
-        Player narn = player("STH-Narn", Faction.NARN);
-        Player centauri = player("STH-Cent", Faction.CENTAURI);
+        Player narn = player("STH-Narn", Race.NARN);
+        Player centauri = player("STH-Cent", Race.CENTAURI);
         LocationCard loc = stationHookLoc();
         centauri.getLocations().add(loc);
         GameState st = state(narn, centauri);
-        st.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
+        st.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
         rules.startRound(st);
 
         // 1: no-source guard — decay on a round boundary only when no source
@@ -5275,7 +5275,7 @@ public class HeadlessConformanceTest {
         // 6: presence-bleed — a Vorlon player holding a captured location
         //    raises vorlon influence 1 at the boundary, which also guards
         //    against decay in the same pass.
-        Player vorlon = player("STH-Vor", Faction.VORLON);
+        Player vorlon = player("STH-Vor", Race.VORLON);
         LocationCard vloc = stationHookLoc();
         vloc.setCapturedBy(vorlon);
         vorlon.getLocations().add(vloc);
@@ -5294,12 +5294,12 @@ public class HeadlessConformanceTest {
         // 7: isolation — the B5-0354 trap. The capture/bleed hooks raise the
         //    station ratings; Support Babylon 5 player-side effects are not
         //    consulted (stationSourceFired moves no player influence).
-        Player narn2 = player("STH-Narn2", Faction.NARN);
-        Player cent2 = player("STH-Cent2", Faction.CENTAURI);
+        Player narn2 = player("STH-Narn2", Race.NARN);
+        Player cent2 = player("STH-Cent2", Race.CENTAURI);
         LocationCard loc2 = stationHookLoc();
         cent2.getLocations().add(loc2);
         GameState st4 = state(narn2, cent2);
-        st4.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
+        st4.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
         int narnInfBefore = narn2.getInfluence();
         rules.startRound(st4);
         Conflict capWar2 = rules.declareWarConflict(narn2, WarKind.LOCATION_TARGET,
@@ -5323,8 +5323,8 @@ public class HeadlessConformanceTest {
 
     private static void testAESScoring() {
         System.out.println("AES (B5-0344): agenda/aftermath/event AI scoring");
-        Player p = player("AES", Faction.NARN);
-        Player rival = player("AESR", Faction.MINBARI);
+        Player p = player("AES", Race.NARN);
+        Player rival = player("AESR", Race.MINBARI);
         GameState st = state(p, rival);
         AIPlayer med = new AIPlayer(p, AIDifficulty.MEDIUM);
         AIPlayer hard = new AIPlayer(p, AIDifficulty.HARD);
@@ -5334,11 +5334,11 @@ public class HeadlessConformanceTest {
         // 1: MEDIUM takes an agenda whose condition is already met — playing
         //    it wins at the next victory check (proximity score 9).
         AgendaCard sup = new AgendaCard("aes_sup", "Supremacy Agenda",
-                "AGENDA", Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "text",
+                "AGENDA", Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "text",
                 false, "MILITARY_SUPREMACY");
         p.addToHand(sup);
         FleetCard fleet = new FleetCard("aes_f1", "Grand Fleet", "FLEET",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "text", 4);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 4);
         p.getFleets().add(fleet);
         check("AES", "MEDIUM plays a win-on-play agenda",
                 med.chooseAction(st, p).getCard() == sup);
@@ -5346,7 +5346,7 @@ public class HeadlessConformanceTest {
 
         // 2: the same agenda is declined when its condition is far from met
         //    (proximity 0; a free recruit scores 5 and wins the table).
-        CharacterCard recruit = charCard("aes_char", Faction.NARN, 0);
+        CharacterCard recruit = charCard("aes_char", Loyalty.NARN, 0);
         p.addToHand(recruit);
         check("AES", "MEDIUM declines a far agenda and recruits instead",
                 med.chooseAction(st, p).getCard() == recruit);
@@ -5357,9 +5357,9 @@ public class HeadlessConformanceTest {
         // 3: events gain catch-up value for the trailing player (both cost 0:
         //    event 2+3=5 beats the group's flat 4).
         EventCard ev = new EventCard("aes_ev", "Catch-Up Event", "EVENT",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text");
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text");
         GroupCard grp = new GroupCard("aes_grp", "Useful Group", "GROUP",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text");
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text");
         p.loseInfluence(0);          // p stays at 10: Build Influence stays
                                      // suppressed so the signal is not drowned
         rival.gainInfluence(9);      // rival 13 vs p 10: p trails by 3 → bonus capped 3
@@ -5400,10 +5400,10 @@ public class HeadlessConformanceTest {
         rival.gainInfluence(2);      // rival 15: ties p — the sole legal
                                      // target is still leadingPlayer's pick
         ConflictCard hope = new ConflictCard("aes_hope", "Hope Strike",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 0);
         CharacterCard rivalBig = new CharacterCard("aes_rbig", "Rival Grand Char",
-                "CHARACTER_MINBARI", Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE,
+                "CHARACTER_MINBARI", Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 3, 0, 0, 0, false);
         rival.getInnerCircle().add(rivalBig);      // rival diplomacy 6 vs p 3
         p.addToHand(hope);
@@ -5453,8 +5453,8 @@ public class HeadlessConformanceTest {
         System.out.println("LEAD (B5-0362): LEAD_FLEET factory, offers, controller handler, expiry");
         RulesEngine rules = new RulesEngine();
 
-        Player p = player("LEADp", Faction.NARN);
-        Player r = player("LEADr", Faction.MINBARI);
+        Player p = player("LEADp", Race.NARN);
+        Player r = player("LEADr", Race.MINBARI);
         GameState st = state(p, r);
         FleetCard fl = fleetCard("lead_fl", "FRIGATE");   // Military 3
         p.getFleets().add(fl);
@@ -5568,15 +5568,15 @@ public class HeadlessConformanceTest {
         System.out.println("AGL (B5-0364): agenda lifecycle — sponsor/discard/replace/reveal");
         RulesEngine rules = new RulesEngine();
 
-        Player p = player("AGLp", Faction.NARN);
-        Player r = player("AGLr", Faction.MINBARI);
+        Player p = player("AGLp", Race.NARN);
+        Player r = player("AGLr", Race.MINBARI);
         GameState st = state(p, r);
-        AgendaCard minor   = agendaCard("agl_minor", false, Faction.ANY);
-        AgendaCard minor2  = agendaCard("agl_minor2", false, Faction.ANY);
-        AgendaCard minor3  = agendaCard("agl_minor3", false, Faction.ANY);
-        AgendaCard major   = agendaCard("agl_major", true, Faction.ANY);
-        AgendaCard major2  = agendaCard("agl_major2", true, Faction.ANY);
-        AgendaCard foreign = agendaCard("agl_foreign", false, Faction.HUMAN);
+        AgendaCard minor   = agendaCard("agl_minor", false, Loyalty.ANY);
+        AgendaCard minor2  = agendaCard("agl_minor2", false, Loyalty.ANY);
+        AgendaCard minor3  = agendaCard("agl_minor3", false, Loyalty.ANY);
+        AgendaCard major   = agendaCard("agl_major", true, Loyalty.ANY);
+        AgendaCard major2  = agendaCard("agl_major2", true, Loyalty.ANY);
+        AgendaCard foreign = agendaCard("agl_foreign", false, Loyalty.HUMAN);
 
         // 1: sponsor legality — one agenda in play at a time (:520).
         check("AGL", "sponsor legal with an empty agenda slot",
@@ -5668,7 +5668,7 @@ public class HeadlessConformanceTest {
         //     old agenda REMOVED FROM THE GAME (:719 — never the discard pile).
         //     minor4 is fresh here (never discarded above), so the discard-pile
         //     assertion tests the replace path itself, not 5b's earlier discard.
-        AgendaCard minor4 = agendaCard("agl_minor4", false, Faction.ANY);
+        AgendaCard minor4 = agendaCard("agl_minor4", false, Loyalty.ANY);
         p.setAgenda(minor4);
         handler.invoke(gc, p, GameAction.replaceAgenda(minor2, leader));
         check("AGL", "REPLACE executes: new agenda seated, IC leader rotated",
@@ -5689,7 +5689,7 @@ public class HeadlessConformanceTest {
 
         // 6: hidden sponsor + inertness + reveal (:520 — a face-down agenda
         //    has no effect on play until revealed).
-        AgendaCard hidden = agendaCard("agl_hidden", false, Faction.ANY);
+        AgendaCard hidden = agendaCard("agl_hidden", false, Loyalty.ANY);
         p.getHand().add(hidden);
         handler.invoke(gc, p, GameAction.playAgendaFaceDown(hidden));
         check("AGL", "hidden sponsor: seated face-down, left the hand",
@@ -5706,12 +5706,12 @@ public class HeadlessConformanceTest {
 
         // 7: startRound guard — a hidden agenda grants no round income until
         //    revealed (de_agenda_servants_of_order needs 2+ IC characters).
-        Player q  = player("AGLq", Faction.CENTAURI);
-        Player q2 = player("AGLq2", Faction.HUMAN);
+        Player q  = player("AGLq", Race.CENTAURI);
+        Player q2 = player("AGLq2", Race.HUMAN);
         GameState sq = state(q, q2);
         q.getInnerCircle().add(leaderCard("agl_qic", 2));
         AgendaCard income = new AgendaCard("de_agenda_servants_of_order",
-                "Servants of Order", "AGENDA", Rarity.COMMON, Faction.ANY,
+                "Servants of Order", "AGENDA", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text", false, "INFLUENCE_20");
         q.setAgenda(income);
         income.setFaceDown(true);
@@ -5729,18 +5729,18 @@ public class HeadlessConformanceTest {
     // ── B5-0365: contingencies ───────────────────────────────────────────────
     private static void testContingencies() throws Exception {
         System.out.println("CON (B5-0365): contingency placement, reveal, event parity");
-        Player p = player("CONp", Faction.NARN);
+        Player p = player("CONp", Race.NARN);
         RulesEngine rules = new RulesEngine();
         CharacterCard host = p.getAmbassador();
         ContingencyCard card = new ContingencyCard("event_merchandising_b5",
-                "Fixture Contingency", "CHARACTER", Rarity.COMMON, Faction.ANY,
+                "Fixture Contingency", "CHARACTER", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "fixture", "CHARACTER", "NARN",
                 "WHEN_REVEALED_FIXTURE");
         p.addToHand(card);
         check("CON", "typed target rejects non-character", !card.canTarget(event("CONwrong")));
         check("CON", "fixture target type and race match host", card.canTarget(host));
         CharacterCard neutralNarn = new CharacterCard("CONrace", "Race Fixture",
-                "CHARACTER_NARN", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "fixture", 1, 1, 1, 1, false);
         check("CON", "race target reads card race, not controlling faction",
                 card.canTarget(neutralNarn));
@@ -5771,12 +5771,12 @@ public class HeadlessConformanceTest {
         // B5-2243: placement opens the real controller's reveal-or-pass
         // window. The AI owns the placed contingency and reveals it during
         // the window without spending a second action.
-        Player windowPlayer = player("CONwindow", Faction.NARN);
+        Player windowPlayer = player("CONwindow", Race.NARN);
         GameState windowState = state(windowPlayer);
         CharacterCard windowHost = windowPlayer.getAmbassador();
         ContingencyCard windowCard = new ContingencyCard(
                 "event_merchandising_b5", "Window Contingency", "CHARACTER",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "fixture",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "fixture",
                 "CHARACTER", "NARN", "WHEN_REVEALED_FIXTURE");
         windowPlayer.getHand().clear();
         windowPlayer.addToHand(windowCard);
@@ -5823,8 +5823,8 @@ public class HeadlessConformanceTest {
         System.out.println("ROT (B5-0366): generic rotate-for-effect action");
         RulesEngine rules = new RulesEngine();
 
-        Player p  = player("ROTp", Faction.NARN);
-        Player p2 = player("ROTr", Faction.MINBARI);
+        Player p  = player("ROTp", Race.NARN);
+        Player p2 = player("ROTr", Race.MINBARI);
         GameState st = state(p, p2);
         CharacterCard amb = p.getAmbassador();
         CharacterCard ch  = leaderCard("rot_ch", 2);
@@ -5868,8 +5868,8 @@ public class HeadlessConformanceTest {
                 && amb.getPrimaryStatValue(ConflictType.PSI) == 3);
 
         // 4: the discount executor matches B5-0339 exactly.
-        Player pd = player("ROTdisc", Faction.NARN);
-        Player pd2 = player("ROTdisc2", Faction.MINBARI);
+        Player pd = player("ROTdisc", Race.NARN);
+        Player pd2 = player("ROTdisc2", Race.MINBARI);
         GameState tstd = state(pd, pd2);
         CharacterCard chd = leaderCard("rot_chd", 2);
         pd.getSupportingRole().add(chd);
@@ -5891,8 +5891,8 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
 
         // 1: begin sustained leadership boost
-        Player p  = player("SUSp", Faction.NARN);
-        Player p2 = player("SUTr", Faction.MINBARI);
+        Player p  = player("SUSp", Race.NARN);
+        Player p2 = player("SUTr", Race.MINBARI);
         GameState st = state(p, p2);
         CharacterCard ch = leaderCard("sus_ch", 3);
         FleetCard fl = fleetCard("sus_fl", "FRIGATE");
@@ -5967,8 +5967,8 @@ public class HeadlessConformanceTest {
                 fl.getEffectiveMilitary() == 3);
 
         // 4: sustained assistant bonus
-        Player pA  = player("SUSA", Faction.NARN);
-        Player pA2 = player("SUSA2", Faction.MINBARI);
+        Player pA  = player("SUSA", Race.NARN);
+        Player pA2 = player("SUSA2", Race.MINBARI);
         GameState stA = state(pA, pA2);
         CharacterCard ambA = pA.getAmbassador();
         CharacterCard asstA = leaderCard("sus_asst", 1);
@@ -5997,8 +5997,8 @@ public class HeadlessConformanceTest {
         // the flag lived solely on the ambassador, so startRound unrotated the
         // assistant and left the +1 in place, and the ambassador kept a
         // Diplomacy/Intrigue/Leadership boost that nobody was paying for.
-        Player pU  = player("SUSU", Faction.NARN);
-        Player pU2 = player("SUSU2", Faction.MINBARI);
+        Player pU  = player("SUSU", Race.NARN);
+        Player pU2 = player("SUSU2", Race.MINBARI);
         GameState stU = state(pU, pU2);
         CharacterCard ambU = pU.getAmbassador();
         CharacterCard asstU = leaderCard("sus_unsustained_asst", 1);
@@ -6013,8 +6013,8 @@ public class HeadlessConformanceTest {
                 && ambU.getPrimaryStatValue(ConflictType.DIPLOMACY) == 3);
 
         // 5: cannot sustain twice with same source
-        Player pB  = player("SUSB", Faction.NARN);
-        Player pB2 = player("SUSB2", Faction.MINBARI);
+        Player pB  = player("SUSB", Race.NARN);
+        Player pB2 = player("SUSB2", Race.MINBARI);
         GameState stB = state(pB, pB2);
         CharacterCard chB = leaderCard("sus_chB", 2);
         FleetCard flB = fleetCard("sus_flB", "FRIGATE");
@@ -6028,8 +6028,8 @@ public class HeadlessConformanceTest {
                 flB.getLeader() == chB);
 
         // 6: clearPlayerSustainedActions at game end
-        Player pC  = player("SUSC", Faction.NARN);
-        Player pC2 = player("SUSC2", Faction.MINBARI);
+        Player pC  = player("SUSC", Race.NARN);
+        Player pC2 = player("SUSC2", Race.MINBARI);
         GameState stC = state(pC, pC2);
         CharacterCard chC = leaderCard("sus_chC", 2);
         FleetCard flC = fleetCard("sus_flC", "FRIGATE");
@@ -6049,8 +6049,8 @@ public class HeadlessConformanceTest {
 
         // 5: the controller branch consumes exactly one action and refuses
         //    illegal pairs as logged no-ops (rotated assistant reused).
-        Player pc = player("ROTctl", Faction.NARN);
-        Player pc2 = player("ROTctl2", Faction.MINBARI);
+        Player pc = player("ROTctl", Race.NARN);
+        Player pc2 = player("ROTctl2", Race.MINBARI);
         GameState stc = state(pc, pc2);
         GameController gcc = new GameController(stc, new ArrayList<AIPlayer>(),
                 new GameStateCallback() { public void accept(GameState gs) { } });
@@ -6094,7 +6094,7 @@ public class HeadlessConformanceTest {
 
     private static void testBonusLayer() {
         System.out.println("BON (B5-0367): registry, read path, expiry and composition");
-        Player p = player("Bonus", Faction.NARN);
+        Player p = player("Bonus", Race.NARN);
         FleetCard fleet = fleetCard("bon_fleet", "FRIGATE");
         p.getFleets().add(fleet);
         fleet.setOwner(p);
@@ -6121,7 +6121,7 @@ public class HeadlessConformanceTest {
                 ch.getPrimaryStatValue(ConflictType.DIPLOMACY) == 2);
 
         CharacterCard zeroPsi = new CharacterCard("bon_psi", "Psi", "CHARACTER_NARN",
-                Rarity.COMMON, Faction.NARN, CardSet.PREMIERE, "x", "", 1, 1, 0, 1, false);
+                Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE, "x", "", 1, 1, 0, 1, false);
         zeroPsi.setOwner(p);
         p.grantBonus(StatBonus.attached("generic", StatKey.PSI, 1,
                 zeroPsi.getId(), Expiry.WHILE_IN_PLAY, 1));
@@ -6136,14 +6136,14 @@ public class HeadlessConformanceTest {
                 fleet.getId(), Expiry.END_OF_TURN, 1));
         p.grantBonus(StatBonus.attached("lasting", StatKey.MILITARY, 1,
                 fleet.getId(), Expiry.WHILE_IN_PLAY, 1));
-        GameState st = state(p, player("Bonus2", Faction.MINBARI));
+        GameState st = state(p, player("Bonus2", Race.MINBARI));
         st.advanceRound();
         check("BON", "round boundary expires turn bonus and keeps in-play bonus",
                 fleet.getEffectiveMilitary() == 7);
 
-        Player penalized = player("Penalty", Faction.NARN);
+        Player penalized = player("Penalty", Race.NARN);
         FleetCard zeroFleet = new FleetCard("bon_zero", "Zero", "FLEET", Rarity.COMMON,
-                Faction.NARN, CardSet.PREMIERE, "x", "", 1);
+                Loyalty.NARN, CardSet.PREMIERE, "x", "", 1);
         zeroFleet.setOwner(penalized);
         penalized.getFleets().add(zeroFleet);
         penalized.grantBonus(StatBonus.attached("penalty", StatKey.MILITARY, -3,
@@ -6162,7 +6162,7 @@ public class HeadlessConformanceTest {
     private static void testDamageNeutralization() {
         System.out.println("DMG (B5-0368): damage, neutralization, overflow and action lock");
         CharacterCard ch = new CharacterCard("dmg_char", "Damaged", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 2, 3, 1, 1, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 2, 3, 1, 1, false);
         check("DMG", "one damage reduces each ability by one",
                 ch.applyDamage(1) == 0
                 && ch.getPrimaryStatValue(ConflictType.DIPLOMACY) == 1
@@ -6172,7 +6172,7 @@ public class HeadlessConformanceTest {
                 && ch.getPrimaryStatValue(ConflictType.PSI) == 0);
 
         CharacterCard overflow = new CharacterCard("dmg_over", "Overflow", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 2, 3, 1, 1, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 2, 3, 1, 1, false);
         check("DMG", "neutralization removes threshold tokens and preserves severe overflow",
                 overflow.applyDamage(5) == 2 && overflow.isNeutralized()
                 && overflow.isFaceDown() && overflow.getDamageTokens() == 0
@@ -6182,8 +6182,8 @@ public class HeadlessConformanceTest {
                 overflow.getSevereDamageTokens() == 2);
 
         CharacterCard locked = new CharacterCard("dmg_lock", "Lock", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 2, 1, 0, 0, false);
-        Player owner = player("DmgOwner", Faction.NARN);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 2, 1, 0, 0, false);
+        Player owner = player("DmgOwner", Race.NARN);
         owner.getInnerCircle().add(locked);
         owner.getAmbassador().rotate();
         locked.applyDamage(2);
@@ -6191,11 +6191,11 @@ public class HeadlessConformanceTest {
         check("DMG", "healing does not clear this-turn action lock",
                 locked.canActAfterNeutralization() == false
                 && !new RulesEngine().canBuildInfluence(owner));
-        new RulesEngine().startRound(state(owner, player("DmgOther", Faction.MINBARI)));
+        new RulesEngine().startRound(state(owner, player("DmgOther", Race.MINBARI)));
         check("DMG", "next round clears neutralized action lock",
                 locked.canActAfterNeutralization());
 
-        Player fleetOwner = player("DmgFleet", Faction.NARN);
+        Player fleetOwner = player("DmgFleet", Race.NARN);
         FleetCard fleet = fleetCard("dmg_fleet", "FRIGATE");
         CharacterCard leader = leaderCard("dmg_leader", 2);
         fleetOwner.getFleets().add(fleet);
@@ -6209,7 +6209,7 @@ public class HeadlessConformanceTest {
                 && leader.getSevereDamageTokens() == 0);
 
         CharacterCard legacy = new CharacterCard("dmg_legacy", "Legacy", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 2, 2, 0, 0, true);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 2, 2, 0, 0, true);
         legacy.damage();
         check("DMG", "B5-0309 conflict damage remains a face-down flip without normal tokens",
                 legacy.isFaceDown() && legacy.getDamageTokens() == 0);
@@ -6218,12 +6218,12 @@ public class HeadlessConformanceTest {
     private static void testAttackParticipant() throws Exception {
         System.out.println("ATK (B5-0370): attack legality, damage and action plumbing");
         RulesEngine rules = new RulesEngine();
-        Player attackerOwner = player("AtkNarn", Faction.NARN);
-        Player targetOwner = player("AtkMinbari", Faction.MINBARI);
+        Player attackerOwner = player("AtkNarn", Race.NARN);
+        Player targetOwner = player("AtkMinbari", Race.MINBARI);
         CharacterCard attacker = new CharacterCard("atk_a", "Attacker", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 3, 1, 0, 1, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 3, 1, 0, 1, false);
         CharacterCard target = new CharacterCard("atk_t", "Target", "CHARACTER_MINBARI",
-                Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
+                Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
         attackerOwner.getSupportingRole().add(attacker);
         targetOwner.getInnerCircle().add(target);
         Conflict conflict = new Conflict(conflictCard("atk_conf", ConflictType.DIPLOMACY, null),
@@ -6256,12 +6256,12 @@ public class HeadlessConformanceTest {
                 !rules.canAttackConflictParticipant(attackerOwner, readyVsNeutralized,
                         target, conflict));
 
-        Player strifeOwner = player("AtkStrife", Faction.NARN);
-        Player strifeTargetOwner = player("AtkStrifeTarget", Faction.MINBARI);
+        Player strifeOwner = player("AtkStrife", Race.NARN);
+        Player strifeTargetOwner = player("AtkStrifeTarget", Race.MINBARI);
         CharacterCard strifeAttacker = new CharacterCard("atk_strife", "Strife", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
         CharacterCard strifeTarget = new CharacterCard("atk_strife_t", "Strife Target", "CHARACTER_MINBARI",
-                Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE, "x", "", 1, 0, 0, 0, false);
+                Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE, "x", "", 1, 0, 0, 0, false);
         strifeAttacker.setStrifeMarks(1);
         strifeOwner.getSupportingRole().add(strifeAttacker);
         strifeTargetOwner.getInnerCircle().add(strifeTarget);
@@ -6278,9 +6278,9 @@ public class HeadlessConformanceTest {
                 && strifeTarget.getSevereDamageTokens() == 3
                 && strifeAttacker.getDamageTokens() == 1);
 
-        Player sameRace = player("AtkNarn2", Faction.NARN);
+        Player sameRace = player("AtkNarn2", Race.NARN);
         CharacterCard sameRaceTarget = new CharacterCard("atk_same", "Same Race", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
         sameRace.getInnerCircle().add(sameRaceTarget);
         CharacterCard readySame = leaderCard("atk_ready", 2);
         attackerOwner.getSupportingRole().add(readySame);
@@ -6294,7 +6294,7 @@ public class HeadlessConformanceTest {
                         readySame, sameRaceTarget, sameRaceConflict));
 
         CharacterCard uncommitted = new CharacterCard("atk_uncommitted", "Uncommitted", "CHARACTER_MINBARI",
-                Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
+                Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE, "x", "", 2, 1, 0, 1, false);
         targetOwner.getInnerCircle().add(uncommitted);
         CharacterCard readyTargetCase = leaderCard("atk_ready2", 2);
         attackerOwner.getSupportingRole().add(readyTargetCase);
@@ -6302,7 +6302,7 @@ public class HeadlessConformanceTest {
                 !rules.canAttackConflictParticipant(attackerOwner,
                         readyTargetCase, uncommitted, conflict));
 
-        Player fleetOwner = player("AtkFleet", Faction.MINBARI);
+        Player fleetOwner = player("AtkFleet", Race.MINBARI);
         FleetCard fleet = fleetCard("atk_fleet", "FRIGATE");
         CharacterCard fleetLeader = leaderCard("atk_fleet_leader", 2);
         fleetOwner.getFleets().add(fleet);
@@ -6322,7 +6322,7 @@ public class HeadlessConformanceTest {
                         readyLeaderCase, fleetLeader, leaderConflict));
 
         CharacterCard zeroAbility = new CharacterCard("atk_zero", "Zero", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 0, 1, 0, 0, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 0, 1, 0, 0, false);
         attackerOwner.getSupportingRole().add(zeroAbility);
         conflict.commitCard(targetOwner, uncommitted, false);
         uncommitted.rotate();
@@ -6347,7 +6347,7 @@ public class HeadlessConformanceTest {
     private static void testHealRepair() throws Exception {
         System.out.println("HLR (B5-0371): character healing and pool-paid repair");
         RulesEngine rules = new RulesEngine();
-        Player p = player("HealRepair", Faction.NARN);
+        Player p = player("HealRepair", Race.NARN);
         CharacterCard amb = p.getAmbassador();
         amb.applyDamage(1);
         check("HLR", "ready damaged Inner Circle character may heal", rules.canHealCharacter(p, amb));
@@ -6357,7 +6357,7 @@ public class HeadlessConformanceTest {
         check("HLR", "same-turn healed character cannot take another action",
                 !rules.canHealCharacter(p, amb));
 
-        Player repairOwner = player("Repair", Faction.NARN);
+        Player repairOwner = player("Repair", Race.NARN);
         FleetCard fleet = fleetCard("repair_fleet", "FRIGATE");
         repairOwner.getFleets().add(fleet);
         fleet.applyDamage(2);
@@ -6379,7 +6379,7 @@ public class HeadlessConformanceTest {
                 && repairOwner.getAppliedPool() == 0
                 && repairOwner.getActionsLeft() == 1);
 
-        Player shortPool = player("ShortPool", Faction.NARN);
+        Player shortPool = player("ShortPool", Race.NARN);
         FleetCard costly = fleetCard("repair_costly", "FRIGATE");
         shortPool.getFleets().add(costly);
         costly.applyDamage(2);
@@ -6389,7 +6389,7 @@ public class HeadlessConformanceTest {
                 && costly.getDamageTokens() == 2 && !costly.isRotated()
                 && shortPool.getAppliedPool() == 1);
 
-        Player severeOwner = player("SevereHeal", Faction.NARN);
+        Player severeOwner = player("SevereHeal", Race.NARN);
         CharacterCard severe = severeOwner.getAmbassador();
         severe.applyDamage(4);
         check("HLR", "neutralization creates severe overflow for healing steps",
@@ -6399,9 +6399,9 @@ public class HeadlessConformanceTest {
                 rules.executeHealCharacter(severeOwner, severe, state(severeOwner))
                 && severe.getSevereDamageTokens() == 0 && severe.isNeutralized());
 
-        Player aid = player("Aid", Faction.NARN);
+        Player aid = player("Aid", Race.NARN);
         CharacterCard aided = new CharacterCard("aid_member", "Aid Member", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "", 2, 2, 0, 1, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "", 2, 2, 0, 1, false);
         aid.getInnerCircle().add(aided);
         aid.getAmbassador().applyDamage(1);
         check("HLR", "undamaged IC member may rotate as ambassador aid",
@@ -6424,11 +6424,11 @@ public class HeadlessConformanceTest {
         RulesEngine rules = new RulesEngine();
 
         // ── Fixture: two players genuinely at war. ─────────────────────────────
-        Player surrendering = player("Surrendering", Faction.HUMAN);
-        Player opponent     = player("Opponent",     Faction.MINBARI);
+        Player surrendering = player("Surrendering", Race.HUMAN);
+        Player opponent     = player("Opponent",     Race.MINBARI);
         GameState stWar    = state(surrendering, opponent);
         // :816+a — acquire a war between the two factions via the tension matrix.
-        stWar.getTensionMatrix().enterWar(Faction.HUMAN, Faction.MINBARI);
+        stWar.getTensionMatrix().enterWar(Race.HUMAN, Race.MINBARI);
 
         // Both players enter the Discard Round (DRAW phase). B5-0661 is only
         // legal there; we pin the phase explicitly for the legality checks.
@@ -6448,8 +6448,8 @@ public class HeadlessConformanceTest {
 
         // ── B. legality: at-war requirement. ─────────────────────────────────────
         // Two HUMAN players are not at war → surrender refused.
-        Player humanA = player("HA", Faction.HUMAN);
-        Player humanB = player("HB", Faction.HUMAN);
+        Player humanA = player("HA", Race.HUMAN);
+        Player humanB = player("HB", Race.HUMAN);
         GameState stPeace = state(humanA, humanB);
         stPeace.setPhase(GamePhase.DRAW);
         // Player.actionsLeft defaults to 1 via the constructor; no setter exists.
@@ -6457,10 +6457,10 @@ public class HeadlessConformanceTest {
                 !rules.canSurrender(humanA, humanB, stPeace));
 
         // ── C. legality: surrendering player's ambassador must be in play. ───────
-        Player noAmb = player("NoAmb", Faction.CENTAURI);
-        Player validOpp = player("ValidOpp", Faction.MINBARI);
+        Player noAmb = player("NoAmb", Race.CENTAURI);
+        Player validOpp = player("ValidOpp", Race.MINBARI);
         GameState stNoAmb = state(noAmb, validOpp);
-        stNoAmb.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.MINBARI);
+        stNoAmb.getTensionMatrix().enterWar(Race.CENTAURI, Race.MINBARI);
         stNoAmb.setPhase(GamePhase.DRAW);
         // Player.actionsLeft defaults to 1 via the constructor; no setter exists.
         noAmb.setAmbassador(null);   // no in-play ambassador → surrender illegal
@@ -6512,7 +6512,7 @@ public class HeadlessConformanceTest {
         // Place a ready, unrotated Inner Circle leader so the only blocker is the
         // asylum flag.
         CharacterCard icLeader = new CharacterCard("icLead", "IC Lead", "CHARACTER_MINBARI",
-                Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE, "x", "text", 1, 1, 0, 1, false);
+                Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE, "x", "text", 1, 1, 0, 1, false);
         opponent.getInnerCircle().add(icLeader);
         icLeader.rotate();
         CharacterCard asylumForPromo = asylumCard;
@@ -6531,15 +6531,15 @@ public class HeadlessConformanceTest {
         //    When every OTHER player has surrendered, the last remaining player
         //    scores a Major Victory (rulebook :821). We exercise this via
         //    checkVictory on a 2-player state where the opponent has surrendered. ─
-        Player lastPlayer = player("Last", Faction.CENTAURI);
-        Player otherPlayer = player("Other", Faction.NARN);
+        Player lastPlayer = player("Last", Race.CENTAURI);
+        Player otherPlayer = player("Other", Race.NARN);
         GameState stLast = state(lastPlayer, otherPlayer);
-        stLast.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
+        stLast.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
         stLast.setPhase(GamePhase.DRAW);
         CharacterCard lastAmb = new CharacterCard("lastAmb", "Last Amb", "CHARACTER_CENTAURI",
-                Rarity.RARE, Faction.CENTAURI, CardSet.PREMIERE, "x", "text", 2, 2, 0, 4, false);
+                Rarity.RARE, Loyalty.CENTAURI, CardSet.PREMIERE, "x", "text", 2, 2, 0, 4, false);
         CharacterCard otherAmb = new CharacterCard("otherAmb", "Other Amb", "CHARACTER_NARN",
-                Rarity.RARE, Faction.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 0, 4, false);
+                Rarity.RARE, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 0, 4, false);
         lastPlayer.setAmbassador(lastAmb);
         otherPlayer.setAmbassador(otherAmb);
         // Set influence so that lastPlayer can major-victory even after paying
@@ -6590,25 +6590,25 @@ public class HeadlessConformanceTest {
 
         // ── A. With no POWER bonus, getPower == getInfluence (the measured
         //    vacuity: Power ≡ Influence until a source breaks the equivalence). ──
-        Player a = player("PWRA", Faction.HUMAN);
+        Player a = player("PWRA", Race.HUMAN);
         check("PWR", "getPower equals influence when no POWER bonus is present",
                 a.getPower() == a.getInfluence() && a.getPower() == 4);
 
         // ── B. A POWER-tagged bonus raises Power above influence. ──
-        a.grantBonus(StatBonus.faction("pwr_src_a", StatKey.POWER, 3,
+        a.grantBonus(StatBonus.race("pwr_src_a", StatKey.POWER, 3,
                 a.getName(), Expiry.WHILE_IN_PLAY, 1));
         check("PWR", "a POWER-tagged bonus raises Power above influence",
                 a.getPower() == a.getInfluence() + 3 && a.getPower() == 7);
 
         // ── C. A non-POWER bonus does not move Power. ──
-        a.grantBonus(StatBonus.faction("pwr_src_b", StatKey.DIPLOMACY, 2,
+        a.grantBonus(StatBonus.race("pwr_src_b", StatKey.DIPLOMACY, 2,
                 a.getName(), Expiry.WHILE_IN_PLAY, 1));
         check("PWR", "a non-POWER bonus does not move Power",
                 a.getPower() == 7);
 
         // ── D. A negative POWER bonus pushes Power BELOW influence — the
         //    :1034 precondition becomes satisfiable and the gate fires. ──
-        a.grantBonus(StatBonus.faction("pwr_src_c", StatKey.POWER, -5,
+        a.grantBonus(StatBonus.race("pwr_src_c", StatKey.POWER, -5,
                 a.getName(), Expiry.WHILE_IN_PLAY, 1));
         check("PWR", "a negative POWER bonus pushes Power below influence",
                 a.getPower() < a.getInfluence());
@@ -6616,7 +6616,7 @@ public class HeadlessConformanceTest {
                 !rules.canAffectTarget(event("pwr_probe"), a));
 
         // ── E. The gate admits a target whose Power is at or above Influence. ──
-        Player b = player("PWRB", Faction.MINBARI);
+        Player b = player("PWRB", Race.MINBARI);
         check("PWR", "gate admits a target with Power == influence (no POWER bonus)",
                 rules.canAffectTarget(event("pwr_probe2"), b));
         a.removeBonusesBySource("pwr_src_c");
@@ -6653,31 +6653,31 @@ public class HeadlessConformanceTest {
                 "buildLegalActions", GameState.class, Player.class);
         build.setAccessible(true);
 
-        Player loser = player("Loser", Faction.CENTAURI);
-        Player rival = player("Rival", Faction.NARN);
-        Player other = player("Other", Faction.MINBARI);
+        Player loser = player("Loser", Race.CENTAURI);
+        Player rival = player("Rival", Race.NARN);
+        Player other = player("Other", Race.MINBARI);
         GameState stWar = state(loser, rival, other);
-        stWar.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
-        stWar.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.MINBARI);
+        stWar.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
+        stWar.getTensionMatrix().enterWar(Race.CENTAURI, Race.MINBARI);
 
-        Player loserW = player("LoserW", Faction.CENTAURI);
-        Player rivalW = player("RivalW", Faction.NARN);
-        Player otherW = player("OtherW", Faction.MINBARI);
+        Player loserW = player("LoserW", Race.CENTAURI);
+        Player rivalW = player("RivalW", Race.NARN);
+        Player otherW = player("OtherW", Race.MINBARI);
         GameState stPeace = state(loserW, rivalW, otherW);
 
-        Player loserA = player("LoserA", Faction.CENTAURI);
-        Player rivalA = player("RivalA", Faction.NARN);
-        Player otherA = player("OtherA", Faction.MINBARI);
+        Player loserA = player("LoserA", Race.CENTAURI);
+        Player rivalA = player("RivalA", Race.NARN);
+        Player otherA = player("OtherA", Race.MINBARI);
         GameState stWarA = state(loserA, rivalA, otherA);
-        stWarA.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
-        stWarA.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.MINBARI);
+        stWarA.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
+        stWarA.getTensionMatrix().enterWar(Race.CENTAURI, Race.MINBARI);
 
-        Player loserE = player("LoserE", Faction.CENTAURI);
-        Player rivalE = player("RivalE", Faction.NARN);
-        Player otherE = player("OtherE", Faction.MINBARI);
+        Player loserE = player("LoserE", Race.CENTAURI);
+        Player rivalE = player("RivalE", Race.NARN);
+        Player otherE = player("OtherE", Race.MINBARI);
         GameState stWarE = state(loserE, rivalE, otherE);
-        stWarE.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.NARN);
-        stWarE.getTensionMatrix().enterWar(Faction.CENTAURI, Faction.MINBARI);
+        stWarE.getTensionMatrix().enterWar(Race.CENTAURI, Race.NARN);
+        stWarE.getTensionMatrix().enterWar(Race.CENTAURI, Race.MINBARI);
 
         // Losing position: the RIVAL is raised so the loser trails the leader
         // by exactly the B5-0679 threshold (10 vs 4 = gap 6).
@@ -6762,7 +6762,7 @@ public class HeadlessConformanceTest {
     }
 
     // ── B5-0691: Civil War engine law, steps 2–4 of the B5-0669 proposal ──────
-    // Synthetic dual-race fixtures ONLY (two Players of one Faction): the
+    // Synthetic dual-race fixtures ONLY (two Players of one Race): the
     // B5-0669 card census found zero pool cards invoking any of these axes.
     // Asserts the row's minimums: unrest axis behaviour, same-race tension
     // substrate + :974 Non-Aggression, :992 entry (incl. single-faction
@@ -6773,8 +6773,8 @@ public class HeadlessConformanceTest {
         System.out.println("CWR (B5-0691): Civil War engine law (rulebook :990–:1009)");
 
         // ── A. Unrest axis: per-faction start values, clamps, own axis. ──
-        Player u1 = player("U1", Faction.HUMAN);
-        Player u2 = player("U2", Faction.NON_ALIGNED);
+        Player u1 = player("U1", Race.HUMAN);
+        Player u2 = player("U2", Race.NON_ALIGNED);
         check("CWR", "unrest starts at 1 (:278)", u1.getUnrest() == 1);
         check("CWR", "Non-Aligned unrest starts at 2 (:888)", u2.getUnrest() == 2);
         u1.raiseUnrest(3);
@@ -6786,9 +6786,9 @@ public class HeadlessConformanceTest {
                 u1.getInfluence() == 4);
 
         // ── B. Same-race tension substrate (:972 start 2; :974 Non-Aggression). ──
-        Player hA = player("HA", Faction.HUMAN);
-        Player hB = player("HB", Faction.HUMAN);
-        Player mA = player("MA", Faction.MINBARI);
+        Player hA = player("HA", Race.HUMAN);
+        Player hB = player("HB", Race.HUMAN);
+        Player mA = player("MA", Race.MINBARI);
         GameState dual = state(hA, hB, mA);
         check("CWR", "same-race tension starts at 2 (:972)",
                 dual.getSameRaceTension(hA, hB) == 2);
@@ -6801,57 +6801,57 @@ public class HeadlessConformanceTest {
                 !dual.isNonAggression(hA, hB));
 
         // ── C. :992 entry — single-faction refusal, dual-race entry, unrest bump. ──
-        Player s1 = player("S1", Faction.CENTAURI);
-        Player m1 = player("M1", Faction.MINBARI);
+        Player s1 = player("S1", Race.CENTAURI);
+        Player m1 = player("M1", Race.MINBARI);
         GameState single = state(s1, m1);
         check("CWR", "a single-faction race can never enter Civil War (:992 needs a rival faction)",
-                !single.enterCivilWarIfTriggered(Faction.CENTAURI, 3));
+                !single.enterCivilWarIfTriggered(Race.CENTAURI, 3));
 
-        Player cA = player("CA", Faction.CENTAURI);
-        Player cB = player("CB", Faction.CENTAURI);
-        Player n1 = player("N1", Faction.NARN);
+        Player cA = player("CA", Race.CENTAURI);
+        Player cB = player("CB", Race.CENTAURI);
+        Player n1 = player("N1", Race.NARN);
         GameState dualC = state(cA, cB, n1);
         dualC.raiseSameRaceTension(cA, cB, 3);            // 2 -> 5
         int unrestBefore = cA.getUnrest();
         check("CWR", "entry fires at same-race tension 5 (:992)",
-                dualC.enterCivilWarIfTriggered(Faction.CENTAURI, 3));
+                dualC.enterCivilWarIfTriggered(Race.CENTAURI, 3));
         check("CWR", "unrest +1 for every faction of the race on entry (:994)",
                 cA.getUnrest() == unrestBefore + 1
                 && cB.getUnrest() == unrestBefore + 1);
         check("CWR", "entry recorded for the race",
-                dualC.civilWarOfRace(Faction.CENTAURI) != null
-                && dualC.civilWarOfRace(Faction.CENTAURI).getPhase()
+                dualC.civilWarOfRace(Race.CENTAURI) != null
+                && dualC.civilWarOfRace(Race.CENTAURI).getPhase()
                         == CivilWarState.Phase.CIVIL_WAR);
 
         // ── D. :994 war relation + :974 Non-Aggression suppressed during war. ──
         check("CWR", "factions of a race in Civil War are at war with each other (:994)",
-                dualC.civilWarOfRace(Faction.CENTAURI)
-                        .isFactionAtWarWithRival(cA));
+                dualC.civilWarOfRace(Race.CENTAURI)
+                        .isRaceAtWarWithRival(cA));
         check("CWR", "Non-Aggression auto-state suppressed during Civil War (:974)",
                 !dualC.isNonAggression(cA, cB));
 
         // ── E. :1000 rounded-up-average merge on exit by war end. ──
         // Snapshot gave both factions the race-level row; diverge them:
         // CA→NARN = 2, CB→NARN = 5 → average 3.5 → rounded UP to 4.
-        CivilWarState cws = dualC.civilWarOfRace(Faction.CENTAURI);
-        cws.setSplitTension(cA, Faction.NARN, 2);
-        cws.setSplitTension(cB, Faction.NARN, 5);
-        Map<Faction, Integer> merged = dualC.exitCivilWarByWarEnd(Faction.CENTAURI);
+        CivilWarState cws = dualC.civilWarOfRace(Race.CENTAURI);
+        cws.setSplitTension(cA, Race.NARN, 2);
+        cws.setSplitTension(cB, Race.NARN, 5);
+        Map<Race, Integer> merged = dualC.exitCivilWarByWarEnd(Race.CENTAURI);
         check("CWR", "merge produces the rounded-up average (2 and 5 -> 4) (:1000)",
-                merged.containsKey(Faction.NARN) && merged.get(Faction.NARN).intValue() == 4);
+                merged.containsKey(Race.NARN) && merged.get(Race.NARN).intValue() == 4);
         check("CWR", "merged value written back to the race-level matrix",
-                dualC.getTensionMatrix().getTension(Faction.CENTAURI, Faction.NARN) == 4);
+                dualC.getTensionMatrix().getTension(Race.CENTAURI, Race.NARN) == 4);
         check("CWR", "unrest -1 for every faction on exit (:998)",
                 cA.getUnrest() == unrestBefore && cB.getUnrest() == unrestBefore);
         check("CWR", "race left the Civil War state",
-                dualC.civilWarOfRace(Faction.CENTAURI).getPhase()
+                dualC.civilWarOfRace(Race.CENTAURI).getPhase()
                         == CivilWarState.Phase.UNIFIED);
 
         // ── F. :996 end-war targeting selection (highest mutual tension). ──
         // Three factions of one race; mutual tensions: A<->B 5, A<->C 3, B<->C 2.
-        Player fA = player("FA", Faction.NARN);
-        Player fB = player("FB", Faction.NARN);
-        Player fC = player("FC", Faction.NARN);
+        Player fA = player("FA", Race.NARN);
+        Player fB = player("FB", Race.NARN);
+        Player fC = player("FC", Race.NARN);
         GameState tri = state(fA, fB, fC);
         // Tension is directional (source→target), so raise both directions of
         // the A<->B pair; the mutual sum for :996 is then 5+5 = 10.
@@ -6867,8 +6867,8 @@ public class HeadlessConformanceTest {
                 tri.getSameRaceTension(fB, fA) >= tri.getSameRaceTension(fB, fC));
 
         // ── G. :980 Joint Effects — unified spill, split isolation. ──
-        Player jA = player("JA", Faction.HUMAN);
-        Player jB = player("JB", Faction.HUMAN);
+        Player jA = player("JA", Race.HUMAN);
+        Player jB = player("JB", Race.HUMAN);
         GameState joint = state(jA, jB);
         joint.applyRaceJointInfluenceLoss(jA, 2);
         check("CWR", "UNIFIED race: influence loss spills to every faction of the race (:980)",
@@ -6876,23 +6876,23 @@ public class HeadlessConformanceTest {
         // Declaration entry (:992 second sentence) — the fixture tension is
         // below 5, so the end-of-turn trigger would not fire.
         check("CWR", "declaration entry registers the machine for the race (:992)",
-                joint.forceCivilWarEntry(Faction.HUMAN, 5)
-                && joint.civilWarOfRace(Faction.HUMAN).getPhase()
+                joint.forceCivilWarEntry(Race.HUMAN, 5)
+                && joint.civilWarOfRace(Race.HUMAN).getPhase()
                         == CivilWarState.Phase.CIVIL_WAR);
         joint.applyRaceJointInfluenceLoss(jA, 1);
         check("CWR", "CIVIL_WAR race: the loss lands on the loser alone (:980/:1000)",
                 jA.getInfluence() == 1 && jB.getInfluence() == 2);
 
         // ── H. Standard game unchanged: single-faction race-level matrix untouched. ──
-        Player std1 = player("STD1", Faction.HUMAN);
-        Player std2 = player("STD2", Faction.MINBARI);
+        Player std1 = player("STD1", Race.HUMAN);
+        Player std2 = player("STD2", Race.MINBARI);
         GameState std = state(std1, std2);
-        std.getTensionMatrix().enterWar(Faction.HUMAN, Faction.MINBARI);
+        std.getTensionMatrix().enterWar(Race.HUMAN, Race.MINBARI);
         std.applyRaceJointInfluenceLoss(std1, 2);
         check("CWR", "standard game: joint loss is the loser's own loss (single faction)",
                 std1.getInfluence() == 2);
         check("CWR", "standard game: race-level matrix behaves exactly as pre-0691",
-                std.isAtWar(Faction.HUMAN, Faction.MINBARI)
+                std.isAtWar(Race.HUMAN, Race.MINBARI)
                 && std.civilWarRaces().isEmpty());
     }
 
@@ -6929,8 +6929,8 @@ public class HeadlessConformanceTest {
                 GameAction.pass().getAmount() == 0);
 
         // 3. Offering: refuses null, duplicates, non-mercenaries; accepts.
-        Player a = player("MerA", Faction.HUMAN);
-        Player b = player("MerB", Faction.MINBARI);
+        Player a = player("MerA", Race.HUMAN);
+        Player b = player("MerB", Race.MINBARI);
         GameState st = state(a, b);
         EventCard plain = event("mer_plain");
         check("MER", "non-mercenary card cannot be offered",
@@ -6959,8 +6959,8 @@ public class HeadlessConformanceTest {
         check("MER", "affordable offered bid is legal", rules.canBidOnMercenary(a, merc, 1, st2));
 
         // 5. Execution: pool-only spend, cumulative totals, no rating movement.
-        Player c = player("MerC", Faction.NARN);
-        Player d = player("MerD", Faction.CENTAURI);
+        Player c = player("MerC", Race.NARN);
+        Player d = player("MerD", Race.CENTAURI);
         GameState st3 = state(c, d);
         st3.addMercenaryOffer(merc);
         int cRating = c.getInfluence();
@@ -6992,8 +6992,8 @@ public class HeadlessConformanceTest {
         //    answer the same question differently, and the one place a reader
         //    would reach for the old comment is exactly where that must be
         //    visible. The full tie-break contract is the MER-TIE section.
-        Player x = player("MerX", Faction.HUMAN);
-        Player y = player("MerY", Faction.MINBARI);
+        Player x = player("MerX", Race.HUMAN);
+        Player y = player("MerY", Race.MINBARI);
         GameState stR = state(x, y);
         stR.addMercenaryOffer(merc);
         check("MER", "no controller before resolution",
@@ -7003,8 +7003,8 @@ public class HeadlessConformanceTest {
         Map<Card, Player> resolved = rules.resolveMercenaryControl(stR);
         check("MER", "highest single bidder controls", resolved.get(merc) == x);
 
-        Player p = player("MerP", Faction.NARN);
-        Player q = player("MerQ", Faction.CENTAURI);
+        Player p = player("MerP", Race.NARN);
+        Player q = player("MerQ", Race.CENTAURI);
         GameState stT = state(p, q);
         stT.addMercenaryOffer(merc);
         rules.executeBidOnMercenary(p, merc, 2, stT);
@@ -7017,7 +7017,7 @@ public class HeadlessConformanceTest {
                 engineTie.get(merc) == expectedTieWinner && modelTie.isEmpty());
 
         // 8. Controller performs the mercenary action (fixture: +1 influence).
-        Player w = player("MerW", Faction.HUMAN);
+        Player w = player("MerW", Race.HUMAN);
         GameState stW = state(w);
         stW.addMercenaryOffer(merc);
         int wRating = w.getInfluence();
@@ -7045,8 +7045,8 @@ public class HeadlessConformanceTest {
 
         // 10. Controller branch integration: the phase resolves and applies
         //     the effect for a BID action through the shared controller loop.
-        Player u = player("MerU", Faction.HUMAN);
-        Player v = player("MerV", Faction.MINBARI);
+        Player u = player("MerU", Race.HUMAN);
+        Player v = player("MerV", Race.MINBARI);
         GameState stC = state(u, v);
         stC.addMercenaryOffer(merc);
         GameController ctl = new GameController(stC, new ArrayList<AIPlayer>(),
@@ -7097,8 +7097,8 @@ public class HeadlessConformanceTest {
         // Rating first (lowest acts first), then each ambassador ability in the
         // rulebook's order -- each ASCENDING, because :352 says the HIGHER
         // ability "wins (acts last)".
-        Player lo = player("TbLo", Faction.HUMAN);
-        Player hi = player("TbHi", Faction.MINBARI);
+        Player lo = player("TbLo", Race.HUMAN);
+        Player hi = player("TbHi", Race.MINBARI);
         lo.gainInfluence(2);        // rating 4 -> 6
         hi.gainInfluence(6);        // rating 4 -> 10
         GameState stA = state(lo, hi);
@@ -7110,8 +7110,8 @@ public class HeadlessConformanceTest {
         // Equal rating: LOWER Diplomacy acts EARLIER (:352 "highest Diplomacy
         // wins (acts last)"). Set the ambassadors explicitly rather than
         // re-reading the 3/3/3/3 fixture.
-        Player dLow = player("TbDLo", Faction.NARN);
-        Player dHigh = player("TbDHi", Faction.CENTAURI);
+        Player dLow = player("TbDLo", Race.NARN);
+        Player dHigh = player("TbDHi", Race.CENTAURI);
         ambassadorWith(dLow, 1, 9, 9, 9);
         ambassadorWith(dHigh, 4, 0, 0, 0);
         GameState stB = state(dLow, dHigh);
@@ -7122,31 +7122,31 @@ public class HeadlessConformanceTest {
         // Equal rating AND Diplomacy: the chain falls to Intrigue, then Psi,
         // then Leadership. Pinned one rung at a time so a chain that silently
         // stopped after Diplomacy cannot pass.
-        Player iLow = player("TbILo", Faction.NARN);
-        Player iHigh = player("TbIHi", Faction.CENTAURI);
+        Player iLow = player("TbILo", Race.NARN);
+        Player iHigh = player("TbIHi", Race.CENTAURI);
         ambassadorWith(iLow, 2, 1, 9, 9);
         ambassadorWith(iHigh, 2, 6, 0, 0);
         check("MER-TIE", ":352 equal rating+Diplomacy, lower Intrigue acts earlier",
                 firstIn(rules.determineInitiativeOrder(state(iLow, iHigh))) == iLow);
 
-        Player pLow = player("TbPLo", Faction.NARN);
-        Player pHigh = player("TbPHi", Faction.CENTAURI);
+        Player pLow = player("TbPLo", Race.NARN);
+        Player pHigh = player("TbPHi", Race.CENTAURI);
         ambassadorWith(pLow, 2, 3, 1, 9);
         ambassadorWith(pHigh, 2, 3, 7, 0);
         check("MER-TIE", ":352 equal through Intrigue, lower Psi acts earlier",
                 firstIn(rules.determineInitiativeOrder(state(pLow, pHigh))) == pLow);
 
-        Player lLow = player("TbLLo", Faction.NARN);
-        Player lHigh = player("TbLHi", Faction.CENTAURI);
+        Player lLow = player("TbLLo", Race.NARN);
+        Player lHigh = player("TbLHi", Race.CENTAURI);
         ambassadorWith(lLow, 2, 3, 4, 1);
         ambassadorWith(lHigh, 2, 3, 4, 8);
         check("MER-TIE", ":352 equal through Psi, lower Leadership acts earlier",
                 firstIn(rules.determineInitiativeOrder(state(lLow, lHigh))) == lLow);
 
         // A seat with no ambassador is orderable at 0 abilities, not an NPE.
-        Player bare = player("TbBare", Faction.HUMAN);
+        Player bare = player("TbBare", Race.HUMAN);
         bare.setAmbassador(null);
-        Player rated = player("TbRated", Faction.MINBARI);
+        Player rated = player("TbRated", Race.MINBARI);
         rated.gainInfluence(3);
         List<Player> ordBare = rules.determineInitiativeOrder(state(bare, rated));
         check("MER-TIE", "a seat with no ambassador ranks at 0 abilities",
@@ -7155,8 +7155,8 @@ public class HeadlessConformanceTest {
         // ── MERTB-04: the order is FROZEN for the turn (:350 "Determine
         //    Initiative" is READY step 3), so a mid-turn gain cannot silently
         //    reorder a tie-break that was already published. ──────────────────
-        Player f1 = player("TbF1", Faction.HUMAN);
-        Player f2 = player("TbF2", Faction.MINBARI);
+        Player f1 = player("TbF1", Race.HUMAN);
+        Player f2 = player("TbF2", Race.MINBARI);
         GameState stF = state(f1, f2);
         RulesEngine frozen = new RulesEngine();
         frozen.startRound(stF);
@@ -7176,8 +7176,8 @@ public class HeadlessConformanceTest {
 
         // ── MERTB-05: no tie, no tie line. The loud path must not fire on an
         //    ordinary strict-highest crown, or the log is worthless. ─────────
-        Player s1 = player("TbS1", Faction.HUMAN);
-        Player s2 = player("TbS2", Faction.MINBARI);
+        Player s1 = player("TbS1", Race.HUMAN);
+        Player s2 = player("TbS2", Race.MINBARI);
         GameState stS = state(s1, s2);
         stS.addMercenaryOffer(merc);
         RulesEngine engS = new RulesEngine();
@@ -7190,7 +7190,7 @@ public class HeadlessConformanceTest {
 
         // ── MERTB-06: nobody bid is NOT a tie. A 0 bid is not a bid, so an
         //    empty table resolves to nobody without a tie line. ──────────────
-        Player z1 = player("TbZ1", Faction.HUMAN);
+        Player z1 = player("TbZ1", Race.HUMAN);
         GameState stZ = state(z1);
         stZ.addMercenaryOffer(merc);
         RulesEngine engZ = new RulesEngine();
@@ -7202,8 +7202,8 @@ public class HeadlessConformanceTest {
         // ── MERTB-07/08: the tie itself. Two seats level on 3; the earlier
         //    initiative takes control and the log names BOTH seats, the shared
         //    total and the step that decided. ────────────────────────────────
-        Player t1 = player("TbT1", Faction.HUMAN);
-        Player t2 = player("TbT2", Faction.MINBARI);
+        Player t1 = player("TbT1", Race.HUMAN);
+        Player t2 = player("TbT2", Race.MINBARI);
         t1.gainInfluence(2);        // t1 rating 6, t2 rating 4 -> t2 acts first
         GameState stT2 = state(t1, t2);
         stT2.addMercenaryOffer(merc);
@@ -7224,9 +7224,9 @@ public class HeadlessConformanceTest {
 
         // ── MERTB-09: a three-way tie resolves to the earliest of the three,
         //    and the two losers are named rather than dropped. ───────────────
-        Player m1 = player("TbM1", Faction.HUMAN);
-        Player m2 = player("TbM2", Faction.MINBARI);
-        Player m3 = player("TbM3", Faction.NARN);
+        Player m1 = player("TbM1", Race.HUMAN);
+        Player m2 = player("TbM2", Race.MINBARI);
+        Player m3 = player("TbM3", Race.NARN);
         m3.gainInfluence(4);        // m3 highest -> acts last
         GameState stT3 = state(m1, m2, m3);
         stT3.addMercenaryOffer(merc);
@@ -7245,8 +7245,8 @@ public class HeadlessConformanceTest {
         // ── MERTB-10: :352's residual step. Identical rating AND all four
         //    abilities means the chain is exhausted, and the log must SAY the
         //    seat-name stand-in decided it rather than implying :352 chose. ───
-        Player r1 = player("TbR1", Faction.HUMAN);
-        Player r2 = player("TbR2", Faction.MINBARI);
+        Player r1 = player("TbR1", Race.HUMAN);
+        Player r2 = player("TbR2", Race.MINBARI);
         GameState stR2 = state(r1, r2);
         stR2.addMercenaryOffer(merc);
         RulesEngine engR = new RulesEngine();
@@ -7264,8 +7264,8 @@ public class HeadlessConformanceTest {
         // ── MERTB-11: a seat that has LEFT THE GAME cannot take control, and
         //    the exclusion is logged. Read through GameState.isPlayerActive so
         //    this phase and every checkVictory path share one definition. ────
-        Player g1 = player("TbG1", Faction.HUMAN);
-        Player g2 = player("TbG2", Faction.MINBARI);
+        Player g1 = player("TbG1", Race.HUMAN);
+        Player g2 = player("TbG2", Race.MINBARI);
         g1.gainInfluence(5);        // g1 outbids g2 outright
         GameState stG = state(g1, g2);
         stG.addMercenaryOffer(merc);
@@ -7280,7 +7280,7 @@ public class HeadlessConformanceTest {
                 logContains(stG, g1.getName())
                 && logContains(stG, "has left the game"));
 
-        Player h1 = player("TbH1", Faction.HUMAN);
+        Player h1 = player("TbH1", Race.HUMAN);
         GameState stH = state(h1);
         stH.addMercenaryOffer(merc);
         RulesEngine engH = new RulesEngine();
@@ -7299,8 +7299,8 @@ public class HeadlessConformanceTest {
         //    vacuously on "nothing happened to either seat".
         Card effectMerc = event("mer_metric_fixture");
         effectMerc.setMercenary(true);
-        Player a1 = player("TbA1", Faction.HUMAN);
-        Player a2 = player("TbA2", Faction.MINBARI);
+        Player a1 = player("TbA1", Race.HUMAN);
+        Player a2 = player("TbA2", Race.MINBARI);
         a1.gainInfluence(3);        // a1 outranks a2, so a2 acts first and takes the tie
         GameState stA2 = state(a1, a2);
         stA2.addMercenaryOffer(effectMerc);
@@ -7322,8 +7322,8 @@ public class HeadlessConformanceTest {
         //    on a strict-highest position they agree. Anyone who later finds
         //    GameState.resolveMercenaries on a play path can read here what the
         //    difference actually is. ──────────────────────────────────────────
-        Player w1 = player("TbW1", Faction.HUMAN);
-        Player w2 = player("TbW2", Faction.MINBARI);
+        Player w1 = player("TbW1", Race.HUMAN);
+        Player w2 = player("TbW2", Race.MINBARI);
         GameState stW2 = state(w1, w2);
         stW2.addMercenaryOffer(merc);
         RulesEngine engW = new RulesEngine();
@@ -7342,8 +7342,8 @@ public class HeadlessConformanceTest {
         // ── MERTB-14: the resolver is side-effect free, so re-running the
         //    phase (or a UI refresh reading it) cannot move bids or spend
         //    influence. Resolution reads; only CardEffects writes. ──────────
-        Player k1 = player("TbK1", Faction.HUMAN);
-        Player k2 = player("TbK2", Faction.MINBARI);
+        Player k1 = player("TbK1", Race.HUMAN);
+        Player k2 = player("TbK2", Race.MINBARI);
         GameState stK = state(k1, k2);
         stK.addMercenaryOffer(merc);
         RulesEngine engK = new RulesEngine();
@@ -7364,8 +7364,8 @@ public class HeadlessConformanceTest {
         //    after another seat has bid keeps the summed total, so the tie is
         //    decided on the rulebook's "bids are cumulative" clause and not
         //    on whichever action happened to be last. ────────────────────────
-        Player c1 = player("TbC1", Faction.HUMAN);
-        Player c2 = player("TbC2", Faction.MINBARI);
+        Player c1 = player("TbC1", Race.HUMAN);
+        Player c2 = player("TbC2", Race.MINBARI);
         GameState stC2 = state(c1, c2);
         stC2.addMercenaryOffer(merc);
         RulesEngine engC = new RulesEngine();
@@ -7382,7 +7382,7 @@ public class HeadlessConformanceTest {
     /** Replaces a player's ambassador with one carrying the given abilities. */
     private static void ambassadorWith(Player p, int dip, int intr, int psi, int lead) {
         CharacterCard amb = new CharacterCard("amb2_" + p.getName(), "Amb2 " + p.getName(),
-                "CHARACTER_" + p.getFaction(), Rarity.FIXED, p.getFaction(),
+                "CHARACTER_" + p.getRace(), Rarity.FIXED, Loyalty.fromRace(p.getRace()),
                 CardSet.PREMIERE, "x", "text", dip, intr, psi, lead, true);
         p.setAmbassador(amb);
         p.getInnerCircle().clear();
@@ -7399,8 +7399,8 @@ public class HeadlessConformanceTest {
     private static void testCardCostOnPlay() throws Exception {
         System.out.println("CPC (B5-1038): generic play path charges card cost");
         RulesEngine rules = new RulesEngine();
-        Player p = player("CPCp", Faction.HUMAN);
-        Player r = player("CPCr", Faction.MINBARI);
+        Player p = player("CPCp", Race.HUMAN);
+        Player r = player("CPCr", Race.MINBARI);
         GameState st = state(p, r);
         GameController gc = new GameController(st, new ArrayList<AIPlayer>(),
             new GameStateCallback() {
@@ -7414,11 +7414,11 @@ public class HeadlessConformanceTest {
         // 1. canPlayCard affordability gate.
         EnhancementCard free = new EnhancementCard(
                 "cpc_free", "Free Boost", "ENHANCEMENT",
-                Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 0, 0);
         EnhancementCard costly = new EnhancementCard(
                 "cpc_costly", "Costly Boost", "ENHANCEMENT",
-                Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 0, 0, 0, 0, 0);
         free.setCost(0);
         costly.setCost(3);
@@ -7466,7 +7466,7 @@ public class HeadlessConformanceTest {
 
     // ── B5-1999: GROUP cards (rulebook §IV "Group Cards", :496) ───────────────
 
-    private static GroupCard groupCard(String id, Faction f, int cost) {
+    private static GroupCard groupCard(String id, Loyalty f, int cost) {
         GroupCard g = new GroupCard(id, id, "GROUP", Rarity.COMMON, f,
                 CardSet.PREMIERE, "x", "text");
         g.setCost(cost);
@@ -7498,11 +7498,11 @@ public class HeadlessConformanceTest {
 
         // ── 1. Sponsorship charges the LISTED cost and deducts on success ──
         {
-            Player p = player("spn_listed", Faction.NARN);
+            Player p = player("spn_listed", Race.NARN);
             GameState st = state(p);
             setInfluence(p, 10);
             LocationCard loc = new LocationCard("spn_loc", "Listed Location",
-                    "LOCATION", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                    "LOCATION", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                     "x", "text", 1);
             loc.setCost(4);
             p.addToHand(loc);
@@ -7529,11 +7529,11 @@ public class HeadlessConformanceTest {
         // three — a refusal that deducted, or that rotated before charging,
         // would pass a check that only looked at the pool.
         {
-            Player p = player("spn_short", Faction.NARN);
+            Player p = player("spn_short", Race.NARN);
             GameState st = state(p);
             setInfluence(p, 3);
             LocationCard loc = new LocationCard("spn_loc_short", "Too Dear",
-                    "LOCATION", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                    "LOCATION", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                     "x", "text", 1);
             loc.setCost(4);
             p.addToHand(loc);
@@ -7560,12 +7560,12 @@ public class HeadlessConformanceTest {
         // outright any other card type naming another race. Collapsing these
         // into one multiplier would let a Narn faction buy a Minbari fleet.
         {
-            Player p = player("spn_race", Faction.NARN);
+            Player p = player("spn_race", Race.NARN);
             GameState st = state(p);
             setInfluence(p, 30);
 
             FleetCard hostileFleet = new FleetCard("spn_fleet_hostile",
-                    "Minbari Fleet", "FLEET", Rarity.COMMON, Faction.MINBARI,
+                    "Minbari Fleet", "FLEET", Rarity.COMMON, Loyalty.MINBARI,
                     CardSet.PREMIERE, "x", "text", 3);
             hostileFleet.setCost(2);
             p.addToHand(hostileFleet);
@@ -7577,11 +7577,11 @@ public class HeadlessConformanceTest {
 
             CharacterCard hostileChar = new CharacterCard("spn_char_hostile",
                     "Minbari Character", "CHARACTER_MINBARI", Rarity.COMMON,
-                    Faction.MINBARI, CardSet.PREMIERE, "x", "text",
+                    Loyalty.MINBARI, CardSet.PREMIERE, "x", "text",
                     2, 2, 2, 2, false);
             hostileChar.setCost(3);
             p.addToHand(hostileChar);
-            CharacterCard readyLeader = player("spn_race_leader", Faction.NARN).getAmbassador();
+            CharacterCard readyLeader = player("spn_race_leader", Race.NARN).getAmbassador();
             readyLeader.setOwner(p);
             p.getInnerCircle().add(readyLeader);
 
@@ -7591,7 +7591,7 @@ public class HeadlessConformanceTest {
 
             CharacterCard ownChar = new CharacterCard("spn_char_own",
                     "Narn Character", "CHARACTER_NARN", Rarity.COMMON,
-                    Faction.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
+                    Loyalty.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
             ownChar.setCost(3);
             check("SPN", "an own-race CHARACTER costs its listed price (:663)",
                     rules.baseRecruitCost(p, ownChar) == 3);
@@ -7604,11 +7604,11 @@ public class HeadlessConformanceTest {
         //    Inner-Circle term of its own (:657 charges the listed cost;
         //    only :669 promotion adds the per-member surcharge) ──
         {
-            Player p = player("spn_ic", Faction.NARN);
+            Player p = player("spn_ic", Race.NARN);
             GameState st = state(p);
             setInfluence(p, 12);
             LocationCard loc = new LocationCard("spn_loc_ic", "Needs A Sponsor",
-                    "LOCATION", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                    "LOCATION", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                     "x", "text", 1);
             loc.setCost(3);
             p.addToHand(loc);
@@ -7623,14 +7623,14 @@ public class HeadlessConformanceTest {
 
             p.getAmbassador().unrotate();
             CharacterCard second = new CharacterCard("spn_ic_second", "Second Member",
-                    "CHARACTER_NARN", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                    "CHARACTER_NARN", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                     "x", "text", 2, 2, 2, 2, false);
             p.getInnerCircle().add(second);
 
             check("SPN", "a bigger Inner Circle does NOT raise the sponsorship price (:657)",
                     rules.sponsorshipCost(p, loc) == 3);
             CharacterCard probe = new CharacterCard("spn_probe", "Probe",
-                    "CHARACTER_NARN", Rarity.COMMON, Faction.NARN, CardSet.PREMIERE,
+                    "CHARACTER_NARN", Rarity.COMMON, Loyalty.NARN, CardSet.PREMIERE,
                     "x", "text", 2, 2, 2, 2, false);
             probe.setCost(3);
             check("SPN", "the Inner-Circle term belongs to promotion, not sponsorship",
@@ -7643,17 +7643,17 @@ public class HeadlessConformanceTest {
         //    other member in its Inner circle, then to promote a character with
         //    an influence cost of three would require a total of five") ──
         {
-            Player p = player("spn_promote", Faction.NARN);
+            Player p = player("spn_promote", Race.NARN);
             GameState st = state(p);
             setInfluence(p, 20);
 
             CharacterCard existing = new CharacterCard("spn_prom_existing",
                     "Existing Member", "CHARACTER_NARN", Rarity.COMMON,
-                    Faction.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
+                    Loyalty.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
             p.getInnerCircle().add(existing);   // ambassador + 1 = 2 members
 
             CharacterCard target = new CharacterCard("spn_prom_target",
-                    "Promote Me", "CHARACTER_NARN", Rarity.COMMON, Faction.NARN,
+                    "Promote Me", "CHARACTER_NARN", Rarity.COMMON, Loyalty.NARN,
                     CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
             target.setCost(3);
             p.getSupportingRole().add(target);
@@ -7684,7 +7684,7 @@ public class HeadlessConformanceTest {
             p.grantSponsorDiscount(1);
             CharacterCard target2 = new CharacterCard("spn_prom_target2",
                     "Promote Me Too", "CHARACTER_NARN", Rarity.COMMON,
-                    Faction.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
+                    Loyalty.NARN, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
             target2.setCost(3);
             p.getSupportingRole().add(target2);
             check("SPN", "an assistant sponsor discount does NOT reduce promotion (:669)",
@@ -7697,12 +7697,12 @@ public class HeadlessConformanceTest {
 
         // ── 6. Promotion refuses when short, and the off-race doubling composes ──
         {
-            Player p = player("spn_prom_short", Faction.NARN);
+            Player p = player("spn_prom_short", Race.NARN);
             GameState st = state(p);
             setInfluence(p, 2);   // promotion of a cost-3 character costs 4
 
             CharacterCard target = new CharacterCard("spn_prom_short_target",
-                    "Unaffordable", "CHARACTER_NARN", Rarity.COMMON, Faction.NARN,
+                    "Unaffordable", "CHARACTER_NARN", Rarity.COMMON, Loyalty.NARN,
                     CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
             target.setCost(3);
             p.getSupportingRole().add(target);
@@ -7717,7 +7717,7 @@ public class HeadlessConformanceTest {
 
             CharacterCard hostile = new CharacterCard("spn_prom_hostile",
                     "Minbari Promote", "CHARACTER_MINBARI", Rarity.COMMON,
-                    Faction.MINBARI, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
+                    Loyalty.MINBARI, CardSet.PREMIERE, "x", "text", 2, 2, 2, 2, false);
             hostile.setCost(2);
             check("SPN", "off-race doubling composes with the IC surcharge on promote (:669)",
                     rules.promotionCost(p, hostile) == 4 + p.getInnerCircle().size());
@@ -7739,13 +7739,13 @@ public class HeadlessConformanceTest {
      */
     private static void testGroupCards() {
         RulesEngine rules = new RulesEngine();
-        Player p = player("grp_human", Faction.HUMAN);
-        Player q = player("grp_narn", Faction.NARN);
+        Player p = player("grp_human", Race.HUMAN);
+        Player q = player("grp_narn", Race.NARN);
         GameState st = state(p, q);
 
         // 1. A group contributes nothing to any conflict total (:496 "They do
         //    not normally have abilities").
-        GroupCard anyGrp = groupCard("grp_any", Faction.ANY, 6);
+        GroupCard anyGrp = groupCard("grp_any", Loyalty.ANY, 6);
         boolean zeroEverywhere = true;
         ConflictType[] types = ConflictType.values();
         for (int i = 0; i < types.length; i++) {
@@ -7777,17 +7777,17 @@ public class HeadlessConformanceTest {
 
         // 2c. War conflicts carry no ConflictCard, so they have no filters at
         //     all — the group gate is the only thing standing there.
-        Player w1 = player("grp_w1", Faction.NARN);
-        Player w2 = player("grp_w2", Faction.MINBARI);
+        Player w1 = player("grp_w1", Race.NARN);
+        Player w2 = player("grp_w2", Race.MINBARI);
         GameState ws = state(w1, w2);
-        ws.getTensionMatrix().raiseTension(Faction.NARN, Faction.MINBARI, 5);
+        ws.getTensionMatrix().raiseTension(Race.NARN, Race.MINBARI, 5);
         Conflict war = new Conflict(WarKind.RACE_TARGET, w1, w2);
         check("GRP", "war conflict (no ConflictCard filters) still refuses a group",
                 !rules.canParticipateInConflict(anyGrp) && war.getCard() == null);
 
         // 3. Promotion: "Groups are Supporting Cards and may not be promoted to
         //    the Inner Circle" (:496). The Card-typed gate states it.
-        GroupCard promoTarget = groupCard("grp_promo", Faction.ANY, 6);
+        GroupCard promoTarget = groupCard("grp_promo", Loyalty.ANY, 6);
         p.getGroups().add(promoTarget);
         check("GRP", "group is not promotable to the Inner Circle (:496)",
                 !rules.canPromote(p, promoTarget) && !promoTarget.canBePromoted());
@@ -7797,9 +7797,9 @@ public class HeadlessConformanceTest {
         //     group-only special-casing.
         check("GRP", "fleet and location are also not promotable (:500/:504)",
                 !rules.canPromote(p, new FleetCard("grp_pf", "F", "FLEET",
-                        Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "t", 3))
+                        Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "t", 3))
                 && !rules.canPromote(p, new LocationCard("grp_pl", "L", "LOCATION",
-                        Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "t", 2, 3)));
+                        Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "t", 2, 3)));
 
         // 3b. Counter-case: a real supporting character is still promotable, so
         //     the gate did not break the promotion path it sits beside.
@@ -7813,30 +7813,30 @@ public class HeadlessConformanceTest {
         //    double-cost term and no Inner-Circle-size term — those belong to
         //    characters (:484) and to promotion respectively.
         check("GRP", "group sponsorship cost is the listed cost, undoubled (:657)",
-                rules.groupSponsorshipCost(groupCard("grp_cost", Faction.NARN, 6)) == 6);
+                rules.groupSponsorshipCost(groupCard("grp_cost", Loyalty.NARN, 6)) == 6);
 
         // 5. Race restriction is ABSOLUTE, not a multiplier (:496 "Only the
         //    player controlling the race listed as part of the Card Type may
         //    bring a restricted card into play").
-        GroupCard narnGrp = groupCard("grp_narn", Faction.NARN, 6);
+        GroupCard narnGrp = groupCard("grp_narn", Loyalty.NARN, 6);
         p.getHand().add(narnGrp);
         p.gainInfluence(20);
         check("GRP", "race-restricted group is refused by another race (:496)",
                 narnGrp.isRaceRestricted() && !rules.canSponsorGroup(p, narnGrp));
-        GroupCard narnOwn = groupCard("grp_narn2", Faction.NARN, 6);
+        GroupCard narnOwn = groupCard("grp_narn2", Loyalty.NARN, 6);
         q.getHand().add(narnOwn);
         q.gainInfluence(20);
         check("GRP", "the same card is legal for its own race",
                 rules.canSponsorGroup(q, narnOwn));
-        GroupCard anyGrp2 = groupCard("grp_any2", Faction.ANY, 6);
+        GroupCard anyGrp2 = groupCard("grp_any2", Loyalty.ANY, 6);
         q.getHand().add(anyGrp2);
         q.gainInfluence(20);
         check("GRP", "unrestricted (ANY) group is playable by any race",
                 !anyGrp2.isRaceRestricted() && rules.canSponsorGroup(q, anyGrp2));
 
         // 5a. Affordability rides the same gate (:657).
-        GroupCard pricey = groupCard("grp_pricey", Faction.ANY, 8);
-        Player poor = player("grp_poor", Faction.HUMAN);
+        GroupCard pricey = groupCard("grp_pricey", Loyalty.ANY, 8);
+        Player poor = player("grp_poor", Race.HUMAN);
         poor.getHand().add(pricey);
         check("GRP", "unaffordable group is refused (:657)",
                 poor.getAppliedPool() < 8 && !rules.canSponsorGroup(poor, pricey));
@@ -7891,12 +7891,12 @@ public class HeadlessConformanceTest {
         System.out.println("DB: deck-builder rules without a display (B5-2287)");
 
         // 1: the faction list a human may actually build for.
-        List<Faction> offered = DeckBuilderModel.playableFactions();
+        List<Race> offered = DeckBuilderModel.playableRaces();
         boolean anyOffered   = false, neutralOffered = false, humanOffered = false;
         for (int i = 0; i < offered.size(); i++) {
-            if (offered.get(i) == Faction.ANY)    anyOffered = true;
-            if (offered.get(i) == Faction.NEUTRAL) neutralOffered = true;
-            if (offered.get(i) == Faction.HUMAN)   humanOffered = true;
+            if (Loyalty.fromRace(offered.get(i)) == Loyalty.ANY)    anyOffered = true;
+            if (Loyalty.fromRace(offered.get(i)) == Loyalty.NEUTRAL) neutralOffered = true;
+            if (offered.get(i) == Race.HUMAN)   humanOffered = true;
         }
         check("DB1", "ANY is not offered as a faction to build for", !anyOffered);
         check("DB1", "NEUTRAL is not offered as a faction to build for", !neutralOffered);
@@ -7905,39 +7905,39 @@ public class HeadlessConformanceTest {
         // "interesting" rather than "a race a human plays" would be an invented
         // rule. Pinned so a future tidy-up cannot quietly drop it.
         check("DB1", "NON_ALIGNED is offered (a real faction, not a card-side value)",
-                offered.contains(Faction.NON_ALIGNED));
+                offered.contains(Race.NON_ALIGNED));
 
         // 2: the pool is filtered by faction, and switching widens it again
         //    rather than destroying the source.
         List<Card> pool = new ArrayList<Card>();
-        pool.add(fleetCard("db_human_fleet", "FLEET"));            // Faction.ANY
-        pool.add(leaderCard("db_narn_char", 3));                   // Faction.NARN
-        pool.add(characterCard("db_vor_char", "V", Faction.VORLON, Faction.VORLON,
+        pool.add(fleetCard("db_human_fleet", "FLEET"));            // Loyalty.ANY
+        pool.add(leaderCard("db_narn_char", 3));                   // Race.NARN
+        pool.add(characterCard("db_vor_char", "V", Race.VORLON, Loyalty.VORLON,
                 CardSet.PREMIERE, Rarity.COMMON, new int[] { 1, 1, 1, 1 }));
-        pool.add(characterCard("db_cen_char", "C", Faction.CENTAURI, Faction.CENTAURI,
+        pool.add(characterCard("db_cen_char", "C", Race.CENTAURI, Loyalty.CENTAURI,
                 CardSet.PREMIERE, Rarity.COMMON, new int[] { 1, 1, 1, 1 }));
 
-        DeckBuilderModel narnModel = new DeckBuilderModel(pool, Faction.NARN);
+        DeckBuilderModel narnModel = new DeckBuilderModel(pool, Race.NARN);
         List<Card> narnPool = narnModel.pool();
         boolean sawNarn = false, sawVor = false, sawCen = false, sawAny = false;
         for (int i = 0; i < narnPool.size(); i++) {
-            Faction f = narnPool.get(i).getFaction();
-            if (f == Faction.NARN)    sawNarn = true;
-            if (f == Faction.VORLON)  sawVor  = true;
-            if (f == Faction.CENTAURI) sawCen = true;
-            if (f == Faction.ANY)     sawAny  = true;
+            Loyalty f = narnPool.get(i).getLoyalty();
+            if (f == Loyalty.NARN)    sawNarn = true;
+            if (f == Loyalty.VORLON)  sawVor  = true;
+            if (f == Loyalty.CENTAURI) sawCen = true;
+            if (f == Loyalty.ANY)     sawAny  = true;
         }
         check("DB2", "pool offers the chosen faction's own card", sawNarn);
         check("DB2", "pool offers ANY-faction cards", sawAny);
         check("DB2", "pool withholds another faction's card", !sawVor);
         check("DB2", "pool withholds a third faction's card", !sawCen);
 
-        narnModel.setFaction(Faction.VORLON);
+        narnModel.setRace(Race.VORLON);
         List<Card> vorPool = narnModel.pool();
         boolean sawVorAfter = false, sawNarnAfter = false;
         for (int i = 0; i < vorPool.size(); i++) {
-            if (vorPool.get(i).getFaction() == Faction.VORLON) sawVorAfter = true;
-            if (vorPool.get(i).getFaction() == Faction.NARN)   sawNarnAfter = true;
+            if (vorPool.get(i).getLoyalty() == Loyalty.VORLON) sawVorAfter = true;
+            if (vorPool.get(i).getLoyalty() == Loyalty.NARN)   sawNarnAfter = true;
         }
         check("DB2", "switching faction widens the pool to the new faction", sawVorAfter);
         check("DB2", "switching faction narrows the pool away from the old one", !sawNarnAfter);
@@ -7946,7 +7946,7 @@ public class HeadlessConformanceTest {
 
         // 3: mutation. Copies are permitted at add-time on purpose, so an
         //    over-limit deck is reachable and therefore testable at all.
-        DeckBuilderModel m = new DeckBuilderModel(pool, Faction.NARN);
+        DeckBuilderModel m = new DeckBuilderModel(pool, Race.NARN);
         check("DB3", "a new deck is empty", m.deckSize() == 0);
         m.addCard(pool.get(0));
         m.addCard(pool.get(0));
@@ -7962,7 +7962,7 @@ public class HeadlessConformanceTest {
 
         // 4: the legality gate. This is the whole point of the dialog existing:
         //    an illegal deck cannot be handed to the engine from here.
-        DeckBuilderModel gate = new DeckBuilderModel(pool, Faction.NARN);
+        DeckBuilderModel gate = new DeckBuilderModel(pool, Race.NARN);
         check("DB4", "an empty deck is not legal (45-card floor, :128/:193)", !gate.isLegal());
         check("DB4", "an empty deck reports problems", !gate.problems().isEmpty());
 
@@ -7970,29 +7970,29 @@ public class HeadlessConformanceTest {
         // Starting Ambassador. Built from NARN's own card repeated, so the only
         // rules under test are the floor and the copy limit.
         List<Card> legal = new ArrayList<Card>();
-        Player holder = player("DBHolder", Faction.NARN);
+        Player holder = player("DBHolder", Race.NARN);
         CharacterCard starterAmb = (CharacterCard) holder.getAmbassador();
         legal.add(starterAmb);                                   // the one ambassador
         Card narnChar = leaderCard("db_legal_narn", 1);
         for (int i = 0; i < 44; i++) legal.add(narnChar);        // 44 copies of one card
 
-        DeckBuilderModel legalModel = new DeckBuilderModel(pool, Faction.NARN);
+        DeckBuilderModel legalModel = new DeckBuilderModel(pool, Race.NARN);
         legalModel.addCards(legal);
         check("DB4", "44 copies of one card breaks the max-3 rule (:194)", !legalModel.isLegal());
 
         // Rebuild legally: 15 distinct NARN cards at 3 copies each = 45.
         List<Card> legalPool = new ArrayList<Card>();
         for (int i = 0; i < 15; i++) {
-            legalPool.add(characterCard("db_ok_" + i, "OK" + i, Faction.NARN, Faction.NARN,
+            legalPool.add(characterCard("db_ok_" + i, "OK" + i, Race.NARN, Loyalty.NARN,
                     CardSet.PREMIERE, Rarity.COMMON, new int[] { 1, 1, 1, 1 }));
         }
         List<Card> good = new ArrayList<Card>();
-        Player goodHolder = player("DBGood", Faction.NARN);
+        Player goodHolder = player("DBGood", Race.NARN);
         good.add(goodHolder.getAmbassador());
         for (int i = 0; i < 15; i++) {
             for (int copy = 0; copy < 3; copy++) good.add(legalPool.get(i));
         }
-        DeckBuilderModel goodModel = new DeckBuilderModel(legalPool, Faction.NARN);
+        DeckBuilderModel goodModel = new DeckBuilderModel(legalPool, Race.NARN);
         goodModel.addCards(good);
         check("DB4", "45 cards, 15 distinct at 3 copies, one ambassador is legal",
                 goodModel.isLegal());
@@ -8002,16 +8002,16 @@ public class HeadlessConformanceTest {
 
         // 5: faction playability is re-checked against the CHOSEN faction, so a
         //    deck that was legal for one faction is not silently legal for all.
-        DeckBuilderModel switched = new DeckBuilderModel(legalPool, Faction.NARN);
+        DeckBuilderModel switched = new DeckBuilderModel(legalPool, Race.NARN);
         switched.addCards(good);
         check("DB5", "a NARN deck is legal while building for NARN", switched.isLegal());
-        switched.setFaction(Faction.MINBARI);
+        switched.setRace(Race.MINBARI);
         check("DB5", "the same deck stops being legal for MINBARI (faction playability)",
                 !switched.isLegal());
 
         // 6: the handed-over deck is a copy, so later mutation cannot change a
         //    deck the engine already accepted.
-        DeckBuilderModel handover = new DeckBuilderModel(legalPool, Faction.NARN);
+        DeckBuilderModel handover = new DeckBuilderModel(legalPool, Race.NARN);
         handover.addCards(good);
         List<Card> handed = handover.constructedDeck();
         int before = handed.size();
@@ -8077,8 +8077,8 @@ public class HeadlessConformanceTest {
     private static void testAftermathDiscardAfterStep() {
         System.out.println("AMT4: aftermath discarded at END of aftermath step (B5-2237)");
 
-        Player owner = player("AMT4Owner", Faction.NARN);
-        Player other = player("AMT4Other", Faction.CENTAURI);
+        Player owner = player("AMT4Owner", Race.NARN);
+        Player other = player("AMT4Other", Race.CENTAURI);
         GameState st = state(owner, other);
         GameController gc = newController(st);
 
@@ -8087,11 +8087,11 @@ public class HeadlessConformanceTest {
         // after play ("Immediate effects are not reversed when the aftermath
         // that caused them is discarded"). "permanently" is the discriminator.
         AftermathCard oneShot = new AftermathCard("am4_rise_to_power", "Rise to Power",
-                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Military conflict. Gain 2 Influence.",
                 "WON_MILITARY");
         AftermathCard permanent = new AftermathCard("am4_war_hero", "War Hero",
-                "AFTERMATH_WON_MILITARY", Rarity.RARE, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON_MILITARY", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Military conflict. One of your characters "
                    + "gains +2 Leadership permanently.", "WON_MILITARY");
 
@@ -8137,11 +8137,11 @@ public class HeadlessConformanceTest {
              && st.getAttachedAftermaths(owner).contains(permanent));
 
         // Both aftermaths played in the same step: exactly one discard happens.
-        Player dual = player("AMT4Dual", Faction.VORLON);
+        Player dual = player("AMT4Dual", Race.VORLON);
         GameState st2 = state(dual, other);
         GameController gc2 = newController(st2);
         AftermathCard second = new AftermathCard("am4_glory", "Glory",
-                "AFTERMATH_WON", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Diplomacy or Military conflict. Gain 2 Influence.",
                 "WON");
         gc2.queueAftermathDiscard(dual, oneShot);
@@ -8194,13 +8194,13 @@ public class HeadlessConformanceTest {
     private static void testOneShotRegistryMembership() {
         System.out.println("AMT5: one-shot registry membership, single-fire and replay (B5-2406)");
 
-        Player owner = player("AMT5Owner", Faction.NARN);
-        Player other = player("AMT5Other", Faction.CENTAURI);
+        Player owner = player("AMT5Owner", Race.NARN);
+        Player other = player("AMT5Other", Race.CENTAURI);
         GameState st = state(owner, other);
         GameController gc = newController(st);
 
         AftermathCard oneShot = new AftermathCard("am4_rise_to_power", "Rise to Power",
-                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Military conflict. Gain 2 Influence.",
                 "WON_MILITARY");
 
@@ -8215,7 +8215,7 @@ public class HeadlessConformanceTest {
 
         // Distinct one-shots in one step are NOT duplicates and both survive.
         AftermathCard other1 = new AftermathCard("am4_glory", "Glory",
-                "AFTERMATH_WON", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Diplomacy or Military conflict. Gain 2 Influence.",
                 "WON");
         gc.queueAftermathDiscard(owner, oneShot);
@@ -8240,15 +8240,15 @@ public class HeadlessConformanceTest {
         // A FRESH owner: `owner`'s discard pile already carries one-shots from the
         // double-fire block above, so reusing it would make the pile-count
         // assertion below measure the earlier block instead of this one.
-        Player owner2 = player("AMT5Owner2", Faction.HUMAN);
+        Player owner2 = player("AMT5Owner2", Race.HUMAN);
         GameState st2 = state(owner2, other);
         GameController gc2 = newController(st2);
         AftermathCard played = new AftermathCard("am4_rise_to_power", "Rise to Power",
-                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Military conflict. Gain 2 Influence.",
                 "WON_MILITARY");
         AftermathCard secondCopy = new AftermathCard("am4_rise_to_power", "Rise to Power",
-                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Military conflict. Gain 2 Influence.",
                 "WON_MILITARY");
 
@@ -8273,7 +8273,7 @@ public class HeadlessConformanceTest {
         // And the registry predicate must agree with the legality gate built on
         // it: while the one-shot is genuinely IN PLAY the D4 slot is held, and
         // canPlayAftermath is the only thing that consults it.
-        Player p2 = player("AMT5P2", Faction.VORLON);
+        Player p2 = player("AMT5P2", Race.VORLON);
         GameState st3 = state(p2, other);
         p2.addToHand(secondCopy);
         st3.attachAftermath(played, p2);
@@ -8305,11 +8305,11 @@ public class HeadlessConformanceTest {
         System.out.println("AMT6: B5-2237 deferral wired into the REAL aftermath path");
 
         // ---- 1. a one-shot played through the real path ----
-        Player ai = player("AMT6AI", Faction.NARN);
+        Player ai = player("AMT6AI", Race.NARN);
         // A human second player keeps both the B5-0338 join loop and the Step 2
         // play loop off the getAI() path (which needs a populated aiPlayers
         // list) and off the interactive join window.
-        Player human = new Player("AMT6Human", Faction.CENTAURI, true);
+        Player human = new Player("AMT6Human", Race.CENTAURI, true);
         human.setDeck(new Deck(new ArrayList<Card>()));
         GameState st = state(ai, human);
         // null uiCallback skips the human join decision window, which would
@@ -8317,13 +8317,13 @@ public class HeadlessConformanceTest {
         GameController gc = new GameController(st, new ArrayList<AIPlayer>(), null);
 
         AftermathCard oneShot = new AftermathCard("am6_rise_to_power", "Rise to Power",
-                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON_MILITARY", Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Military conflict. Gain 2 Influence.",
                 "WON_MILITARY");
         ai.addToHand(oneShot);
 
         ConflictCard cc = new ConflictCard("conf_am6", "AMT6 Strike", "CONFLICT_MILITARY",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text",
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text",
                 ConflictType.MILITARY, 2);
         Conflict c = new Conflict(cc, ai);
         c.commitCard(ai, ai.getAmbassador());
@@ -8351,20 +8351,20 @@ public class HeadlessConformanceTest {
                 playAt >= 0 && discardAt > playAt);
 
         // ---- 2. a permanent played through the same real path ----
-        Player ai2 = player("AMT6AI2", Faction.VORLON);
-        Player human2 = new Player("AMT6Human2", Faction.MINBARI, true);
+        Player ai2 = player("AMT6AI2", Race.VORLON);
+        Player human2 = new Player("AMT6Human2", Race.MINBARI, true);
         human2.setDeck(new Deck(new ArrayList<Card>()));
         GameState st2 = state(ai2, human2);
         GameController gc2 = new GameController(st2, new ArrayList<AIPlayer>(), null);
 
         AftermathCard permanent = new AftermathCard("am6_war_hero", "War Hero",
-                "AFTERMATH_WON_MILITARY", Rarity.RARE, Faction.ANY, CardSet.PREMIERE,
+                "AFTERMATH_WON_MILITARY", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "Play after winning a Military conflict. One of your characters "
                    + "gains +2 Leadership permanently.", "WON_MILITARY");
         ai2.addToHand(permanent);
 
         ConflictCard cc2 = new ConflictCard("conf_am6b", "AMT6 Strike 2",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 2);
         Conflict c2 = new Conflict(cc2, ai2);
         c2.commitCard(ai2, ai2.getAmbassador());
@@ -8382,13 +8382,13 @@ public class HeadlessConformanceTest {
                 gc2.getPendingAftermathDiscardCount() == 0);
 
         // ---- 3. the real path with NO aftermath to play must still flush clean ----
-        Player ai3 = player("AMT6AI3", Faction.CENTAURI);
-        Player human3 = new Player("AMT6Human3", Faction.HUMAN, true);
+        Player ai3 = player("AMT6AI3", Race.CENTAURI);
+        Player human3 = new Player("AMT6Human3", Race.HUMAN, true);
         human3.setDeck(new Deck(new ArrayList<Card>()));
         GameState st3 = state(ai3, human3);
         GameController gc3 = new GameController(st3, new ArrayList<AIPlayer>(), null);
         ConflictCard cc3 = new ConflictCard("conf_am6c", "AMT6 Strike 3",
-                "CONFLICT_MILITARY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.MILITARY, 2);
         Conflict c3 = new Conflict(cc3, ai3);
         c3.commitCard(ai3, ai3.getAmbassador());
@@ -8424,45 +8424,45 @@ public class HeadlessConformanceTest {
         // ── seat 1: HUMAN, the reported defect. Three printed Jeffrey Sinclairs
         //    (one to be seated, two duplicates under two different set ids),
         //    one duplicate dealt into the hand exactly as the screenshot showed.
-        Player human = new Player("AMBHuman", Faction.HUMAN, true);
-        CharacterCard sinclairSeated = startingAmbassador("char_jeffrey_sinclair", "Jeffrey Sinclair", Faction.HUMAN);
-        CharacterCard sinclairInDeck = startingAmbassador("char_jeffrey_sinclair", "Jeffrey Sinclair", Faction.HUMAN);
-        CharacterCard sinclairDeluxe  = startingAmbassador("de_char_jeffrey_sinclair", "Jeffrey Sinclair", Faction.HUMAN);
+        Player human = new Player("AMBHuman", Race.HUMAN, true);
+        CharacterCard sinclairSeated = startingAmbassador("char_jeffrey_sinclair", "Jeffrey Sinclair", Race.HUMAN);
+        CharacterCard sinclairInDeck = startingAmbassador("char_jeffrey_sinclair", "Jeffrey Sinclair", Race.HUMAN);
+        CharacterCard sinclairDeluxe  = startingAmbassador("de_char_jeffrey_sinclair", "Jeffrey Sinclair", Race.HUMAN);
         List<Card> humanDeck = new ArrayList<Card>();
         humanDeck.add(sinclairInDeck);
         humanDeck.add(sinclairDeluxe);
-        for (int i = 0; i < 6; i++) humanDeck.add(ambFiller("amb_h_" + i, Faction.HUMAN));
+        for (int i = 0; i < 6; i++) humanDeck.add(ambFiller("amb_h_" + i, Race.HUMAN));
         human.setDeck(new Deck(humanDeck));
         human.addToHand(sinclairSeated);
         human.addToHand(sinclairDeluxe);   // the reported symptom
-        human.addToHand(ambFiller("amb_h_hand", Faction.HUMAN));
+        human.addToHand(ambFiller("amb_h_hand", Race.HUMAN));
 
         // ── seat 2: MINBARI. "Delenn Transformed" ships with isAmbassador true
         //    (char_delenn_transformed, MINBARI, RARE). It is a legal Minbari
         //    character, NOT the :230 starting ambassador, so both copies must
         //    survive while the two "Delenn" copies collapse to the seated one.
-        Player minbari = new Player("AMBMinbari", Faction.MINBARI, false);
-        CharacterCard delennSeated = startingAmbassador("char_delenn", "Delenn", Faction.MINBARI);
-        CharacterCard delennDup    = startingAmbassador("de_char_delenn", "Delenn", Faction.MINBARI);
-        CharacterCard transformedA = startingAmbassador("char_delenn_transformed", "Delenn Transformed", Faction.MINBARI, Rarity.RARE);
-        CharacterCard transformedB = startingAmbassador("de_char_delenn_transformed", "Delenn Transformed", Faction.MINBARI, Rarity.RARE);
+        Player minbari = new Player("AMBMinbari", Race.MINBARI, false);
+        CharacterCard delennSeated = startingAmbassador("char_delenn", "Delenn", Race.MINBARI);
+        CharacterCard delennDup    = startingAmbassador("de_char_delenn", "Delenn", Race.MINBARI);
+        CharacterCard transformedA = startingAmbassador("char_delenn_transformed", "Delenn Transformed", Race.MINBARI, Rarity.RARE);
+        CharacterCard transformedB = startingAmbassador("de_char_delenn_transformed", "Delenn Transformed", Race.MINBARI, Rarity.RARE);
         List<Card> minbariDeck = new ArrayList<Card>();
         minbariDeck.add(delennDup);
         minbariDeck.add(transformedB);
-        for (int i = 0; i < 6; i++) minbariDeck.add(ambFiller("amb_m_" + i, Faction.MINBARI));
+        for (int i = 0; i < 6; i++) minbariDeck.add(ambFiller("amb_m_" + i, Race.MINBARI));
         minbari.setDeck(new Deck(minbariDeck));
         minbari.addToHand(delennSeated);
         minbari.addToHand(transformedA);
 
         // ── seat 3: NARN, no duplicate at all. Pins that the sweep costs
         //    nothing and does not disturb the deck it rebuilds.
-        Player narn = new Player("AMBNarn", Faction.NARN, false);
-        CharacterCard gkarSeated = startingAmbassador("char_gkar", "G'kar", Faction.NARN);
+        Player narn = new Player("AMBNarn", Race.NARN, false);
+        CharacterCard gkarSeated = startingAmbassador("char_gkar", "G'kar", Race.NARN);
         List<Card> narnDeck = new ArrayList<Card>();
-        for (int i = 0; i < 9; i++) narnDeck.add(ambFiller("amb_n_" + i, Faction.NARN));
+        for (int i = 0; i < 9; i++) narnDeck.add(ambFiller("amb_n_" + i, Race.NARN));
         narn.setDeck(new Deck(narnDeck));
         narn.addToHand(gkarSeated);
-        narn.addToHand(ambFiller("amb_n_hand", Faction.NARN));
+        narn.addToHand(ambFiller("amb_n_hand", Race.NARN));
         List<String> narnPileBefore = drawPileIds(narn);
 
         // ── seat 4: NON_ALIGNED. Rulebook :888/:890 -- there is no single League
@@ -8470,13 +8470,13 @@ public class HeadlessConformanceTest {
         //    ambassador. Both are ambassador-flagged and same-faction, so this
         //    seat is what stops a later reader from widening the predicate to
         //    isAmbassador() alone and deleting a card the rulebook keeps.
-        Player league = new Player("AMBLeague", Faction.NON_ALIGNED, false);
-        CharacterCard gaim  = startingAmbassador("na_gaim",  "Gaim",  Faction.NON_ALIGNED);
-        CharacterCard draziA = startingAmbassador("na_drazi", "Drazi", Faction.NON_ALIGNED);
-        CharacterCard draziB = startingAmbassador("na_drazi2", "Drazi", Faction.NON_ALIGNED);
+        Player league = new Player("AMBLeague", Race.NON_ALIGNED, false);
+        CharacterCard gaim  = startingAmbassador("na_gaim",  "Gaim",  Race.NON_ALIGNED);
+        CharacterCard draziA = startingAmbassador("na_drazi", "Drazi", Race.NON_ALIGNED);
+        CharacterCard draziB = startingAmbassador("na_drazi2", "Drazi", Race.NON_ALIGNED);
         List<Card> leagueDeck = new ArrayList<Card>();
         leagueDeck.add(draziB);
-        for (int i = 0; i < 6; i++) leagueDeck.add(ambFiller("amb_l_" + i, Faction.NON_ALIGNED));
+        for (int i = 0; i < 6; i++) leagueDeck.add(ambFiller("amb_l_" + i, Race.NON_ALIGNED));
         league.setDeck(new Deck(leagueDeck));
         league.addToHand(gaim);
         league.addToHand(draziA);
@@ -8561,7 +8561,7 @@ public class HeadlessConformanceTest {
     private static void testStartingSetupSweep() {
         System.out.println("SETUP-SETUP: setup cards seated, deck/hand duplicates swept (B5-4242)");
 
-        final Faction[]  factions = { Faction.HUMAN, Faction.CENTAURI, Faction.MINBARI, Faction.NARN };
+        final Race[]  factions = { Race.HUMAN, Race.CENTAURI, Race.MINBARI, Race.NARN };
         final String[]   hwTitles = { "Earth", "Centauri Prime", "Minbar", "Narn Homeworld" };
         final String[]   flTitles = { "Homeworld Fleet (Human)", "Homeworld Fleet (Centauri)",
                 "Homeworld Fleet (Minbari)", "Homeworld Fleet (Narn)" };
@@ -8626,27 +8626,27 @@ public class HeadlessConformanceTest {
     }
 
     /** B5-4242: a one-location test card of {@code faction}, title {@code title}. */
-    private static LocationCard setupLocation(String id, String title, Faction f) {
-        return new LocationCard(id, title, "LOCATION", Rarity.FIXED, f,
+    private static LocationCard setupLocation(String id, String title, Race f) {
+        return new LocationCard(id, title, "LOCATION", Rarity.FIXED, Loyalty.fromRace(f),
                 CardSet.PREMIERE, "x", "text", 1);
     }
 
     /** B5-4242: a one-fleet test card of {@code faction}, title {@code title}. */
-    private static FleetCard setupFleet(String id, String title, Faction f) {
-        return new FleetCard(id, title, "FLEET", Rarity.FIXED, f,
+    private static FleetCard setupFleet(String id, String title, Race f) {
+        return new FleetCard(id, title, "FLEET", Rarity.FIXED, Loyalty.fromRace(f),
                 CardSet.PREMIERE, "x", "text", 3);
     }
 
     /** B5-4242: a one-agenda test card of {@code faction}, title {@code title}. */
-    private static AgendaCard setupAgenda(String id, String title, Faction f) {
-        return new AgendaCard(id, title, "AGENDA", Rarity.FIXED, f,
+    private static AgendaCard setupAgenda(String id, String title, Race f) {
+        return new AgendaCard(id, title, "AGENDA", Rarity.FIXED, Loyalty.fromRace(f),
                 CardSet.PREMIERE, "x", "text", false, "INFLUENCE_20");
     }
 
     /** B5-4242: filler so a fixture deck/draw pile has playable draws. */
-    private static Card setupFiller(String base, int i, Faction f) {
+    private static Card setupFiller(String base, int i, Race f) {
         return new EventCard(base + "_fill_" + i, "Fill " + i, "EVENT",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text");
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text");
     }
 
     /**
@@ -8657,7 +8657,7 @@ public class HeadlessConformanceTest {
      * sweep is pinned in isolation.
      */
     private static Player setupPlayerWithSetupDuplicates(
-            String name, Faction f, String hwTitle, String flTitle, String agTitle) {
+            String name, Race f, String hwTitle, String flTitle, String agTitle) {
         Player p = new Player(name, f, false);
         List<Card> deck = new ArrayList<Card>();
         for (int i = 0; i < 6; i++) deck.add(setupFiller(name, i, f));
@@ -8676,22 +8676,22 @@ public class HeadlessConformanceTest {
     }
 
     /** B5-2412: a Starting Ambassador test card (rulebook :230). */
-    private static CharacterCard startingAmbassador(String id, String title, Faction f) {
+    private static CharacterCard startingAmbassador(String id, String title, Race f) {
         return startingAmbassador(id, title, f, Rarity.FIXED);
     }
 
     /** B5-2412: as above with an explicit rarity, for the RARE card that also
      *  carries the ambassador flag in shipped data. */
-    private static CharacterCard startingAmbassador(String id, String title, Faction f, Rarity r) {
-        return new CharacterCard(id, title, "CHARACTER_" + f, r, f, CardSet.PREMIERE,
+    private static CharacterCard startingAmbassador(String id, String title, Race f, Rarity r) {
+        return new CharacterCard(id, title, "CHARACTER_" + f, r, Loyalty.fromRace(f), CardSet.PREMIERE,
                 "x", "Starting Ambassador.", 3, 3, 0, 3, true);
     }
 
     /** B5-2412: an ordinary card so every fixture pile has non-ambassador
      *  cards to draw, which is what keeps setupGame's drawCards(3) off the
      *  deck-out forfeit branch. */
-    private static Card ambFiller(String id, Faction f) {
-        return new EventCard(id, "Filler " + id, "EVENT", Rarity.COMMON, f,
+    private static Card ambFiller(String id, Race f) {
+        return new EventCard(id, "Filler " + id, "EVENT", Rarity.COMMON, Loyalty.fromRace(f),
                 CardSet.PREMIERE, "x", "text");
     }
 
@@ -8742,8 +8742,8 @@ public class HeadlessConformanceTest {
         System.out.println("STALL: consecutive all-pass stall guard (B5-2275)");
 
         // 1. A 20-20 table — the exact B5-0312 position — is crowned by nobody.
-        Player a = player("StallA", Faction.NARN);
-        Player b = player("StallB", Faction.CENTAURI);
+        Player a = player("StallA", Race.NARN);
+        Player b = player("StallB", Race.CENTAURI);
         a.gainInfluence(20);
         b.gainInfluence(20);
         GameState tie = state(a, b);
@@ -8758,9 +8758,9 @@ public class HeadlessConformanceTest {
 
         // 2. Three-way tie at a different rating is still uncrowned: the guard
         //    counts ties, it does not grade them.
-        Player c1 = player("StallC1", Faction.VORLON);
-        Player c2 = player("StallC2", Faction.MINBARI);
-        Player c3 = player("StallC3", Faction.HUMAN);
+        Player c1 = player("StallC1", Race.VORLON);
+        Player c2 = player("StallC2", Race.MINBARI);
+        Player c3 = player("StallC3", Race.HUMAN);
         c1.gainInfluence(7);
         c2.gainInfluence(7);
         c3.gainInfluence(7);
@@ -8772,8 +8772,8 @@ public class HeadlessConformanceTest {
 
         // 3. A strictly-greatest leader IS crowned, at any rating — the guard
         //    is a liveness measure and deliberately has no rating floor.
-        Player solo = player("StallSolo", Faction.NARN);
-        Player back  = player("StallBack",  Faction.CENTAURI);
+        Player solo = player("StallSolo", Race.NARN);
+        Player back  = player("StallBack",  Race.CENTAURI);
         solo.gainInfluence(9);
         back.gainInfluence(3);
         GameState lead = state(solo, back);
@@ -8789,8 +8789,8 @@ public class HeadlessConformanceTest {
         // 4. Forfeited and surrendered players are excluded from BOTH the
         //    crown and the tie, matching GameState.isPlayerActive and every
         //    path in RulesEngine.checkVictory.
-        Player keep  = player("StallKeep", Faction.NARN);
-        Player gone  = player("StallGone", Faction.CENTAURI);
+        Player keep  = player("StallKeep", Race.NARN);
+        Player gone  = player("StallGone", Race.CENTAURI);
         keep.gainInfluence(4);
         gone.gainInfluence(30);
         gone.setHasForfeited(true);
@@ -8800,8 +8800,8 @@ public class HeadlessConformanceTest {
         check("STALL", "a forfeited 30 does not beat an active 4",
                 forf.isGameOver() && forf.getWinner() == keep);
 
-        Player keep2 = player("StallKeep2", Faction.NARN);
-        Player sur   = player("StallSur",   Faction.CENTAURI);
+        Player keep2 = player("StallKeep2", Race.NARN);
+        Player sur   = player("StallSur",   Race.CENTAURI);
         keep2.gainInfluence(4);
         sur.gainInfluence(30);
         sur.setHasSurrendered(true);
@@ -8812,8 +8812,8 @@ public class HeadlessConformanceTest {
 
         // 5. Two ACTIVE players tied at the top: still no winner. This is the
         //    distinction the guard turns on, so it is asserted directly.
-        Player t1 = player("StallT1", Faction.NARN);
-        Player t2 = player("StallT2", Faction.CENTAURI);
+        Player t1 = player("StallT1", Race.NARN);
+        Player t2 = player("StallT2", Race.CENTAURI);
         t1.gainInfluence(12);
         t2.gainInfluence(12);
         GameState topTie = state(t1, t2);
@@ -8828,8 +8828,8 @@ public class HeadlessConformanceTest {
 
         // 7. The counter is readable and starts at zero — the run loop's only
         //    input to the decision, so its default matters.
-        GameState fresh = state(player("StallFresh1", Faction.NARN),
-                                player("StallFresh2", Faction.CENTAURI));
+        GameState fresh = state(player("StallFresh1", Race.NARN),
+                                player("StallFresh2", Race.CENTAURI));
         GameController freshCtl = newController(fresh);
         check("STALL", "a fresh controller has counted zero all-pass rounds",
                 freshCtl.getConsecutiveFullPassRounds() == 0);

@@ -45,11 +45,11 @@ public class B54157ActionRoundJoinProbe {
 
     /** A seat whose only conflict ability is its ambassador's
      *  Diplomacy, so conflictTotal(DIPLOMACY) is exactly dip. */
-    private static Player seat(String name, Faction f, int dip) {
+    private static Player seat(String name, Race f, int dip) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name,
                 "Ambassador " + name, "CHARACTER_" + f, Rarity.FIXED,
-                f, CardSet.PREMIERE, "x", "text",
+                Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 dip, 1, 1, 1, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);
@@ -60,7 +60,7 @@ public class B54157ActionRoundJoinProbe {
 
     private static ConflictCard conflictCard(String id, int reward) {
         return new ConflictCard(id, "Probe Conflict " + id,
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "", ConflictType.DIPLOMACY, reward);
     }
 
@@ -115,8 +115,8 @@ public class B54157ActionRoundJoinProbe {
         // ── S1: a strong seat rotates to OPPOSE (outweigh) ────────
         // joiner 6 vs initiator 2: mediumJoinSide returns -1.
         {
-            Player init = seat("S1Init", Faction.MINBARI, 2);
-            Player join = seat("S1Join", Faction.NARN, 6);
+            Player init = seat("S1Init", Race.MINBARI, 2);
+            Player join = seat("S1Join", Race.NARN, 6);
             GameState g = state(init, join);
             g.setPhase(GamePhase.ACTION);
             g.setActiveConflict(inPlay(conflictCard("s1", 3), init));
@@ -133,8 +133,8 @@ public class B54157ActionRoundJoinProbe {
         // ── S2: a weak seat rotates to SUPPORT (free-ride) ────────
         // joiner 1 vs initiator 6: 1*2 < 6, mediumJoinSide returns +1.
         {
-            Player init = seat("S2Init", Faction.MINBARI, 6);
-            Player join = seat("S2Join", Faction.NARN, 1);
+            Player init = seat("S2Init", Race.MINBARI, 6);
+            Player join = seat("S2Join", Race.NARN, 1);
             GameState g = state(init, join);
             g.setPhase(GamePhase.ACTION);
             g.setActiveConflict(inPlay(conflictCard("s2", 3), init));
@@ -149,8 +149,8 @@ public class B54157ActionRoundJoinProbe {
         // ── S3: the middle band abstains ──────────────────────────
         // joiner 3 vs initiator 3: neither outweigh nor free-ride.
         {
-            Player init = seat("S3Init", Faction.MINBARI, 3);
-            Player join = seat("S3Join", Faction.NARN, 3);
+            Player init = seat("S3Init", Race.MINBARI, 3);
+            Player join = seat("S3Join", Race.NARN, 3);
             GameState g = state(init, join);
             g.setPhase(GamePhase.ACTION);
             g.setActiveConflict(inPlay(conflictCard("s3", 3), init));
@@ -163,8 +163,8 @@ public class B54157ActionRoundJoinProbe {
 
         // ── S4: a seat that already joined may not join again ─────
         {
-            Player init = seat("S4Init", Faction.MINBARI, 2);
-            Player join = seat("S4Join", Faction.NARN, 6);
+            Player init = seat("S4Init", Race.MINBARI, 2);
+            Player join = seat("S4Join", Race.NARN, 6);
             GameState g = state(init, join);
             g.setPhase(GamePhase.ACTION);
             Conflict c = inPlay(conflictCard("s4", 3), init);
@@ -179,8 +179,8 @@ public class B54157ActionRoundJoinProbe {
 
         // ── S5: the initiator is never offered a join on its own ──
         {
-            Player init = seat("S5Init", Faction.MINBARI, 6);
-            Player join = seat("S5Join", Faction.NARN, 2);
+            Player init = seat("S5Init", Race.MINBARI, 6);
+            Player join = seat("S5Join", Race.NARN, 2);
             GameState g = state(init, join);
             g.setPhase(GamePhase.ACTION);
             g.setActiveConflict(inPlay(conflictCard("s5", 3), init));
@@ -193,8 +193,8 @@ public class B54157ActionRoundJoinProbe {
 
         // ── S6: the declaration window owns the CONFLICT phase ────
         {
-            Player init = seat("S6Init", Faction.MINBARI, 2);
-            Player join = seat("S6Join", Faction.NARN, 6);
+            Player init = seat("S6Init", Race.MINBARI, 2);
+            Player join = seat("S6Join", Race.NARN, 6);
             GameState g = state(init, join);
             g.setPhase(GamePhase.CONFLICT);
             g.setActiveConflict(inPlay(conflictCard("s6", 3), init));
@@ -209,8 +209,8 @@ public class B54157ActionRoundJoinProbe {
         // (dormant until the engine follow-up keeps the conflict in
         // play through the action round).
         {
-            Player init = seat("S7Init", Faction.MINBARI, 2);
-            Player join = seat("S7Join", Faction.NARN, 6);
+            Player init = seat("S7Init", Race.MINBARI, 2);
+            Player join = seat("S7Join", Race.NARN, 6);
             GameState g = state(init, join);
             g.setPhase(GamePhase.ACTION);
             AIPlayer ai = new AIPlayer(join, AIDifficulty.MEDIUM);
@@ -222,8 +222,8 @@ public class B54157ActionRoundJoinProbe {
 
         // ── S8: a resolved conflict draws no join ─────────────────
         {
-            Player init = seat("S8Init", Faction.MINBARI, 2);
-            Player join = seat("S8Join", Faction.NARN, 6);
+            Player init = seat("S8Init", Race.MINBARI, 2);
+            Player join = seat("S8Join", Race.NARN, 6);
             GameState g = state(init, join);
             g.setPhase(GamePhase.ACTION);
             Conflict c = inPlay(conflictCard("s8", 3), init);
@@ -242,8 +242,8 @@ public class B54157ActionRoundJoinProbe {
         // (1 vs 6, reward 3): the free-ride support outscores a
         // hopeless opposition.
         {
-            Player strongInit = seat("S9InitA", Faction.MINBARI, 2);
-            Player strongJoin = seat("S9JoinA", Faction.NARN, 6);
+            Player strongInit = seat("S9InitA", Race.MINBARI, 2);
+            Player strongJoin = seat("S9JoinA", Race.NARN, 6);
             GameState gStrong = state(strongInit, strongJoin);
             gStrong.setPhase(GamePhase.ACTION);
             gStrong.setActiveConflict(
@@ -258,8 +258,8 @@ public class B54157ActionRoundJoinProbe {
             check("S9: both join sides score positive",
                     opposeScore > 0 && supportScore > 0);
 
-            Player weakInit = seat("S9InitB", Faction.MINBARI, 6);
-            Player weakJoin = seat("S9JoinB", Faction.NARN, 1);
+            Player weakInit = seat("S9InitB", Race.MINBARI, 6);
+            Player weakJoin = seat("S9JoinB", Race.NARN, 1);
             GameState gWeak = state(weakInit, weakJoin);
             gWeak.setPhase(GamePhase.ACTION);
             gWeak.setActiveConflict(

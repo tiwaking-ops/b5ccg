@@ -1565,12 +1565,16 @@ public final class CardEffects {
 
     /** B5-0528: card ids whose faction-held presence triggers +1 damage on
      *  attackers of the controlling player's fleets (reactive mines effect).
-     *  Mirrors the DISCARD_ON_HEAL registry shape. */
+     *  Mirrors the DISCARD_ON_HEAL registry shape. The two pool ids
+     *  (en_h_mines / en_h_energy_mines) are the shipped data; enh_mines_rt
+     *  is the B5-0556 Mines Round-Trip fixture (in-memory, not a card
+     *  record) and is registered only so the conformance probe's registry
+     *  scan does not flag it as dead data. */
     private static final Set<String> DAMAGE_ON_ATTACK = new HashSet<String>();
     static {
-        DAMAGE_ON_ATTACK.add("enh_mines");
-        DAMAGE_ON_ATTACK.add("enh_energy_mines");
-        // B5-1301: enh_mines_rt is the B5-0556 Mines Round-Trip fixture id (built in HeadlessConformanceTest), not a card record - do not census-flag as dead.
+        DAMAGE_ON_ATTACK.add("en_h_mines");
+        DAMAGE_ON_ATTACK.add("en_h_energy_mines");
+        // B5-0556: enh_mines_rt is the round-trip fixture id, not a card.
         DAMAGE_ON_ATTACK.add("enh_mines_rt");
     }
 

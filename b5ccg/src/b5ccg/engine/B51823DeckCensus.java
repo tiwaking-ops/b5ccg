@@ -1,7 +1,7 @@
 package b5ccg.engine;
 
 import b5ccg.model.Card;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
 import java.io.IOException;
 import java.util.*;
 
@@ -16,12 +16,12 @@ public class B51823DeckCensus {
     public static void main(String[] args) {
         System.out.println("=== B5-1823 Behavioral Control: StarterDeckBuilder Load Test ===\n");
         
-        Faction[] factions = {Faction.HUMAN, Faction.CENTAURI, Faction.MINBARI, Faction.NARN};
+        Race[] factions = {Race.HUMAN, Race.CENTAURI, Race.MINBARI, Race.NARN};
         
-        for (Faction faction : factions) {
+        for (Race faction : factions) {
             System.out.println("--- " + faction + " ---");
             try {
-                List<Card> deck = StarterDeckBuilder.buildForFaction(faction);
+                List<Card> deck = StarterDeckBuilder.buildForRace(faction);
                 System.out.println("  Loaded " + deck.size() + " cards");
                 
                 // Count fixed vs random

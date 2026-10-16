@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  B5CCG AutoSnapshot — Task Scheduler definition (B5-0009, B0 snapshot job).
+
+  STATUS: NOT REGISTERED, NOT ENABLED. This file is a definition for owner
+  review only. Nothing on this machine runs new-snapshot.ps1 on a timer until
+  the owner imports it.
+
+  To enable (owner only, after review):
+    Register-ScheduledTask -TaskName "B5CCG\AutoSnapshot" `
+      -Xml (Get-Content -Raw "<repo>\.agent\tools\snapshot-task.xml") `
+      -TaskPath "\B5CCG\"
+  To keep it imported-but-disabled instead, follow with:
+    Disable-ScheduledTask -TaskName "B5CCG\AutoSnapshot"
+  To test once without the timer:
+    powershell -NoProfile -ExecutionPolicy Bypass -File "<repo>\.agent\tools\new-snapshot.ps1" -DryRun
+  (DryRun writes no commit and moves no ref. Live test: run without -DryRun,
+  then inspect the new tip with git log on auto-snapshot)
+
+  Notes for review:
+    * Runs hourly (PT1H, indefinite), only while the owner is logged on
+      (InteractiveToken) and with least privilege; no password is stored.
+    * Absolute paths below bind this definition to this machine and this
+      checkout. If the repo moves, edit Command Arguments / WorkingDirectory.
+    * The script itself never checks out branches, never touches the working
+      tree or the real index, and moves only refs/heads/auto-snapshot.
+    * Freshness is monitored separately with:
+        .agent\tools\snapshot-age-check.ps1 -Ref auto-snapshot
+      (exit 1 = older than 24 h).
+-->
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Date>2026-10-16T05:52:00</Date>
+    <Author>repo owner</Author>
+    <Description>B0 non-agent snapshot: commit the b5ccg working tree to the auto-snapshot branch hourly. Agents keep no-commit/no-push; this timer job is the approved non-agent exception. Definition only until the owner registers it.</Description>
+    <URI>\B5CCG\AutoSnapshot</URI>
+  </RegistrationInfo>
+  <Triggers>
+    <TimeTrigger>
+      <StartBoundary>2026-10-17T09:00:00</StartBoundary>
+      <Repetition>
+        <Interval>PT1H</Interval>
+      </Repetition>
+      <Enabled>true</Enabled>
+    </TimeTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>true</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <DisallowStartOnRemoteAppSession>false</DisallowStartOnRemoteAppSession>
+    <UseUnifiedSchedulingEngine>true</UseUnifiedSchedulingEngine>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT5M</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>powershell.exe</Command>
+      <Arguments>-NoProfile -ExecutionPolicy Bypass -File "C:\temp\projects\b5ccg\.agent\tools\new-snapshot.ps1" -Branch auto-snapshot</Arguments>
+      <WorkingDirectory>C:\temp\projects\b5ccg</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>

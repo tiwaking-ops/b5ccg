@@ -27,10 +27,10 @@ public class HeadlessAIMemoryDifficultyContractTest {
     }
 
     // ── deterministic fixtures (similar to HeadlessAIDifficultyContractTest) ────
-    private static Player player(String name, Faction f) {
+    private static Player player(String name, Race f) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name, "Amb " + name,
-                "CHARACTER_" + f, Rarity.FIXED, f, CardSet.PREMIERE, "x", "text",
+                "CHARACTER_" + f, Rarity.FIXED, Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 3, 3, 3, 3, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);
@@ -39,7 +39,7 @@ public class HeadlessAIMemoryDifficultyContractTest {
     }
 
     private static EventCard event(String id, String title) {
-        return new EventCard(id, title, "EVENT", Rarity.COMMON, Faction.ANY,
+        return new EventCard(id, title, "EVENT", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text");
     }
 
@@ -62,8 +62,8 @@ public class HeadlessAIMemoryDifficultyContractTest {
         System.out.println("=== B5-2541 AI memory difficulty contract verification ===");
 
         // ── Fixture: p leads with two cost-0 plays + pass in the legal set ──
-        final Player p     = player("ContractNarn", Faction.NARN);
-        final Player rival = player("ContractMinbari", Faction.MINBARI);
+        final Player p     = player("ContractNarn", Race.NARN);
+        final Player rival = player("ContractMinbari", Race.MINBARI);
         final GameState st = state(p, rival);   // p 10, rival 4: p leads, no catch-up bonus
 
         // Two otherwise-identical EVENTs (same positional base): zero-cost

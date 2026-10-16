@@ -248,17 +248,17 @@ public class HeadlessReportingTiebreakTest {
     // ------------------------------------------------------------------
 
     /** Fresh player: ambassador 3/3/3/3 seated in the Inner Circle, filler deck. */
-    private static Player player(String name, Faction f) {
+    private static Player player(String name, Race f) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name, "Amb " + name,
-                "CHARACTER_" + f, Rarity.FIXED, f, CardSet.PREMIERE, "x", "text",
+                "CHARACTER_" + f, Rarity.FIXED, Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 3, 3, 3, 3, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);
         List<Card> filler = new ArrayList<Card>();
         for (int i = 0; i < 10; i++) {
             filler.add(new EventCard("deck_" + name + "_" + i, "Deck " + i,
-                    "EVENT", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text"));
+                    "EVENT", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text"));
         }
         p.setDeck(new Deck(filler));
         return p;
@@ -273,12 +273,12 @@ public class HeadlessReportingTiebreakTest {
     }
 
     private static FleetCard fleet(String id, int military) {
-        return new FleetCard(id, id, "FLEET", Rarity.COMMON, Faction.ANY,
+        return new FleetCard(id, id, "FLEET", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "text", military);
     }
 
     private static CharacterCard icChar(String id, int leadership) {
-        return new CharacterCard(id, id, "CHARACTER_NARN", Rarity.RARE, Faction.NARN,
+        return new CharacterCard(id, id, "CHARACTER_NARN", Rarity.RARE, Loyalty.NARN,
                 CardSet.PREMIERE, "x", "text", 2, 2, 0, leadership, false);
     }
 
@@ -292,8 +292,8 @@ public class HeadlessReportingTiebreakTest {
 
         // 0. Engine purity baseline: a 20-20 tie with no agenda crowns
         //    nobody (strict standard victory, D12) - the stall Option C targets.
-        Player a = player("Alpha", Faction.NARN);
-        Player b = player("Beta", Faction.MINBARI);
+        Player a = player("Alpha", Race.NARN);
+        Player b = player("Beta", Race.MINBARI);
         GameState st = state(a, b);
         a.gainInfluence(16);              // 4 -> 20
         b.gainInfluence(16);              // 4 -> 20
@@ -339,7 +339,7 @@ public class HeadlessReportingTiebreakTest {
         b.getFleets().remove(fb);
 
         // 4. Step 2: Inner Circle size, reached by step-1 narrowing (3 players).
-        Player c = player("Gamma", Faction.CENTAURI);
+        Player c = player("Gamma", Race.CENTAURI);
         GameState st3 = state(a, b, c);
         c.gainInfluence(16);              // Gamma 4 -> 20
         a.getFleets().add(fleet("tb_t2_a", 3));
@@ -384,7 +384,7 @@ public class HeadlessReportingTiebreakTest {
         // 7. Engine precedence: an INFLUENCE_20 agenda win beats the tiebreak
         //    (proposal section 4: agenda win at 20 still wins first).
         a.setAgenda(new AgendaCard("tb_agenda", "Reach Twenty", "AGENDA", Rarity.RARE,
-                Faction.NARN, CardSet.PREMIERE, "x", "text", false, "INFLUENCE_20"));
+                Loyalty.NARN, CardSet.PREMIERE, "x", "text", false, "INFLUENCE_20"));
         check("SYN", "agenda win at 20-20: engine checkVictory crowns the agenda owner",
                 rules.checkVictory(st) == a);
         r = evaluateAtRoundCap(st, rules, new int[] { 4, 12 });
@@ -432,8 +432,8 @@ public class HeadlessReportingTiebreakTest {
     private static final long ROUND_TIMEOUT_MS = 120000L;
 
     private static final String[] NAMES = { "Alpha", "Beta", "Gamma", "Delta" };
-    private static final Faction[] FACTIONS = {
-        Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN
+    private static final Race[] FACTIONS = {
+        Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN
     };
     private static final AIDifficulty[] DIFFICULTIES = {
         AIDifficulty.EASY, AIDifficulty.MEDIUM, AIDifficulty.HARD, AIDifficulty.MEDIUM
@@ -459,7 +459,7 @@ public class HeadlessReportingTiebreakTest {
         List<AIPlayer> aiPlayers = new ArrayList<AIPlayer>();
         for (int i = 0; i < NAMES.length; i++) {
             Player p = new Player(NAMES[i], FACTIONS[i], false);
-            List<Card> deckCards = buildFactionDeck(allCards, FACTIONS[i]);
+            List<Card> deckCards = buildRaceDeck(allCards, FACTIONS[i]);
             if (deckCards.isEmpty()) {
                 check("LIVE", "deck available for faction " + FACTIONS[i], false);
                 return;
@@ -549,7 +549,7 @@ public class HeadlessReportingTiebreakTest {
     // ------------------------------------------------------------------
 
     /** Real Premier starter deck when available; else faction-first heuristic. */
-    private static List<Card> buildFactionDeck(List<Card> all, Faction faction) {
+    private static List<Card> buildRaceDeck(List<Card> all, Race faction) {
         if (StarterDeckBuilder.isAvailable()) {
             try {
                 return StarterDeckBuilder.build(faction, all);
@@ -561,7 +561,7 @@ public class HeadlessReportingTiebreakTest {
         List<Card> deck = new ArrayList<Card>();
         for (int i = 0; i < all.size() && deck.size() < 60; i++) {
             Card c = all.get(i);
-            if (c.getFaction() == faction) deck.add(c);
+            if (c.getLoyalty() == Loyalty.fromRace(faction)) deck.add(c);
         }
         int conflicts = 0;
         for (int i = 0; i < all.size() && conflicts < 12; i++) {
@@ -575,8 +575,8 @@ public class HeadlessReportingTiebreakTest {
         }
         for (int i = 0; i < all.size() && deck.size() < 60; i++) {
             Card c = all.get(i);
-            Faction f = c.getFaction();
-            if (f == Faction.ANY || f == Faction.NEUTRAL || f == Faction.NON_ALIGNED) {
+            Loyalty f = c.getLoyalty();
+            if (f == Loyalty.ANY || f == Loyalty.NEUTRAL || f == Loyalty.NON_ALIGNED) {
                 deck.add(c);
             }
         }
@@ -584,12 +584,12 @@ public class HeadlessReportingTiebreakTest {
     }
 
     /** The faction's ambassador card inside a deck list, or null. */
-    private static CharacterCard findAmbassadorCard(List<Card> deckCards, Faction faction) {
+    private static CharacterCard findAmbassadorCard(List<Card> deckCards, Race faction) {
         for (int i = 0; i < deckCards.size(); i++) {
             Card c = deckCards.get(i);
             if (c instanceof CharacterCard) {
                 CharacterCard ch = (CharacterCard) c;
-                if (ch.isAmbassador() && ch.getFaction() == faction) return ch;
+                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(faction)) return ch;
             }
         }
         return null;

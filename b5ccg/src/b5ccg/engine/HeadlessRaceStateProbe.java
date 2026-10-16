@@ -7,7 +7,8 @@ import b5ccg.model.GameState;
 import b5ccg.model.Player;
 import b5ccg.model.enums.AIDifficulty;
 import b5ccg.model.enums.CardSet;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Loyalty;
+import b5ccg.model.enums.Race;
 import b5ccg.model.enums.Rarity;
 
 import java.util.ArrayList;
@@ -17,18 +18,18 @@ import java.util.List;
  * B5-2535 — FACTION STATE BOOK conformance probe (standalone CLI, wired into
  * compile.sh RUN_TESTS as a gate; exit 0 on all-pass, 1 on any failure).
  *
- * <p>Verifies that {@link FactionStateBook} is correctly <em>initialised</em>,
+ * <p>Verifies that {@link RaceStateBook} is correctly <em>initialised</em>,
  * <em>advanced</em>, and <em>read across a full round</em>. Complements
- * {@code B51996FactionStateProbe} (which tests the book in isolation) by
+ * {@code B51996RaceStateProbe} (which tests the book in isolation) by
  * driving state through a real {@link GameController} round and across
  * {@code advanceRound()} boundaries.
  *
  * <p>Each assertion names the rulebook line it enforces. Java 6 only.
  *
  * <p>Run after compile.bat / compile.sh:
- * {@code java -cp b5ccg/out b5ccg.engine.HeadlessFactionStateProbe}
+ * {@code java -cp b5ccg/out b5ccg.engine.HeadlessRaceStateProbe}
  */
-public class HeadlessFactionStateProbe {
+public class HeadlessRaceStateProbe {
 
     private static int failures = 0;
 
@@ -61,11 +62,11 @@ public class HeadlessFactionStateProbe {
     private static void scenarioInitialisation() {
         GameState g = game();
         RulesEngine r = rules();
-        check("fresh game: no alliance", !r.areAllied(Faction.HUMAN, Faction.NARN, g));
-        check("fresh game: no trade pact", !r.areTrading(Faction.HUMAN, Faction.NARN, g));
-        check("fresh game: no war", !g.isAtWar(Faction.HUMAN, Faction.NARN));
+        check("fresh game: no alliance", !r.areAllied(Race.HUMAN, Race.NARN, g));
+        check("fresh game: no trade pact", !r.areTrading(Race.HUMAN, Race.NARN, g));
+        check("fresh game: no war", !g.isAtWar(Race.HUMAN, Race.NARN));
         check("fresh game: state set is empty",
-              r.getFactionStates(g).getStates(Faction.HUMAN, Faction.NARN).isEmpty());
+              r.getRaceStates(g).getStates(Race.HUMAN, Race.NARN).isEmpty());
     }
 
     /** :803 — alliances and trade pacts can be entered and read back. */
@@ -73,67 +74,67 @@ public class HeadlessFactionStateProbe {
         GameState g = game();
         RulesEngine r = rules();
         check("alliance entered via facade",
-              r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g));
+              r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g));
         check("alliance reads back",
-              r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              r.areAllied(Race.HUMAN, Race.NARN, g));
         check("trade pact entered via facade",
-              r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.TRADE_PACT, g));
+              r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.TRADE_PACT, g));
         check("trade pact reads back",
-              r.areTrading(Faction.HUMAN, Faction.NARN, g));
+              r.areTrading(Race.HUMAN, Race.NARN, g));
         check("alliance survives alongside trade pact",
-              r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              r.areAllied(Race.HUMAN, Race.NARN, g));
         check("both states in force",
-              r.getFactionStates(g).getStates(Faction.HUMAN, Faction.NARN).size() == 2);
+              r.getRaceStates(g).getStates(Race.HUMAN, Race.NARN).size() == 2);
         check("re-entering alliance is refused",
-              !r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g));
+              !r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g));
         check("alliance exited via facade",
-              r.exitFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g));
+              r.exitRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g));
         check("alliance no longer in force",
-              !r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              !r.areAllied(Race.HUMAN, Race.NARN, g));
         check("trade pact untouched by alliance exit",
-              r.areTrading(Faction.HUMAN, Faction.NARN, g));
+              r.areTrading(Race.HUMAN, Race.NARN, g));
     }
 
     /** State persists across advanceRound() — the book is not round-scoped. */
     private static void scenarioPersistenceAcrossAdvanceRound() {
         GameState g = game();
         RulesEngine r = rules();
-        r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g);
-        r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.TRADE_PACT, g);
+        r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g);
+        r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.TRADE_PACT, g);
         g.advanceRound();
         check("alliance persists across advanceRound()",
-              r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              r.areAllied(Race.HUMAN, Race.NARN, g));
         check("trade pact persists across advanceRound()",
-              r.areTrading(Faction.HUMAN, Faction.NARN, g));
+              r.areTrading(Race.HUMAN, Race.NARN, g));
         g.advanceRound();
         g.advanceRound();
         check("alliance persists across three advanceRound() calls",
-              r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              r.areAllied(Race.HUMAN, Race.NARN, g));
         check("trade pact persists across three advanceRound() calls",
-              r.areTrading(Faction.HUMAN, Faction.NARN, g));
+              r.areTrading(Race.HUMAN, Race.NARN, g));
     }
 
     /** :807 — war cancels other states, and the cancellation persists. */
     private static void scenarioWarExclusivityAcrossRound() {
         GameState g = game();
         RulesEngine r = rules();
-        r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g);
-        r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.TRADE_PACT, g);
+        r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g);
+        r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.TRADE_PACT, g);
         check("war entered via facade",
-              r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.WAR, g));
+              r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.WAR, g));
         check("alliance cancelled by war",
-              !r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              !r.areAllied(Race.HUMAN, Race.NARN, g));
         check("trade pact cancelled by war",
-              !r.areTrading(Faction.HUMAN, Faction.NARN, g));
+              !r.areTrading(Race.HUMAN, Race.NARN, g));
         g.advanceRound();
         check("alliance stays cancelled across advanceRound()",
-              !r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              !r.areAllied(Race.HUMAN, Race.NARN, g));
         check("trade pact stays cancelled across advanceRound()",
-              !r.areTrading(Faction.HUMAN, Faction.NARN, g));
+              !r.areTrading(Race.HUMAN, Race.NARN, g));
         check("war persists across advanceRound()",
-              g.isAtWar(Faction.HUMAN, Faction.NARN));
+              g.isAtWar(Race.HUMAN, Race.NARN));
         check("alliance refused while at war",
-              !r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g));
+              !r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g));
     }
 
     /** Two games do not share faction state. */
@@ -141,11 +142,11 @@ public class HeadlessFactionStateProbe {
         GameState g1 = game();
         GameState g2 = game();
         RulesEngine r = rules();
-        r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g1);
-        check("alliance in g1", r.areAllied(Faction.HUMAN, Faction.NARN, g1));
-        check("no alliance in g2", !r.areAllied(Faction.HUMAN, Faction.NARN, g2));
+        r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g1);
+        check("alliance in g1", r.areAllied(Race.HUMAN, Race.NARN, g1));
+        check("no alliance in g2", !r.areAllied(Race.HUMAN, Race.NARN, g2));
         check("facade refuses a second game",
-              r.getFactionStates(g2) == null);
+              r.getRaceStates(g2) == null);
     }
 
     /** The RulesEngine facade works before and after advanceRound(). */
@@ -153,29 +154,29 @@ public class HeadlessFactionStateProbe {
         GameState g = game();
         RulesEngine r = rules();
         check("facade: alliance entered before round",
-              r.enterFactionState(Faction.CENTAURI, Faction.MINBARI,
-                      FactionState.ALLIANCE, g));
+              r.enterRaceState(Race.CENTAURI, Race.MINBARI,
+                      RaceState.ALLIANCE, g));
         g.advanceRound();
         check("facade: alliance readable after round",
-              r.areAllied(Faction.CENTAURI, Faction.MINBARI, g));
+              r.areAllied(Race.CENTAURI, Race.MINBARI, g));
         check("facade: trade pact entered after round",
-              r.enterFactionState(Faction.CENTAURI, Faction.MINBARI,
-                      FactionState.TRADE_PACT, g));
+              r.enterRaceState(Race.CENTAURI, Race.MINBARI,
+                      RaceState.TRADE_PACT, g));
         check("facade: trade pact readable after round",
-              r.areTrading(Faction.CENTAURI, Faction.MINBARI, g));
+              r.areTrading(Race.CENTAURI, Race.MINBARI, g));
         g.advanceRound();
         check("facade: both states readable after two rounds",
-              r.areAllied(Faction.CENTAURI, Faction.MINBARI, g)
-              && r.areTrading(Faction.CENTAURI, Faction.MINBARI, g));
+              r.areAllied(Race.CENTAURI, Race.MINBARI, g)
+              && r.areTrading(Race.CENTAURI, Race.MINBARI, g));
     }
 
     /** State persists across a full GameController round with real AI players. */
     private static void scenarioFullGameRound() {
         GameState g = game();
         RulesEngine r = rules();
-        r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.ALLIANCE, g);
-        r.enterFactionState(Faction.HUMAN, Faction.NARN, FactionState.TRADE_PACT, g);
-        r.enterFactionState(Faction.CENTAURI, Faction.MINBARI, FactionState.ALLIANCE, g);
+        r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.ALLIANCE, g);
+        r.enterRaceState(Race.HUMAN, Race.NARN, RaceState.TRADE_PACT, g);
+        r.enterRaceState(Race.CENTAURI, Race.MINBARI, RaceState.ALLIANCE, g);
 
         // Run a full game on a background thread. The game ends when a winner
         // is found or the stall guard fires. We wait up to 120 s.
@@ -210,21 +211,21 @@ public class HeadlessFactionStateProbe {
 
         // States must persist after the full game round.
         check("alliance persists after full game round",
-              r.areAllied(Faction.HUMAN, Faction.NARN, g));
+              r.areAllied(Race.HUMAN, Race.NARN, g));
         check("trade pact persists after full game round",
-              r.areTrading(Faction.HUMAN, Faction.NARN, g));
+              r.areTrading(Race.HUMAN, Race.NARN, g));
         check("unrelated alliance persists after full game round",
-              r.areAllied(Faction.CENTAURI, Faction.MINBARI, g));
+              r.areAllied(Race.CENTAURI, Race.MINBARI, g));
     }
 
     // ── fixtures ────────────────────────────────────────────────────────────
 
     private static GameState game() {
         List<Player> players = new ArrayList<Player>();
-        players.add(new Player("Human",   Faction.HUMAN,   false));
-        players.add(new Player("Minbari", Faction.MINBARI, false));
-        players.add(new Player("Centauri", Faction.CENTAURI, false));
-        players.add(new Player("Narn",    Faction.NARN,    false));
+        players.add(new Player("Human",   Race.HUMAN,   false));
+        players.add(new Player("Minbari", Race.MINBARI, false));
+        players.add(new Player("Centauri", Race.CENTAURI, false));
+        players.add(new Player("Narn",    Race.NARN,    false));
         GameState g = new GameState(players);
         for (Player p : players) {
             p.setGameState(g);
@@ -234,7 +235,7 @@ public class HeadlessFactionStateProbe {
                 filler.add(new b5ccg.model.EventCard(
                         "deck_" + p.getName() + "_" + i,
                         "Deck " + i,
-                        "EVENT", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                        "EVENT", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                         "x", "text"));
             }
             p.setDeck(new Deck(filler));
