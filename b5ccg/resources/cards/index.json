@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "comment": "Card id namespace registry. Implements docs/proposals/2026-10-03-card-id-namespace-guard-proposal.md section 3 (B5-2576). Each entry declares the MANDATORY token every id in that file must begin with. An empty idPrefix is a positive declaration of bare ids, not an absence of information. A new set picks a short, distinct, lowercase prefix and registers it here before its cards land; a prefix is never reused by a second set and never retired while cards carrying it remain in the pool.",
+  "sets": [
+    {
+      "file": "premiere.json",
+      "set": "PREMIERE",
+      "idPrefix": "",
+      "idPrefixRequired": false,
+      "cardCount": 446
+    },
+    {
+      "file": "deluxe.json",
+      "set": "DELUXE",
+      "idPrefix": "de_",
+      "idPrefixRequired": true,
+      "cardCount": 383
+    }
+  ]
+}

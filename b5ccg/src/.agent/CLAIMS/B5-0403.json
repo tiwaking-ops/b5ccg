@@ -1,0 +1,8 @@
+{
+  "task": "B5-0403",
+  "agent_id": "solar-pro4:free",
+  "started_utc": "2026-09-25T09:06:00Z",
+  "ttl_min": 30,
+  "scope": ["b5ccg/src/b5ccg/ai/"],
+  "javac": "1.8.0_292"
+}
