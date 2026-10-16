@@ -16,6 +16,10 @@ tmp-scans/
 *.log
 out*.txt
 
+# Compiled classes and backups (never commit)
+*.class
+*.bak
+
 # Secrets (WP-00 secret scan gate)
 *.pem
 *.key
