@@ -1,5 +1,5 @@
 @echo off
-REM Compile the B5 CCG Java project (Java 6 only, no external libraries)
+REM Compile the B5 CCG Java project (JDK 25 --release 8, stdlib only; Hop 1 per B5-0007/D2)
 setlocal enabledelayedexpansion
 
 REM Resolve the script directory so it runs from any CWD and always targets
@@ -46,7 +46,7 @@ if %N% equ 0 (
 REM Collect all .java files (relative paths, one per line) into a response
 REM file so the list can exceed the command-line ceiling without trimming
 REM javac's argument list.
-set LIST=..\b5ccg_compile_list.tmp
+set LIST=%TEMP%\b5ccg_compile_list.tmp
 REM B5-0001: quote each path AND slash the backslashes — %%~f expands to a
 REM FULL path, and javac @-files treat backslash as an escape (measured: the
 REM quoted attempt still failed as "file not found: C:UsersTiwa Pene...").
@@ -73,7 +73,7 @@ REM consistent when both were equally truncated: the two builds agreed because
 REM they both stopped at the same cap, not because they saw the same tree.
 REM A capped count is a floor, never a total -- read the exit code, and treat any
 REM error count printed without -Xmaxerrs as a lower bound.
-javac -source 6 -target 6 -encoding UTF-8 -Xmaxerrs 2000 -d "%OUT%" @"%LIST%"
+javac --release 8 -encoding UTF-8 -Xmaxerrs 2000 -d "%OUT%" @"%LIST%"
 if errorlevel 1 (
   del /f /q "%LIST%" 2>nul
   REM Leave no half-written output behind for run.bat to mistake for a build.
@@ -139,6 +139,11 @@ REM trailing separator, so `%OUT%marker` would concatenate into a sibling FILE
 REM named `outmarker` rather than a file inside out/. Measured: every marker
 REM probe wrote beside the directory, never into it, and out/ stayed unmarked.
 echo ok> "%OUT%\b5ccg-build-ok.txt"
+
+REM B5-0016 (b): the response file is scratch. Delete it on the success path
+REM too (the javac-failure branch above already deletes it), so no stale file
+REM list survives the build in any directory.
+if exist "%LIST%" del /f /q "%LIST%" 2>nul
 
 echo.
 echo Build successful. Run with: run.bat

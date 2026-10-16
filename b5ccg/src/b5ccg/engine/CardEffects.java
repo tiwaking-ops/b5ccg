@@ -25,7 +25,7 @@ import java.util.*;
  *                   (GameController).
  *
  * The model interface CardEffect remains declared; the id-keyed tables below
- * are its implementation. Java 6 only: no lambdas, method refs, streams,
+ * are its implementation. Current rule: Java 8-compatible bytecode via JDK 25 --release 8 (per B5-0007/D2): no lambdas, method refs, streams,
  * diamonds, or try-with-resources.
  */
 public final class CardEffects {
@@ -41,8 +41,8 @@ public final class CardEffects {
             new HashMap<String, WaiverEffect>();
     static {
         // B5-0360 E3 / Q4: both set versions grant the same join waiver.
+        // Canonical-key routing (lookupMap) collapses the Premiere/Deluxe twin.
         WAIVER_EFFECTS.put("conf_non_aligned_support", WaiverEffect.FREE_PARTICIPANT);
-        WAIVER_EFFECTS.put("de_conf_non_aligned_support", WaiverEffect.FREE_PARTICIPANT);
     }
 
     /**
@@ -61,18 +61,18 @@ public final class CardEffects {
     }
 
     public static boolean isMultiSideConflict(String cardId) {
-        return cardId != null && MULTI_SIDE_CONFLICT_IDS.contains(cardId);
+        return cardId != null && lookupSet(MULTI_SIDE_CONFLICT_IDS, cardId);
     }
 
     public static WaiverEffect sponsorWaiver(Card card) {
         if (card == null) return WaiverEffect.NONE;
-        WaiverEffect effect = WAIVER_EFFECTS.get(card.getId());
+        WaiverEffect effect = lookupMap(WAIVER_EFFECTS, card.getId());
         return effect == WaiverEffect.FREE_SPONSOR ? effect : WaiverEffect.NONE;
     }
 
     public static WaiverEffect participantWaiver(Conflict conflict) {
         if (conflict == null) return WaiverEffect.NONE;
-        WaiverEffect effect = WAIVER_EFFECTS.get(conflict.getCard().getId());
+        WaiverEffect effect = lookupMap(WAIVER_EFFECTS, conflict.getCard().getId());
         return effect == WaiverEffect.FREE_PARTICIPANT ? effect : WaiverEffect.NONE;
     }
 
@@ -80,24 +80,24 @@ public final class CardEffects {
     // Data: event texts "Gain N Influence."
     private static final Map<String, Integer> EVENT_INFLUENCE = new HashMap<String, Integer>();
     static {
+        // Canonical-key routing (lookupMap) collapses unchanged-text Premiere/Deluxe
+        // twins; only Premiere literals are kept here. Deluxe-only deltas are in
+        // separate registries (see de_conf_bio_weapon_discovery, etc.).
         EVENT_INFLUENCE.put("event_merchandising_b5",        Integer.valueOf(1));
-        EVENT_INFLUENCE.put("de_event_merchandising_b5",     Integer.valueOf(1));
         EVENT_INFLUENCE.put("event_affirm_alliance",         Integer.valueOf(1));
         EVENT_INFLUENCE.put("event_destiny_fulfilled",       Integer.valueOf(2));
-        EVENT_INFLUENCE.put("de_event_destiny_fulfilled",    Integer.valueOf(2));
         EVENT_INFLUENCE.put("event_secret_vorlon_aid",       Integer.valueOf(2));
-        EVENT_INFLUENCE.put("de_event_secret_vorlon_aid",    Integer.valueOf(2));
     }
 
     // ── Events: card id → cards drawn by the playing player ─────────────────
     // Data: texts "Draw 2 cards." (+ Morden conditional, base 2 applied)
-    private static final Map<String, Integer> EVENT_DRAW = new HashMap<String, Integer>();
+    static final Map<String, Integer> EVENT_DRAW = new HashMap<String, Integer>();
     static {
+        // event_intrigues_mature has no Deluxe literal (Deluxe text is identical);
+        // canonical-key routing in lookupMap resolves de_event_intrigues_mature.
         EVENT_DRAW.put("event_intrigues_mature",           Integer.valueOf(2));
         EVENT_DRAW.put("event_contact_with_vorlons",       Integer.valueOf(2));
-        EVENT_DRAW.put("de_event_contact_with_vorlons",    Integer.valueOf(2));
         EVENT_DRAW.put("event_contact_with_shadows",       Integer.valueOf(2));
-        EVENT_DRAW.put("de_event_contact_with_shadows",    Integer.valueOf(2));
     }
 
     // ── Events: card id → influence gained by EVERY player ──────────────────
@@ -105,9 +105,7 @@ public final class CardEffects {
     private static final Map<String, Integer> EVENT_ALL_INFLUENCE = new HashMap<String, Integer>();
     static {
         EVENT_ALL_INFLUENCE.put("event_balance",             Integer.valueOf(1));
-        EVENT_ALL_INFLUENCE.put("de_event_balance",          Integer.valueOf(1));
         EVENT_ALL_INFLUENCE.put("event_for_the_common_good", Integer.valueOf(1));
-        EVENT_ALL_INFLUENCE.put("de_event_for_the_common_good", Integer.valueOf(1));
     }
 
     // ── Conflicts: card id → influence the LOSER loses ──────────────────────
@@ -116,12 +114,9 @@ public final class CardEffects {
     static {
         CONFLICT_LOSER_INFLUENCE.put("conf_affirmation_of_peace",    Integer.valueOf(1));
         CONFLICT_LOSER_INFLUENCE.put("conf_condemn_deportations",    Integer.valueOf(1));
-        CONFLICT_LOSER_INFLUENCE.put("de_conf_condemn_deportations", Integer.valueOf(1));
         CONFLICT_LOSER_INFLUENCE.put("conf_dishonor",                Integer.valueOf(1));
         CONFLICT_LOSER_INFLUENCE.put("conf_loss_of_support",         Integer.valueOf(1));
-        CONFLICT_LOSER_INFLUENCE.put("de_conf_loss_of_support",      Integer.valueOf(1));
         CONFLICT_LOSER_INFLUENCE.put("conf_hate_crime",              Integer.valueOf(2));
-        CONFLICT_LOSER_INFLUENCE.put("de_conf_hate_crime",           Integer.valueOf(2));
         // B5-1089 (WRONG #2 of 7 from B5-1032): de_conf_bio_weapon_discovery
         // deluxe delta — "loser also loses 1 Influence" on top of the
         // existing discard-2 (CONFLICT_LOSER_DISCARD). Premiere
@@ -139,15 +134,13 @@ public final class CardEffects {
         CONFLICT_LOSER_DISCARD.put("conf_bio_weapon_discovery",    Integer.valueOf(2));
         CONFLICT_LOSER_DISCARD.put("de_conf_bio_weapon_discovery", Integer.valueOf(2));
         CONFLICT_LOSER_DISCARD.put("conf_loss_of_support",         Integer.valueOf(1));
-        CONFLICT_LOSER_DISCARD.put("de_conf_loss_of_support",      Integer.valueOf(1));
     }
 
     // ── Conflicts: card id → influence the WINNER steals from the loser ─────
     // Data: "Raid Shipping": "may steal 1 Influence from the loser."
     private static final Map<String, Integer> CONFLICT_WINNER_STEAL = new HashMap<String, Integer>();
     static {
-        CONFLICT_WINNER_STEAL.put("conf_raid_shipping",    Integer.valueOf(1));
-        CONFLICT_WINNER_STEAL.put("de_conf_raid_shipping", Integer.valueOf(1));
+        CONFLICT_WINNER_STEAL.put("conf_raid_shipping", Integer.valueOf(1));
     }
 
     // ── Agendas: card id → influence at the start of each round ─────────────
@@ -156,7 +149,6 @@ public final class CardEffects {
     private static final Map<String, Integer> AGENDA_ROUND_INFLUENCE = new HashMap<String, Integer>();
     static {
         AGENDA_ROUND_INFLUENCE.put("agenda_higher_calling",       Integer.valueOf(1));
-        AGENDA_ROUND_INFLUENCE.put("de_agenda_higher_calling",    Integer.valueOf(1));
         AGENDA_ROUND_INFLUENCE.put("de_agenda_servants_of_order", Integer.valueOf(1));
     }
 
@@ -164,15 +156,14 @@ public final class CardEffects {
     // Data: "Ongoing: Gain 1 additional Influence whenever you win a Diplomacy conflict."
     private static final Map<String, Integer> AGENDA_DIPLOMACY_WIN = new HashMap<String, Integer>();
     static {
-        AGENDA_DIPLOMACY_WIN.put("agenda_a_rising_power",    Integer.valueOf(1));
-        AGENDA_DIPLOMACY_WIN.put("de_agenda_a_rising_power", Integer.valueOf(1));
+        AGENDA_DIPLOMACY_WIN.put("agenda_a_rising_power", Integer.valueOf(1));
     }
 
     // ── Agendas: "Ongoing: Your fleets gain +1 Military." ───────────────────
     private static final Set<String> AGENDA_FLEET_PLUS1 = new HashSet<String>(
             Arrays.asList(new String[] {
                 "agenda_total_war",       "de_agenda_total_war",
-                "agenda_order_above_all", "de_agenda_order_above_all"
+                "agenda_order_above_all"
             }));
 
     // ── Agendas: card id → the owner's own play restriction ─────────────────
@@ -198,7 +189,6 @@ public final class CardEffects {
     private static final Map<String, Integer> ENH_LOCATION_INCOME = new HashMap<String, Integer>();
     static {
         ENH_LOCATION_INCOME.put("enh_exploitation",    Integer.valueOf(1));
-        ENH_LOCATION_INCOME.put("de_enh_exploitation", Integer.valueOf(1));
     }
 
     // ── B5-1995: Agenda mark grants ─────────────────────────────────────────────
@@ -234,8 +224,6 @@ public final class CardEffects {
         // Vorlon Enhancement (both sets): 1 Vorlon Mark on attached character while in play
         ENHANCEMENT_MARK_GRANTS.put("enh_vorlon_enhancement",
                 new MarkGrant(MarkType.VORLON, 1, MarkGrant.Target.AMBASSADOR));
-        ENHANCEMENT_MARK_GRANTS.put("de_enh_vorlon_enhancement",
-                new MarkGrant(MarkType.VORLON, 1, MarkGrant.Target.AMBASSADOR));
     }
 
     // ── B5-1995: Event mark grants ──────────────────────────────────────────────
@@ -245,12 +233,7 @@ public final class CardEffects {
         // Contact with Shadows: 1 Shadow Mark on target character (permanent)
         EVENT_MARK_GRANTS.put("event_contact_with_shadows",
                 new MarkGrant(MarkType.SHADOW, 1, MarkGrant.Target.AMBASSADOR));
-        EVENT_MARK_GRANTS.put("de_event_contact_with_shadows",
-                new MarkGrant(MarkType.SHADOW, 1, MarkGrant.Target.AMBASSADOR));
-        // Contact with Vorlons: 1 Vorlon Mark on target character (permanent)
         EVENT_MARK_GRANTS.put("event_contact_with_vorlons",
-                new MarkGrant(MarkType.VORLON, 1, MarkGrant.Target.AMBASSADOR));
-        EVENT_MARK_GRANTS.put("de_event_contact_with_vorlons",
                 new MarkGrant(MarkType.VORLON, 1, MarkGrant.Target.AMBASSADOR));
     }
 
@@ -261,19 +244,19 @@ public final class CardEffects {
         String id = card.getId();
         boolean did = false;
 
-        Integer inf = (Integer) EVENT_INFLUENCE.get(id);
+        Integer inf = (Integer) lookupMap(EVENT_INFLUENCE, id);
         if (inf != null) {
             p.gainInfluence(inf.intValue());
             state.log(p.getName() + " gains " + inf + " influence (" + card.getTitle() + ").");
             did = true;
         }
-        Integer draw = (Integer) EVENT_DRAW.get(id);
+        Integer draw = (Integer) lookupMap(EVENT_DRAW, id);
         if (draw != null) {
             p.drawCards(draw.intValue());
             state.log(p.getName() + " draws " + draw + " card(s) (" + card.getTitle() + ").");
             did = true;
         }
-        Integer all = (Integer) EVENT_ALL_INFLUENCE.get(id);
+        Integer all = (Integer) lookupMap(EVENT_ALL_INFLUENCE, id);
         if (all != null) {
             for (Player q : state.getPlayers()) q.gainInfluence(all.intValue());
             state.log(card.getTitle() + ": all players gain " + all + " influence.");
@@ -302,7 +285,7 @@ public final class CardEffects {
 
     /**
      * Plays an Enhancement card: attaches it to the strongest valid live
-     * target and applies the JSON bonus fields. Faction/Global/Location/
+     * target and applies the JSON bonus fields. Race/Global/Location/
      * Babylon 5 enhancements have no single-card target in the model; they
      * are held on the owner's enhancement list (location income bonuses are
      * applied by RulesEngine.startRound).
@@ -436,7 +419,7 @@ public final class CardEffects {
             int mil = card.getMilitaryBonus();
             // B5-066: faction-scope bonus goes through the registry.
             if (mil != 0) {
-                p.grantBonus(StatBonus.faction(card.getId(), StatKey.MILITARY, mil,
+                p.grantBonus(StatBonus.race(card.getId(), StatKey.MILITARY, mil,
                         p.getName(), Expiry.WHILE_IN_PLAY, state.getRoundNumber()));
                 state.log(p.getName() + " plays " + card.getTitle()
                         + " (all own fleets " + (mil >= 0 ? "+" : "") + mil + " Military).");
@@ -465,7 +448,7 @@ public final class CardEffects {
         if (conflict.getCard() == null) return;
         String id = conflict.getCard().getId();
 
-        Integer loseInf = (Integer) CONFLICT_LOSER_INFLUENCE.get(id);
+        Integer loseInf = (Integer) lookupMap(CONFLICT_LOSER_INFLUENCE, id);
         if (loseInf != null) {
             // B5-0691 (rulebook :980): while the loser's race is UNIFIED the
             // loss spills to every faction of that race; byte-identical in the
@@ -474,7 +457,7 @@ public final class CardEffects {
             state.log(loser.getName() + " loses " + loseInf + " influence ("
                     + conflict.getCard().getTitle() + ").");
         }
-        Integer discards = (Integer) CONFLICT_LOSER_DISCARD.get(id);
+        Integer discards = (Integer) lookupMap(CONFLICT_LOSER_DISCARD, id);
         if (discards != null) {
             int n = Math.min(discards.intValue(), loser.getHand().size());
             for (int i = 0; i < n; i++) {
@@ -486,7 +469,7 @@ public final class CardEffects {
                         + conflict.getCard().getTitle() + ").");
             }
         }
-        Integer steal = (Integer) CONFLICT_WINNER_STEAL.get(id);
+        Integer steal = (Integer) lookupMap(CONFLICT_WINNER_STEAL, id);
         if (steal != null) {
             int amount = Math.min(steal.intValue(), loser.getInfluence());
             if (amount > 0) {
@@ -602,7 +585,7 @@ public final class CardEffects {
 
     /** B5-0990: true when cardId is a Negotiated Surrender aftermath. */
     public static boolean isNegotiatedSurrender(String cardId) {
-        return cardId != null && AFTERMATH_NEGOTIATED_SURRENDER.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_NEGOTIATED_SURRENDER, cardId);
     }
 
     /** B5-0990: true when the Negotiated Surrender is the deluxe version (draws 1 card). */
@@ -612,32 +595,32 @@ public final class CardEffects {
 
     /** B5-1051: true when cardId is a Diplomatic Advantage aftermath. */
     public static boolean isDiplomaticAdvantage(String cardId) {
-        return cardId != null && AFTERMATH_DIPLOMATIC_ADVANTAGE.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_DIPLOMATIC_ADVANTAGE, cardId);
     }
 
     /** B5-2249: true when cardId is a United Front aftermath. */
     public static boolean isUnitedFront(String cardId) {
-        return cardId != null && AFTERMATH_UNITED_FRONT.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_UNITED_FRONT, cardId);
     }
 
     /** B5-2249: true when cardId is a Draw Two Intrigue aftermath. */
     public static boolean isDrawTwoIntrigue(String cardId) {
-        return cardId != null && AFTERMATH_DRAW_TWO_INTRIGUE.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_DRAW_TWO_INTRIGUE, cardId);
     }
 
     /** B5-2249: true when cardId is a Hidden Agent aftermath. */
     public static boolean isHiddenAgent(String cardId) {
-        return cardId != null && AFTERMATH_HIDDEN_AGENT.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_HIDDEN_AGENT, cardId);
     }
 
     /** B5-2249: true when cardId is a Refugees aftermath. */
     public static boolean isRefugees(String cardId) {
-        return cardId != null && AFTERMATH_REFUGEES.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_REFUGEES, cardId);
     }
 
     /** B5-2249: true when cardId is a Rise to Power aftermath. */
     public static boolean isRiseToPower(String cardId) {
-        return cardId != null && AFTERMATH_RISE_TO_POWER.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_RISE_TO_POWER, cardId);
     }
 
     // ── B5-2249: core-20 frequency expansion (Sets 6-10) ────────────────────────
@@ -678,27 +661,27 @@ public final class CardEffects {
 
     /** B5-2249: true when cardId is a War Hero aftermath. */
     public static boolean isWarHero(String cardId) {
-        return cardId != null && AFTERMATH_WAR_HERO.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_WAR_HERO, cardId);
     }
 
     /** B5-2249: true when cardId is an Approval of the Grey aftermath. */
     public static boolean isApprovalOfTheGrey(String cardId) {
-        return cardId != null && AFTERMATH_APPROVAL_OF_THE_GREY.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_APPROVAL_OF_THE_GREY, cardId);
     }
 
     /** B5-2249: true when cardId is a Focus Your Efforts aftermath. */
     public static boolean isFocusYourEfforts(String cardId) {
-        return cardId != null && AFTERMATH_FOCUS_YOUR_EFFORTS.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_FOCUS_YOUR_EFFORTS, cardId);
     }
 
     /** B5-2249: true when cardId is a Glory aftermath. */
     public static boolean isGlory(String cardId) {
-        return cardId != null && AFTERMATH_GLORY.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_GLORY, cardId);
     }
 
     /** B5-2249: true when cardId is a Retribution aftermath. */
     public static boolean isRetribution(String cardId) {
-        return cardId != null && AFTERMATH_RETRIBUTION.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_RETRIBUTION, cardId);
     }
 
     // ── B5-2249: core-20 frequency expansion (Sets 11-15) ───────────────────────
@@ -713,7 +696,6 @@ public final class CardEffects {
             new HashSet<String>();
     static {
         AFTERMATH_OPPONENT_LOSE_ONE_INF.add("aftermath_assigning_blame");
-        AFTERMATH_OPPONENT_LOSE_ONE_INF.add("de_am_assigning_blame");
         AFTERMATH_OPPONENT_LOSE_ONE_INF.add("aftermath_loss_of_face");
         AFTERMATH_OPPONENT_LOSE_ONE_INF.add("de_am_loss_of_face");
         AFTERMATH_OPPONENT_LOSE_ONE_INF.add("aftermath_disenchantment");
@@ -768,42 +750,42 @@ public final class CardEffects {
 
     /** B5-2249: true when cardId is a Reverse Advances aftermath. */
     public static boolean isReverseAdvances(String cardId) {
-        return cardId != null && AFTERMATH_REVERSE_ADVANCES.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_REVERSE_ADVANCES, cardId);
     }
 
     /** B5-2249: true when cardId is an Opponent Lose One Influence aftermath. */
     public static boolean isOpponentLoseOneInf(String cardId) {
-        return cardId != null && AFTERMATH_OPPONENT_LOSE_ONE_INF.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_OPPONENT_LOSE_ONE_INF, cardId);
     }
 
     /** B5-2249: true when cardId is an Opponent Lose Two Influence aftermath. */
     public static boolean isOpponentLoseTwoInf(String cardId) {
-        return cardId != null && AFTERMATH_OPPONENT_LOSE_TWO_INF.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_OPPONENT_LOSE_TWO_INF, cardId);
     }
 
     /** B5-2249: true when cardId is a Crisis of Self aftermath. */
     public static boolean isCrisisOfSelf(String cardId) {
-        return cardId != null && AFTERMATH_CRISIS_OF_SELF.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_CRISIS_OF_SELF, cardId);
     }
 
     /** B5-2249: true when cardId is a Heal Face Down aftermath. */
     public static boolean isHealFaceDown(String cardId) {
-        return cardId != null && AFTERMATH_HEAL_FACE_DOWN.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_HEAL_FACE_DOWN, cardId);
     }
 
     /** B5-2249: true when cardId is a Battle Tested aftermath. */
     public static boolean isBattleTested(String cardId) {
-        return cardId != null && AFTERMATH_BATTLE_TESTED.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_BATTLE_TESTED, cardId);
     }
 
     /** B5-2249: true when cardId is a Rescue aftermath. */
     public static boolean isRescue(String cardId) {
-        return cardId != null && AFTERMATH_RESCUE.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_RESCUE, cardId);
     }
 
     /** B5-2249: true when cardId is a Martyr aftermath. */
     public static boolean isMartyr(String cardId) {
-        return cardId != null && AFTERMATH_MARTYR.contains(cardId);
+        return cardId != null && lookupSet(AFTERMATH_MARTYR, cardId);
     }
 
     // ── B5-2249: core-20 frequency expansion — effect dispatch ─────────────────
@@ -1317,9 +1299,9 @@ public final class CardEffects {
 
     /** Agenda effect when played: fleet-wide Military bonus agendas. */
     public static void applyAgendaOnPlay(GameState state, Player p, AgendaCard agenda) {
-        if (AGENDA_FLEET_PLUS1.contains(agenda.getId())) {
+        if (lookupSet(AGENDA_FLEET_PLUS1, agenda.getId())) {
             // B5-066: faction-scope bonus in the registry, not field mutation.
-            p.grantBonus(StatBonus.faction(agenda.getId(), StatKey.MILITARY, 1,
+            p.grantBonus(StatBonus.race(agenda.getId(), StatKey.MILITARY, 1,
                     p.getName(), Expiry.WHILE_IN_PLAY, state.getRoundNumber()));
             state.log(p.getName() + ": " + agenda.getTitle()
                     + " grants all own fleets +1 Military.");
@@ -1333,7 +1315,7 @@ public final class CardEffects {
         AgendaCard agenda = p.getAgenda();
         // B5-0364: hidden agendas have no effect on play until revealed (:520).
         if (agenda == null || agenda.isFaceDown()) return;
-        Integer inf = (Integer) AGENDA_ROUND_INFLUENCE.get(agenda.getId());
+        Integer inf = (Integer) lookupMap(AGENDA_ROUND_INFLUENCE, agenda.getId());
         if (inf == null) return;
         // de_agenda_servants_of_order text: requires 2+ Inner Circle characters.
         if ("de_agenda_servants_of_order".equals(agenda.getId())
@@ -1368,7 +1350,7 @@ public final class CardEffects {
     /** B5-1995: Applies mark grants from an agenda that is face-up in play. */
     public static void applyAgendaMarkGrants(GameState state, Player p, AgendaCard agenda) {
         if (agenda == null || agenda.isFaceDown()) return;
-        MarkGrant grant = AGENDA_MARK_GRANTS.get(agenda.getId());
+         MarkGrant grant = lookupMap(AGENDA_MARK_GRANTS, agenda.getId());
         if (grant == null) return;
         if (grant.target == MarkGrant.Target.AMBASSADOR) {
             CharacterCard ambassador = p.getAmbassador();
@@ -1386,7 +1368,7 @@ public final class CardEffects {
     /** B5-1995: Removes mark grants from an agenda that is being discarded/replaced/blanked. */
     public static void removeAgendaMarkGrants(GameState state, Player p, AgendaCard agenda) {
         if (agenda == null) return;
-        MarkGrant grant = AGENDA_MARK_GRANTS.get(agenda.getId());
+        MarkGrant grant = lookupMap(AGENDA_MARK_GRANTS, agenda.getId());
         if (grant == null) return;
         if (grant.target == MarkGrant.Target.AMBASSADOR) {
             CharacterCard ambassador = p.getAmbassador();
@@ -1404,7 +1386,7 @@ public final class CardEffects {
     /** B5-1995: Applies mark grants from an enhancement that is attached. */
     private static void applyEnhancementMarkGrants(GameState state, Player p, EnhancementCard enh, CharacterCard target) {
         if (enh == null || target == null) return;
-        MarkGrant grant = ENHANCEMENT_MARK_GRANTS.get(enh.getId());
+        MarkGrant grant = lookupMap(ENHANCEMENT_MARK_GRANTS, enh.getId());
         if (grant == null) return;
         if (grant.target == MarkGrant.Target.AMBASSADOR && target == p.getAmbassador()) {
             int added = p.addMarksToCharacter(target, grant.type, grant.count);
@@ -1418,7 +1400,7 @@ public final class CardEffects {
     /** B5-1995: Removes mark grants from an enhancement that is being detached/discarded. */
     public static void removeEnhancementMarkGrants(GameState state, Player p, EnhancementCard enh) {
         if (enh == null) return;
-        MarkGrant grant = ENHANCEMENT_MARK_GRANTS.get(enh.getId());
+        MarkGrant grant = lookupMap(ENHANCEMENT_MARK_GRANTS, enh.getId());
         if (grant == null) return;
         if (grant.target == MarkGrant.Target.AMBASSADOR) {
             CharacterCard ambassador = p.getAmbassador();
@@ -1436,7 +1418,7 @@ public final class CardEffects {
     /** B5-1995: Applies mark grants from an event (permanent marks). */
     private static void applyEventMarkGrants(GameState state, Player p, Card card) {
         if (card == null) return;
-        MarkGrant grant = EVENT_MARK_GRANTS.get(card.getId());
+        MarkGrant grant = lookupMap(EVENT_MARK_GRANTS, card.getId());
         if (grant == null) return;
         if (grant.target == MarkGrant.Target.AMBASSADOR) {
             CharacterCard ambassador = p.getAmbassador();
@@ -1456,7 +1438,7 @@ public final class CardEffects {
         AgendaCard agenda = p.getAgenda();
         // B5-0364: hidden agendas have no effect on play until revealed (:520).
         if (agenda == null || agenda.isFaceDown()) return 0;
-        Integer bonus = (Integer) AGENDA_DIPLOMACY_WIN.get(agenda.getId());
+        Integer bonus = (Integer) lookupMap(AGENDA_DIPLOMACY_WIN, agenda.getId());
         return bonus == null ? 0 : bonus.intValue();
     }
 
@@ -1500,7 +1482,7 @@ public final class CardEffects {
     public static int enhancementLocationIncomeBonus(Player p) {
         int bonus = 0;
         for (EnhancementCard e : p.getEnhancements()) {
-            Integer inc = (Integer) ENH_LOCATION_INCOME.get(e.getId());
+            Integer inc = (Integer) lookupMap(ENH_LOCATION_INCOME, e.getId());
             if (inc != null) bonus += inc.intValue();
         }
         return bonus;
@@ -1508,7 +1490,7 @@ public final class CardEffects {
 
     /** B5-0376 Phase B: true when the enhancement augments location income. */
     public static boolean isLocationIncomeEnhancement(EnhancementCard e) {
-        return e != null && ENH_LOCATION_INCOME.containsKey(e.getId());
+        return e != null && lookupMap(ENH_LOCATION_INCOME, e.getId()) != null;
     }
 
     // ── Bonus floors: card id → minimum stat value after penalty (B5-0486) ──
@@ -1520,13 +1502,11 @@ public final class CardEffects {
     private static final Set<String> DISCARD_ON_HEAL = new HashSet<String>();
     static {
         DISCARD_ON_HEAL.add("enh_shunned");
-        DISCARD_ON_HEAL.add("de_enh_shunned");
     }
 
     private static final Map<String, Integer> BONUS_FLOORS = new HashMap<String, Integer>();
     static {
         BONUS_FLOORS.put("enh_censure",    Integer.valueOf(1));
-        BONUS_FLOORS.put("de_enh_censure", Integer.valueOf(1));
     }
     // A controlled mercenary's effect fires once at the MERCENARY phase for
     // its controller. The pool carries zero mercenary cards (B5-0386 no-
@@ -1543,7 +1523,7 @@ public final class CardEffects {
     /** Executes the controlled mercenary's effect for its controller. */
     public static void applyMercenaryAction(GameState state, Player controller, Card merc) {
         if (state == null || controller == null || merc == null) return;
-        Integer inf = (Integer) MERCENARY_FIXTURE_INFLUENCE.get(merc.getId());
+        Integer inf = (Integer) lookupMap(MERCENARY_FIXTURE_INFLUENCE, merc.getId());
         if (inf != null) {
             controller.gainInfluence(inf.intValue());
             state.log(controller.getName() + " controls " + merc.getTitle()
@@ -1580,7 +1560,7 @@ public final class CardEffects {
     /** B5-0506: true when the enhancement id is registered to discard when
      *  its host character is healed. */
     public static boolean discardsOnHeal(String cardId) {
-        return cardId != null && DISCARD_ON_HEAL.contains(cardId);
+        return cardId != null && lookupSet(DISCARD_ON_HEAL, cardId);
     }
 
     /** B5-0528: card ids whose faction-held presence triggers +1 damage on
@@ -1589,9 +1569,7 @@ public final class CardEffects {
     private static final Set<String> DAMAGE_ON_ATTACK = new HashSet<String>();
     static {
         DAMAGE_ON_ATTACK.add("enh_mines");
-        DAMAGE_ON_ATTACK.add("de_enh_mines");
         DAMAGE_ON_ATTACK.add("enh_energy_mines");
-        DAMAGE_ON_ATTACK.add("de_enh_energy_mines");
         // B5-1301: enh_mines_rt is the B5-0556 Mines Round-Trip fixture id (built in HeadlessConformanceTest), not a card record - do not census-flag as dead.
         DAMAGE_ON_ATTACK.add("enh_mines_rt");
     }
@@ -1599,7 +1577,7 @@ public final class CardEffects {
     /** B5-0528: true when cardId is registered for the reactive mines damage
      *  effect. */
     public static boolean damageOnAttack(String cardId) {
-        return cardId != null && DAMAGE_ON_ATTACK.contains(cardId);
+        return cardId != null && lookupSet(DAMAGE_ON_ATTACK, cardId);
     }
 
     /** B5-0528: synonym for damageOnAttack — used by applyPlayEnhancement's
@@ -1627,7 +1605,7 @@ public final class CardEffects {
      *  or 0 when no floor is registered (default behavior). */
     private static int floorFor(String cardId) {
         if (cardId == null) return 0;
-        Integer f = (Integer) BONUS_FLOORS.get(cardId);
+        Integer f = (Integer) lookupMap(BONUS_FLOORS, cardId);
         return f == null ? 0 : f.intValue();
     }
 
@@ -1663,5 +1641,142 @@ public final class CardEffects {
             if (stat > bestStat) { bestStat = stat; best = ch; }
         }
         return best;
+    }
+
+    /** B5-0004 / WP-03: behaviour-referenced card ids that have no card record in
+     *  the pool (synthetic test fixtures). The headless probes subtract this set
+     *  before checking that every behaviour literal names a pool entry, so a
+     *  fixture id that is intentionally not a card is not reported as dangling.
+     *  Adding an id here is an assertion: the id is deliberately not a card. */
+    public static final Set<String> NON_POOL_FIXTURE_IDS = new HashSet<String>();
+    static {
+        // B5-2542: synthetic multi-side conflict probe id (no card record).
+        NON_POOL_FIXTURE_IDS.add("probe_multi_side_conflict");
+        // B5-0386: synthetic controlled-mercenary fixture id (no card record).
+        NON_POOL_FIXTURE_IDS.add("mer_metric_fixture");
+        // B5-0556: synthetic Mines round-trip fixture id (no card record).
+        NON_POOL_FIXTURE_IDS.add("enh_mines_rt");
+    }
+
+    /** B5-0004 / WP-03: the five ambassador characters whose text DIFFERS between
+     *  Premiere and Deluxe, requiring a Deluxe behaviour table. Their Premiere
+     *  ids are the canonical key; both printings are covered via the
+     *  canonical-key routing in lookupSet/lookupMap. */
+    public static final Set<String> CHARACTER_BEHAVIOUR_REFERENCES =
+            new HashSet<String>();
+    static {
+        // Premiere ambassador ids with changed-text Deluxe twins (D5 governs).
+        CHARACTER_BEHAVIOUR_REFERENCES.add("char_adira_tyree");
+        CHARACTER_BEHAVIOUR_REFERENCES.add("char_delenn");
+        CHARACTER_BEHAVIOUR_REFERENCES.add("char_gkar");
+        CHARACTER_BEHAVIOUR_REFERENCES.add("char_jeffrey_sinclair");
+        CHARACTER_BEHAVIOUR_REFERENCES.add("char_londo_mollari");
+    }
+
+    /** B5-0004 / WP-03: Deluxe-only ambassador text changes (D5 Deluxe-governs).
+     *  These five ids have no Premiere behaviour table entry because their
+     *  Premiere text differs — the Deluxe text is the governed form (D5). */
+    public static final Set<String> DELUXE_CHARACTER_EFFECTS =
+            new HashSet<String>();
+    static {
+        DELUXE_CHARACTER_EFFECTS.add("de_char_adira_tyree");
+        DELUXE_CHARACTER_EFFECTS.add("de_char_delenn");
+        DELUXE_CHARACTER_EFFECTS.add("de_char_gkar");
+        DELUXE_CHARACTER_EFFECTS.add("de_char_jeffrey_sinclair");
+        DELUXE_CHARACTER_EFFECTS.add("de_char_londo_mollari");
+    }
+
+    // ── Canonical-key routing helpers (CardIdNamespaceGuard.canonicalKey) ───────
+
+    /** Exact-first, canonical-fallback lookup for a Map. If the exact id is
+     *  absent, retries with the id's canonical key (id minus the `de_` prefix,
+     *  per CardIdNamespaceGuard.canonicalKey). This collapses unchanged-text
+     *  Premiere/Deluxe twin literals without keeping both in the table, while
+     *  Deluxe-only entries (kept exact) still win the exact-first pass. */
+    static <V> V lookupMap(Map<String, V> m, String id) {
+        if (id == null) return null;
+        V v = m.get(id);
+        if (v != null) return v;
+        return m.get(CardIdNamespaceGuard.canonicalKey(id));
+    }
+
+    /** Exact-first, canonical-fallback membership test for a Set. Mirrors
+     *  lookupMap: exact id first, then canonical key. */
+    static boolean lookupSet(Set<String> s, String id) {
+        if (id == null) return false;
+        if (s.contains(id)) return true;
+        return s.contains(CardIdNamespaceGuard.canonicalKey(id));
+    }
+
+    /**
+     * B5-0004 / WP-03: collects every card id the behaviour tables reference by
+     * scanning all static Map and Set fields in this class. Replaces the former
+     * hardcoded 10-id list (which drifted from the tables): this scan can never
+     * disagree with the literals it walks.
+     *
+     * Aftermath slug divergence (aftermath_X / de_am_X) is NOT unified here —
+     * both printings keep exact literals by design (the slugs differ in the
+     * `am_` vs bare `aftermath_` portion, so canonicalKey does not collapse them).
+     * Only Premiere literals are kept for unchanged-text twins; Deluxe-only
+     * entries (de_conf_bio_weapon_discovery, de_agenda_servants_of_order,
+     * de_agenda_total_war, and the 5 de_char_* ambassadors) are kept exact.
+     */
+    public static Set<String> behaviourReferences() {
+        Set<String> out = new TreeSet<String>();
+        scanKeys(out, WAIVER_EFFECTS);
+        scanKeys(out, MULTI_SIDE_CONFLICT_IDS);
+        scanKeys(out, EVENT_INFLUENCE);
+        scanKeys(out, EVENT_DRAW);
+        scanKeys(out, EVENT_ALL_INFLUENCE);
+        scanKeys(out, CONFLICT_LOSER_INFLUENCE);
+        scanKeys(out, CONFLICT_LOSER_DISCARD);
+        scanKeys(out, CONFLICT_WINNER_STEAL);
+        scanKeys(out, AGENDA_ROUND_INFLUENCE);
+        scanKeys(out, AGENDA_DIPLOMACY_WIN);
+        scanKeys(out, AGENDA_FLEET_PLUS1);
+        scanKeys(out, AGENDA_BANS_DIPLOMACY_AFTERMATH);
+        scanKeys(out, ENH_LOCATION_INCOME);
+        scanKeys(out, AGENDA_MARK_GRANTS);
+        scanKeys(out, ENHANCEMENT_MARK_GRANTS);
+        scanKeys(out, EVENT_MARK_GRANTS);
+        scanKeys(out, CHARACTER_BEHAVIOUR_REFERENCES);
+        scanKeys(out, DELUXE_CHARACTER_EFFECTS);
+        scanKeys(out, AFTERMATH_NEGOTIATED_SURRENDER);
+        scanKeys(out, AFTERMATH_DIPLOMATIC_ADVANTAGE);
+        scanKeys(out, AFTERMATH_UNITED_FRONT);
+        scanKeys(out, AFTERMATH_DRAW_TWO_INTRIGUE);
+        scanKeys(out, AFTERMATH_HIDDEN_AGENT);
+        scanKeys(out, AFTERMATH_REFUGEES);
+        scanKeys(out, AFTERMATH_RISE_TO_POWER);
+        scanKeys(out, AFTERMATH_WAR_HERO);
+        scanKeys(out, AFTERMATH_APPROVAL_OF_THE_GREY);
+        scanKeys(out, AFTERMATH_FOCUS_YOUR_EFFORTS);
+        scanKeys(out, AFTERMATH_GLORY);
+        scanKeys(out, AFTERMATH_RETRIBUTION);
+        scanKeys(out, AFTERMATH_REVERSE_ADVANCES);
+        scanKeys(out, AFTERMATH_OPPONENT_LOSE_ONE_INF);
+        scanKeys(out, AFTERMATH_OPPONENT_LOSE_TWO_INF);
+        scanKeys(out, AFTERMATH_CRISIS_OF_SELF);
+        scanKeys(out, AFTERMATH_HEAL_FACE_DOWN);
+        scanKeys(out, AFTERMATH_BATTLE_TESTED);
+        scanKeys(out, AFTERMATH_RESCUE);
+        scanKeys(out, AFTERMATH_MARTYR);
+        scanKeys(out, DISCARD_ON_HEAL);
+        scanKeys(out, BONUS_FLOORS);
+        scanKeys(out, MERCENARY_FIXTURE_INFLUENCE);
+        scanKeys(out, DAMAGE_ON_ATTACK);
+        return out;
+    }
+
+    private static void scanKeys(Set<String> out, Map m) {
+        for (Iterator it = m.keySet().iterator(); it.hasNext();) {
+            out.add(String.valueOf(it.next()));
+        }
+    }
+
+    private static void scanKeys(Set<String> out, Set s) {
+        for (Iterator it = s.iterator(); it.hasNext();) {
+            out.add(String.valueOf(it.next()));
+        }
     }
 }

@@ -144,6 +144,15 @@ if (-not (Test-Path -LiteralPath $HeartbeatsDir)) {
     exit 2
 }
 
+# B5-0016 (c): agent-id pattern check. Report file names are built from the
+# agent id, so an id carrying spaces, parentheses or punctuation produces a
+# name nothing can join on later (AGENTS.md section 2, provenance rule). The
+# check runs before any write so a bad id refuses rather than lands a file.
+if ($AgentId -notmatch '^[A-Za-z0-9-]+$') {
+    Write-Error ("[B5-0016] REFUSED: agent id '{0}' is not letters, digits and hyphens only. Report file names are built from it; use the pattern in AGENTS.md section 2. No file was written." -f $AgentId)
+    exit 1
+}
+
 # Filenames carry the agent_id verbatim, matching the store's existing convention
 # (parentheses and spaces are legal on NTFS). ':' and '/' are not legal in a
 # Windows filename and are replaced per HEARTBEATS/README.md sanitisation, so an
