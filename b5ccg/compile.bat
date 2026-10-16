@@ -47,8 +47,12 @@ REM Collect all .java files (relative paths, one per line) into a response
 REM file so the list can exceed the command-line ceiling without trimming
 REM javac's argument list.
 set LIST=..\b5ccg_compile_list.tmp
+REM B5-0001: quote each path — %%~f expands to a FULL path, and an
+REM unquoted response-file entry splits on spaces (measured: restore drill
+REM under "C:\Users\Tiwa Pene\..." failed with "javac: invalid flag").
+REM javac @-files accept double-quoted entries.
 > "%LIST%" (
-  for /r "%SRC%" %%f in (*.java) do echo %%~f
+  for /r "%SRC%" %%f in (*.java) do echo "%%~f"
 )
 
 if not exist "%LIST%" (
