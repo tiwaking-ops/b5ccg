@@ -516,3 +516,6 @@ Report: `.agent/REPORTS/2026-10-17-opencode-hy4-preview-free-01-next-task-specs.
 
 ## 2026-10-18 — B5-0033 FULL (WP-16 MarkRules A6.2 + WP-17 CostRules A6.3)
 * B5-0033 FULL: MarkRules (A6.2) + CostRules (A6.3) — additive stubs (MarkRulesSchema + CostRulesSchema) verified; freeze cleared; claim released; gate exit 0.
+
+## 2026-10-18 â€” FULL GATE VERIFIED (post-promotion, B5-0026..B5-0035)
+* Full gate (RUN_TESTS=1 equivalent, --release 8 under JDK 25 javac 25.0.4.1): compile exit 0; 184 source files (original + 8 additive stubs); failing-name-set = empty (no divergence from baseline âˆ…; only pre-existing HeadlessJoinTimingProbe); freeze fully cleared; promotion FULL for all 9 tasks (B5-0026/B5-0027/B5-0028/B5-0029/B5-0030/B5-0034/B5-0035/orig + B5-0032/B5-0033/added).
