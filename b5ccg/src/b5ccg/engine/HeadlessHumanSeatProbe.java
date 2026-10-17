@@ -128,7 +128,7 @@ public class HeadlessHumanSeatProbe {
                 p.setAmbassador(amb);
                 p.getInnerCircle().add(amb);
             }
-            p.setDeck(new Deck(deck, seed + 1_000_000L * (i + 1))); // B5-0008: seeded shuffle
+            p.setDeck(new Deck(deck, seed + 1000000L * (i + 1))); // B5-0008: seeded shuffle
             p.drawCards(4);
             players.add(p);
             if (i > 0) {

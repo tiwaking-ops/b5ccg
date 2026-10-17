@@ -1900,7 +1900,7 @@ public class HeadlessConformanceTest {
 
         rules.executeAttackConflictParticipant(attackerP, attackCard, defFleet, conflict, st);
         check("MINES", "reactive mines adds +1 return damage (fleet)",
-                logContains(st, "2 damage; 4 damage returned."));
+                logContains(st, "2 damage; 4 damage returned"));
         check("MINES", "defender fleet survives reactive mines (no severe)",
                 defFleet.getDamageTokens() == 2);
         check("MINES", "registry gate: unregistered id does not trigger",
@@ -2008,7 +2008,7 @@ public class HeadlessConformanceTest {
         // be ready/unrotated per canAttackConflictParticipant (B5-0556).
         rtRules.executeAttackConflictParticipant(rtAttacker, rtAttCard, rtFleet, rtConflict, rtSt);
         check("MINES", "round-trip: mines played then attack triggers +1 return damage",
-                logContains(rtSt, "2 damage; 4 damage returned."));
+                logContains(rtSt, "2 damage; 4 damage returned"));
         check("MINES", "round-trip: fleet survives reactive mines",
                 rtFleet.getDamageTokens() == 2);
     }

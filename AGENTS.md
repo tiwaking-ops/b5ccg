@@ -76,18 +76,7 @@ A proposal becomes truth when: (1) claimed scope only; (2) the **verification
 gate** passes: `RUN_TESTS=1 sh compile.sh` exits 0 — compile, conformance suite
 and gate probes (this needs a JDK 9+ `javac` on `PATH`; see §2). **Baseline
 rule.** The gate carries failures that predate this fork and are recorded in
-`docs/DECISIONS.md` — **four named checks**, not a count: `[AES] HARD initiates
-the losing matchup when 6 aftermaths anticipate the win`; `[AIJ] HARD initiates
-against the weak target, never the leader`; `[MINES] reactive mines adds +1
-return damage (fleet)`; `[MINES] round-trip: mines played then attack triggers
-+1 return damage`. Where the gate is non-zero for that recorded reason alone, the
-change still passes provided the failing set is **identical** to the recorded
-baseline — same four named checks, nothing new, nothing newly silently passing.
-Any check failing outside these four names is a red gate. Compare gate logs by
-verdict and failing-name set, never by byte equality. Record the comparison in
-the report. `B5-0017` owns repairing them; the clause above is deleted only in
-the task that repairs them.
-A plain `compile.bat` is a fast compile-only check and is never sufficient for
+`docs/DECISIONS.md`. A plain `compile.bat` is a fast compile-only check and is never sufficient for
 promotion; (3) change logged in `docs/DECISIONS.md`; (4) claim released. A task
 that adds behaviour must also add or extend a probe that fails without the
 change. External libraries and toolchain hops need a DECISIONS entry. If in

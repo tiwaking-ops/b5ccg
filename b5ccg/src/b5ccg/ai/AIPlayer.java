@@ -1326,8 +1326,16 @@ public class AIPlayer {
                 // player (feeding the strongest opponent influence rewards);
                 // now leading the board is a penalty, and weak targets score
                 // higher through the win-probability term.
-                double leaderPenalty = (opp == leader) ? -3.0 : 0;
+                double leaderPenalty = (opp == leader) ? -5.0 : 0;
                 double lossPenalty   = myTotal < oppTotal ? -3.0 : 0;
+                // B5-2001 / AIJ: HARD initiates against the weak target, never
+                // the leader. Weak target = lower conflict total than leader.
+                double weakTargetBonus = 0.0;
+                if (opp != null && leader != null && opp != leader) {
+                    int oppInf = opp.getInfluence();
+                    int leaderInf = leader.getInfluence();
+                    if (oppInf < leaderInf) weakTargetBonus = 2.0;
+                }
                 // B5-0344: conflicts a WIN would make aftermath-eligible are
                 // worth more (the controller auto-plays eligible aftermaths
                 // right after resolution). Rewards on the initiator's side.
@@ -1353,7 +1361,7 @@ public class AIPlayer {
                 base += threatConflictTypeTilt(cc.getConflictType(), threat,
                         p.conflictTotal(ConflictType.MILITARY),
                         threatTarget.conflictTotal(ConflictType.MILITARY));
-                return base + leaderPenalty + lossPenalty;
+                return base + leaderPenalty + lossPenalty + weakTargetBonus;
             }
             case RECRUIT_CHARACTER: {
                 if (!(a.getCard() instanceof CharacterCard)) return 3;
@@ -1624,7 +1632,7 @@ public class AIPlayer {
         for (Card c : p.getHand()) {
             if (c instanceof AftermathCard) {
                 AftermathCard am = (AftermathCard) c;
-                if (am.isEligible(true, true, cc.getConflictType())) bonus += 1.0;
+                if (am.isEligible(true, true, cc.getConflictType())) bonus += 3.0;
             }
         }
         return bonus;

@@ -30,3 +30,4 @@ b5ccg/scratch/**
 .agent/CLAIMS/
 .agent/HEARTBEATS/
 .agent/HEARTBEATS/**
+conformance_log.txt

@@ -157,10 +157,10 @@ public class HeadlessDoubleRunProbe {
                 CharacterCard amb = findAmbassadorCard(deckCards, FACTIONS[i]);
                 if (amb != null) {
                     deckCards.remove(deckCards.indexOf(amb));
-                    p.setDeck(new Deck(deckCards, seed + 1_000_000L * (i + 1)));
+                    p.setDeck(new Deck(deckCards, seed + 1000000L * (i + 1)));
                     p.getDeck().addToTop(amb); // pin ambassador at draw top after construction
                 } else {
-                    p.setDeck(new Deck(deckCards, seed + 1_000_000L * (i + 1)));
+                    p.setDeck(new Deck(deckCards, seed + 1000000L * (i + 1)));
                 }
                 p.drawCards(4);
                 if (p.getHand().isEmpty()) {
@@ -185,7 +185,7 @@ public class HeadlessDoubleRunProbe {
             state.setSeed(seed); // B5-0008: game-level seed → controller derives AI streams
 
             // Replay recorder, additive seed header field (B5-0008).
-            b5ccg.engine.ReplayRecorder rec =
+            final b5ccg.engine.ReplayRecorder rec =
                     new b5ccg.engine.ReplayRecorder(replayPath, "B5-0008");
             rec.setRoster(players);
             rec.setSeed(seed);
