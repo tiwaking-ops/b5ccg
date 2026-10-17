@@ -1319,7 +1319,7 @@ public class AIPlayer {
                 Player       opp = a.getTarget();
                 int myTotal      = p.conflictTotal(cc.getConflictType());
                 int oppTotal     = opp != null ? opp.conflictTotal(cc.getConflictType()) : 0;
-                double winProb   = myTotal + 1.0 / (myTotal + oppTotal + 2.0);
+                double winProb   = (myTotal + 1.0) / (myTotal + oppTotal + 2.0);
                 double base      = winProb * cc.getInfluenceReward();
                 // B5-0343: pick targets WEAKER than the auto-leader — the
                 // pre-0343 +3 leaderBonus steered initiation AT the leading
