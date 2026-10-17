@@ -4,10 +4,14 @@ document:
   status: "Claim done — conformance suite 904/904 PASS; smoke PASS; 4 baseline checks pass"
 provenance:
   author_llm: {name: "Solar Mini4", version: "upstage/solar-mini4:free"}
-  assessor_llm: {name: "Solar Mini4", version: "upstage/solar-mini4:free", passes: 1, date: "2026-10-17"}
+  assessor_llm:
+    - {name: "Solar Mini4", version: "upstage/solar-mini4:free", passes: 1, date: "2026-10-17"}
+    - {name: "Claude Code", version: "claude-opus-5-5", passes: 1, date: "2026-10-17"}
   created_date: "2026-10-17"
   task: "B5-0017"
   scope: ["ai", "engine", "docs", "tooling"]
+  last_modified_by_llm: {name: "Claude Code", version: "claude-opus-5-5"}
+  last_modified_date: "2026-10-17"
 ---
 
 # Report: B5-0017 Corrected Close-out — AES/AIJ Baseline Repair & Verification
