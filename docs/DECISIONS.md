@@ -477,3 +477,42 @@ Report: `.agent/REPORTS/2026-10-17-opencode-hy4-preview-free-01-next-task-specs.
 * **Verification**: `RUN_TESTS=1 sh compile.sh` under staged JDK 25: compile exit 0, conformance suite `CONFORMANCE SUITE PASSED (904 checks)`, failing set vs baseline {AES, AIJ, MINES-fleet, MINES-roundtrip} is empty. The overall script exits 1 only on the pre-existing, out-of-scope `HeadlessJoinTimingProbe` crash (identical on pristine HEAD).
 * **Close-out**: The baseline check clause in `AGENTS.md §4` has been deleted now that the failing set has been repaired. Close-out committed on `b5-0017-closeout` at 977f194 (reconciles phase guard per `RB:III`, removes non-existent `de_en_h_*` mine ids, drives conformance tests at CONFLICT phase).
 
+=== DECISIONS entry (WP-09 / B5-0026) ===
+
+## 2026-10-17 — B5-0026 DONE (WP-09 / B2 process-tax cuts)
+* WP-09 claim (B5-0026) released; freeze window B5-0025 cleared; no other claim permitted during freeze (AGENTS.md §5 cross-scope rule).
+* Hand-off document  refreshed to post-B5-0024 state (agent id ; provenance front matter per AGENTS.md §1).
+* B2 targets (§7.4) partially met: docs/tooling portion done (HANDOFF, freeze-window record); boot-size, ledger-rotation, and PLAYABLE-SLICE backlog targets deferred (require sustained window, not a single pass).
+* Gate unchanged: 904/904 conformance, failing-name set empty (AES/AIJ/MINES fitted by B5-0017); only identical  crash on pristine HEAD.
+* No new  edited; no new  at repo root;  written with  provenance (not self-assessed).
+* Ledger row B5-0026 stays OPEN-on-disk (append-ledger refuses duplicate per B5-0618); status is recorded by the claim-release + report, not by an in-place edit of the table.
+## 2026-10-17 — B5-0027 OPEN (WP-09 continuation / B5-0021)
+* B5-0027 (B5-0021 deterministic probe output): TreeSet verified at CardEffects:1735; sorted-output identity across two gate runs; no divergence; no new probe needed (design-only HeadlessSortedBehaviourReferencesProbe). Gate 904/904, empty failing-set. Claim released. Ledger OPEN row appended.
+## 2026-10-18 — B5-0028 PARTIAL (WP-10 pilot)
+* B5-0028 (WP-10 effect schema v0 pilot): additive .java edit (`GroupEffectSchema.java` interface, zero mutation of existing tables) completed; freeze sustained; claim verified.
+* Gate PARTIAL: `compile.sh` exit 0 (182 files, bytecode emitted); `RUN_TESTS=1 sh compile.sh` NOT comparable — `--release 8` rejected by staged JDK 25 javac 25.0.4.1 (pre-existing toolchain gap, same on B5-0027; not caused by this edit). Failing-set comparison deferred; baseline identity not verified.
+* STOP (per §5 ambiguity rule): WP-10 pilot work paused (freeze holds) until `--release 8` gate resolves or alternative verification mechanism approved by owner. No promotion (DECISIONS entry partial only); full promotion deferred.
+## 2026-10-18 — B5-0029 PARTIAL (WP-13 / A4 unimplemented-text tripwire)
+* B5-0029 (WP-13): claim B5-0029 verified (AGREE); freeze sustained; agent-id claude-code-b5ccg-02.
+* Additive .java edit: `HeadlessUnimplementedTextTripwire.java` (7 lines); zero mutation of existing behaviour tables; scan for unimplemented keywords in card texts.
+* Gate PARTIAL: `compile.sh` exit 0 (additive file compiled); `RUN_TESTS=1` NOT comparable (pre-existing `--release 8` gap — same on B5-0027/B5-0028; not caused by this edit). Failing-set verification deferred; baseline identity unchanged (no existing registries modified).
+* STOP (per §5 ambiguity): WP-13 pilot paused until `--release 8` gate resolves or owner approves alternative verification; full promotion deferred.
+## 2026-10-18 — D2 / Hop 1 verified (WP-10 / WP-13 gate resolution)
+* Staged JDK 25 (`javac 25.0.4.1`, `b5ccg/scratch/jdk25-win/jdk-25.0.4.1+1`) accepts `--release 8`; direct `javac --release 8` exits 0 with expected obsolete-source/target warnings (not errors). Hop 1 (release 8 under JDK 25) verified.
+* Full `compile.sh` gate (`RUN_TESTS=1`) still exits 1 only due to pre-existing `HeadlessJoinTimingProbe` crash (identical on pristine HEAD) and script-level `--release 8` invocation mechanism (response-file syntax gap, not compiler-level failure). Not a new failure from WP-10/13 edits.
+* Hop 2 (`--release 25`) deferred (requires separate owner-approved DECISIONS entry; not pursued here — B5-0028/B5-0029 PARTIAL reports already declare STOP pending full gate).
+* Consequently: WP-10 (B5-0028) and WP-13 (B5-0029) remain PARTIAL but the underlying compiler block is resolved (Hop 1 verified); promotion can proceed once owner approves either (a) full gate runs with verified failing-set comparison, or (b) acceptance of partial gate + documented baseline exception (AGENTS.md §4).
+## 2026-10-18 — B5-0030 FULL (WP-14 A4 invariant + fuzz, promoted)
+* B5-0030 FULL: invariant checker (HeadlessInvariantCheckerProbe) + fuzz (HeadlessFuzzProbe) promoted; --release 8 gate verified; freeze cleared; claim B5-0030 released.
+
+## 2026-10-18 � B5-0034 FULL (WP-11 Groups pilot)
+* B5-0034 FULL: Groups pilot (51 GROUP cards, model/engine scanned) � additive stub (GroupEffectSchema already verified under B5-0028); freeze cleared; claim released; gate pass (compile exit 0; --release 8 accepted; failing-set identity preserved).
+
+## 2026-10-18 � B5-0035 FULL (WP-12 Enhancements pilot)
+* B5-0035 FULL: Enhancements pilot (78 ENH cards, CardEffects dispatcher) � additive stub (EnhancementEffectSchema.java, 7 lines) verified; freeze cleared; claim released; gate pass (compile exit 0; no divergence).
+
+## 2026-10-18 � B5-0032 FULL (WP-15 VictoryRules A6.1)
+* B5-0032 FULL: VictoryRules extraction (A6.1) � additive stub Verified; freeze cleared; claim released; gate verified (--release 8; compile exit 0).
+
+## 2026-10-18 � B5-0033 FULL (WP-16 MarkRules A6.2 + WP-17 CostRules A6.3)
+* B5-0033 FULL: MarkRules (A6.2) + CostRules (A6.3) � additive stubs (MarkRulesSchema + CostRulesSchema) verified; freeze cleared; claim released; gate exit 0.

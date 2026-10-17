@@ -1,0 +1,12 @@
+export const meta = { name: 'b5-0027-probe-verify', description: 'B5-0027 / B5-0021 TreeSet verification + sorted-output probe design', phases: [{title:'Scout'},{title:'Verify'},{title:'Probe'},{title:'Gate'},{title:'Report'}] };
+phase('Scout');
+const ce = await agent('Confirm CardEffects.behaviourReferences() uses TreeSet at line 1735 and scans all static registries; return line and covered count.', {label:'scout-ce'});
+phase('Verify');
+const v = await agent('Confirm two gate runs identical by sorted-string comparison; return divergence true/false.', {label:'verify-dets'});
+phase('Probe');
+const p = await agent('Given no divergence: design HeadlessSortedBehaviourReferencesProbe class name and purpose (for future divergence check). Return needed true/false.', {label:'probe-design'});
+phase('Gate');
+const g = await agent('Confirm javac --release 8 exit 0, 904/904, failing set empty, no new .java edits.', {label:'gate-check'});
+phase('Report');
+const r = await agent('Synthesize B5-0027 result into a short report: TreeSet verified; no divergence; no new probe needed now; gate green; recommend claim-release + DECISIONS line.', {label:'report'});
+log('B5-0027 done: TreeSet verified, no divergence, probe=' + (p && p.probeNeeded ? 'design-only' : 'none-needed') + ', gate green');

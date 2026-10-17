@@ -55,3 +55,15 @@ comparison needs no special handling; a partial fix landed as
 acceptance). Rows B5-0022 (WP-18a), B5-0023 (WP-18b) and B5-0024 (WP-18c) were
 appended by the tool at EOF and moved into the table above by hand.
 
+| B5-0025 | OPEN | Freeze window: WP-09 cross-scope claim (docs + tooling). No other claim may be created until this row is DONE. | docs, tooling | - | - |
+
+| B5-0026 | OPEN | WP-09 Process-tax cuts (B2): boot file, pattern policy, ledger rotation, provenance scope. Acceptance: B2 targets in 7.4 met and measured over a two-week window | docs, tooling | - | - |
+
+| B5-0027 | OPEN | B5-0021 Deterministic probe output (TreeSet fix at CardEffects:1735 verified; sorted-output probe designed; gate 904/904 identity confirmed; no divergence) | engine,tooling | - | - |
+| B5-0028 | OPEN | WP-10 Effect schema v0 (freeze: engine + tooling); depends on B5-0005 census + B5-0027 release | engine,tooling | - | - |
+| B5-0029 | OPEN | WP-13 Unimplemented-text tripwire (A4) | engine,tooling | - | - |
+| B5-0030 | OPEN | WP-14 Invariant checker + fuzz (A4) — freeze sustained; independent of --release 8; depends on B5-0029 tripwire (FULL) | engine,tooling | - | - |
+| B5-0034 | OPEN | WP-11 Groups pilot (A2) | engine,tooling | - | - |
+| B5-0035 | OPEN | WP-12 Enhancements pilot (A2) | engine,tooling | - | - |
+| B5-0032 | OPEN | WP-15 VictoryRules extraction (A6.1) | engine,tooling | - | - |
+| B5-0033 | OPEN | WP-16/17 MarkRules + CostRules (A6.2/3) | engine,tooling | - | - |

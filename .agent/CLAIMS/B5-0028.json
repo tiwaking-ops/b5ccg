@@ -1,0 +1,8 @@
+{
+  "task": "B5-0028",
+  "agent_id": "claude-code-b5ccg-02",
+  "started_utc": "2026-10-17T10:55:34Z",
+  "ttl_min": 30,
+  "scope": ["engine", "tooling"],
+  "javac": "javac 25.0.4.1"
+}
