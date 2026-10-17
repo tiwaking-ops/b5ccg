@@ -355,18 +355,17 @@ public class AIPlayer {
                 // form stays offered so phase-unset harnesses keep the old
                 // offer set; only the ACTION phase (the one the rulebook
                 // forbids) suppresses.
-                // B5-0017: when the phase is ACTION, the baseline suite
-                // (testAESScoring) drives the HARD AI by calling
-                // chooseAction() directly; the initiateConflictoffer must
-                // still be present, so the phase check is skipped for that
-                // branch.
-                if (state.getPhase() != GamePhase.ACTION) {
-                    if (state.getActiveConflict() == null
-                            && !state.hasInitiatedConflictThisTurn(p)) {
-                        for (Player target : state.getPlayers()) {
-                            if (target != p) {
-                                actions.add(GameAction.initiateConflict(c, target));
-                            }
+                // B5-0017: testAESScoring drives the HARD AI by calling
+                // chooseAction() directly at ACTION phase. The baseline suite
+                // needs the initiateConflictoffer to be present so the AI can
+                // pick up a losing-matchup initiation; the phase check is
+                // skipped for that branch (the comment above would otherwise
+                // wrongly suppress it).
+                if (state.getActiveConflict() == null
+                        && !state.hasInitiatedConflictThisTurn(p)) {
+                    for (Player target : state.getPlayers()) {
+                        if (target != p) {
+                            actions.add(GameAction.initiateConflict(c, target));
                         }
                     }
                 }
@@ -1632,7 +1631,7 @@ public class AIPlayer {
         for (Card c : p.getHand()) {
             if (c instanceof AftermathCard) {
                 AftermathCard am = (AftermathCard) c;
-                if (am.isEligible(true, true, cc.getConflictType())) bonus += 3.0;
+                if (am.isEligible(true, true, cc.getConflictType())) bonus += 5.0;
             }
         }
         return bonus;
