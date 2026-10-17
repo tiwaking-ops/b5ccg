@@ -1573,9 +1573,7 @@ public final class CardEffects {
     private static final Set<String> DAMAGE_ON_ATTACK = new HashSet<String>();
     static {
         DAMAGE_ON_ATTACK.add("en_h_mines");
-        DAMAGE_ON_ATTACK.add("de_en_h_mines");
         DAMAGE_ON_ATTACK.add("en_h_energy_mines");
-        DAMAGE_ON_ATTACK.add("de_en_h_energy_mines");
         // B5-0528: reactive-mines pool ids (both sets) drive on-attack damage.
         // Premiere ids (no namespace prefix) and Delux ids (de_ prefix).
         DAMAGE_ON_ATTACK.add("enh_mines");

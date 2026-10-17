@@ -355,13 +355,8 @@ public class AIPlayer {
                 // form stays offered so phase-unset harnesses keep the old
                 // offer set; only the ACTION phase (the one the rulebook
                 // forbids) suppresses.
-                // B5-0017: testAESScoring drives the HARD AI by calling
-                // chooseAction() directly at ACTION phase. The baseline suite
-                // needs the initiateConflictoffer to be present so the AI can
-                // pick up a losing-matchup initiation; the phase check is
-                // skipped for that branch (the comment above would otherwise
-                // wrongly suppress it).
-                if (state.getActiveConflict() == null
+                if (state.getPhase() != GamePhase.ACTION
+                        && state.getActiveConflict() == null
                         && !state.hasInitiatedConflictThisTurn(p)) {
                     for (Player target : state.getPlayers()) {
                         if (target != p) {

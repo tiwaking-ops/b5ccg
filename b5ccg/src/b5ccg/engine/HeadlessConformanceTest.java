@@ -1191,6 +1191,7 @@ public class HeadlessConformanceTest {
         Player strong = player("AJstrong", Race.HUMAN);
         strong.gainInfluence(9);              // strong leads the board (13)
         GameState st2 = state(weak, strong, p);
+        st2.setPhase(GamePhase.CONFLICT);  // conflict initiation is a CONFLICT-round act (RB:III)
         p.addToHand(dip);
         GameAction best = hard.chooseAction(st2, p);
         check("AIJ", "HARD initiates against the weak target, never the leader",
@@ -5397,6 +5398,10 @@ public class HeadlessConformanceTest {
         // (6 × +1.0 = 6 vs base 0 − leader −3 − loss −3 = 0 > pass −0.5;
         // in a 2-player state the sole target is always leadingPlayer's
         // pick, so the leader penalty always applies).
+        // Conflict declarations live in the CONFLICT round (RB:III), not the
+        // ACTION loop — test at CONFLICT phase so the legal offer set is
+        // correct for real gameplay too.
+        st.setPhase(GamePhase.CONFLICT);
         rival.gainInfluence(2);      // rival 15: ties p — the sole legal
                                      // target is still leadingPlayer's pick
         ConflictCard hope = new ConflictCard("aes_hope", "Hope Strike",
