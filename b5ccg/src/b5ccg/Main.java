@@ -64,30 +64,30 @@ public class Main {
         }
 
         // ── Create players ────────────────────────────────────────────────────
-        Faction humanFaction = chooseFaction();
-        List<Faction> aiFactions = otherFactions(humanFaction);
+        Race humanRace = chooseRace();
+        List<Race> aiRaces = otherRaces(humanRace);
 
-        Player human  = new Player("You",       humanFaction,          true);
+        Player human  = new Player("You",       humanRace,          true);
         // B5-4170: use the rulebook-named ambassador for each faction instead of
         // hardcoding names — the previous literals "G'Kar"/"Londo" were assigned
-        // to aiFactions.get(1)/get(2) in positional order, which swaps them when
+        // to aiRaces.get(1)/get(2) in positional order, which swaps them when
         // the human faction is Human (order is MINBARI, CENTAURI, NARN), putting
         // G'Kar (the Narn ambassador) on the Centauri seat and Londo on the Narn.
-        Player ai1    = new Player(StartingGameFlowModel.ambassadorName(aiFactions.get(0)),  aiFactions.get(0),     false);
-        Player ai2    = new Player(StartingGameFlowModel.ambassadorName(aiFactions.get(1)),  aiFactions.get(1),     false);
-        Player ai3    = new Player(StartingGameFlowModel.ambassadorName(aiFactions.get(2)),  aiFactions.get(2),     false);
+        Player ai1    = new Player(StartingGameFlowModel.ambassadorName(aiRaces.get(0)),  aiRaces.get(0),     false);
+        Player ai2    = new Player(StartingGameFlowModel.ambassadorName(aiRaces.get(1)),  aiRaces.get(1),     false);
+        Player ai3    = new Player(StartingGameFlowModel.ambassadorName(aiRaces.get(2)),  aiRaces.get(2),     false);
 
         List<Player> players = Arrays.asList(human, ai1, ai2, ai3);
 
         // ── Build and deal faction decks ──────────────────────────────────────
         for (Player p : players) {
-            List<Card> factionCards = buildFactionDeck(allCards, p.getFaction());
+            List<Card> factionCards = buildRaceDeck(allCards, p.getRace());
             Deck deck = new Deck(factionCards);
             // B5-0319: pin the race ambassador to the draw-pile top so the
             // fixed starter deck's ambassador reaches the hand (GameController
             // .setupGame extracts it from the hand only). Deck shuffles in its
             // constructor, so pin AFTER construction.
-            CharacterCard amb = StarterDeckBuilder.findAmbassador(factionCards, p.getFaction());
+            CharacterCard amb = StarterDeckBuilder.findAmbassador(factionCards, p.getRace());
             if (amb != null) deck.addToTop(amb);
             p.setDeck(deck);
             p.drawCards(4); // initial hand
@@ -278,28 +278,28 @@ public class Main {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private static Faction chooseFaction() {
+    private static Race chooseRace() {
         Object[] options = { "Human", "Minbari", "Centauri", "Narn" };
         int choice = JOptionPane.showOptionDialog(null,
-            "Choose your faction:", "Babylon 5 CCG — Choose Faction",
+            "Choose your faction:", "Babylon 5 CCG — Choose Race",
             JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
             null, options, options[0]);
         switch (choice) {
-            case 1: return Faction.MINBARI;
-            case 2: return Faction.CENTAURI;
-            case 3: return Faction.NARN;
-            default: return Faction.HUMAN;
+            case 1: return Race.MINBARI;
+            case 2: return Race.CENTAURI;
+            case 3: return Race.NARN;
+            default: return Race.HUMAN;
         }
     }
 
-    private static List<Faction> otherFactions(Faction chosen) {
-        List<Faction> all = new ArrayList<Faction>(
-            Arrays.asList(Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN));
+    private static List<Race> otherRaces(Race chosen) {
+        List<Race> all = new ArrayList<Race>(
+            Arrays.asList(Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN));
         all.remove(chosen);
         return all;
     }
 
-    private static List<Card> buildFactionDeck(List<Card> all, Faction faction) {
+    private static List<Card> buildRaceDeck(List<Card> all, Race faction) {
         // B5-0319: use the real printed Premier starter deck (50 fixed + 10
         // random uncommons/rares) when the deck resource is available; fall
         // back to the legacy heuristic for a minimal/partial card pool.
@@ -312,15 +312,15 @@ public class Main {
             }
         }
         List<Card> deck = new ArrayList<Card>();
-        // 1. Faction-specific cards first
+        // 1. Race-specific cards first
         for (Card c : all) {
-            if (c.getFaction() == faction && deck.size() < 30) deck.add(c);
+            if (c.getLoyalty() == Loyalty.fromRace(faction) && deck.size() < 30) deck.add(c);
         }
         // 2. Neutral and ANY faction fillers
         for (Card c : all) {
             if (deck.size() >= 60) break;
-            Faction f = c.getFaction();
-            if (f == Faction.ANY || f == Faction.NEUTRAL || f == Faction.NON_ALIGNED) {
+            Loyalty f = c.getLoyalty();
+            if (f == Loyalty.ANY || f == Loyalty.NEUTRAL || f == Loyalty.NON_ALIGNED) {
                 deck.add(c);
             }
         }
@@ -336,31 +336,31 @@ public class Main {
     private static List<Card> buildMinimalTestSet() {
         List<Card> cards = new ArrayList<Card>();
         cards.add(new CharacterCard("test_sinclair","Jeffrey Sinclair","CHARACTER_HUMAN",
-            Rarity.FIXED, Faction.HUMAN, CardSet.PREMIERE,"jeffrey_sinclair",
+            Rarity.FIXED, Loyalty.HUMAN, CardSet.PREMIERE,"jeffrey_sinclair",
             "Human Ambassador.",5,3,0,4,true));
         cards.add(new CharacterCard("test_gkar","G'Kar","CHARACTER_NARN",
-            Rarity.FIXED, Faction.NARN, CardSet.PREMIERE,"gkar",
+            Rarity.FIXED, Loyalty.NARN, CardSet.PREMIERE,"gkar",
             "Narn Ambassador.",4,5,0,3,true));
         cards.add(new CharacterCard("test_delenn","Delenn","CHARACTER_MINBARI",
-            Rarity.FIXED, Faction.MINBARI, CardSet.PREMIERE,"delenn",
+            Rarity.FIXED, Loyalty.MINBARI, CardSet.PREMIERE,"delenn",
             "Minbari Ambassador.",7,3,2,5,true));
         cards.add(new CharacterCard("test_londo","Londo Mollari","CHARACTER_CENTAURI",
-            Rarity.FIXED, Faction.CENTAURI, CardSet.PREMIERE,"londo_mollari",
+            Rarity.FIXED, Loyalty.CENTAURI, CardSet.PREMIERE,"londo_mollari",
             "Centauri Ambassador.",5,6,0,4,true));
         for (int i = 0; i < 15; i++) {
             cards.add(new ConflictCard("test_dip_" + i, "Campaign for Support",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "campaign_for_support", "Diplomacy conflict. Winner gains 2 Influence.",
                 ConflictType.DIPLOMACY, 2));
             cards.add(new ConflictCard("test_mil_" + i, "Border Raid",
-                "CONFLICT_MILITARY", Rarity.FIXED, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_MILITARY", Rarity.FIXED, Loyalty.ANY, CardSet.PREMIERE,
                 "border_raid", "Military conflict. Winner gains 2 Influence.",
                 ConflictType.MILITARY, 2));
             cards.add(new FleetCard("test_fleet_" + i, "Picket Fleet",
-                "FLEET_HUMAN", Rarity.FIXED, Faction.ANY, CardSet.PREMIERE,
+                "FLEET_HUMAN", Rarity.FIXED, Loyalty.ANY, CardSet.PREMIERE,
                 "picket_fleet_human", "Basic patrol fleet.", 3));
             cards.add(new EventCard("test_evt_" + i, "Short Term Goals",
-                "EVENT", Rarity.FIXED, Faction.ANY, CardSet.PREMIERE,
+                "EVENT", Rarity.FIXED, Loyalty.ANY, CardSet.PREMIERE,
                 "short_term_goals", "Gain 1 Influence immediately."));
         }
         return cards;

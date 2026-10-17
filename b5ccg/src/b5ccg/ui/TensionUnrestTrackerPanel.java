@@ -2,7 +2,7 @@ package b5ccg.ui;
 
 import b5ccg.model.GameState;
 import b5ccg.model.Player;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
 import b5ccg.model.enums.TensionMatrix;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -142,7 +142,7 @@ public class TensionUnrestTrackerPanel extends JPanel {
 
         // Build the render list first: seats first (unrest), then one row per
         // unordered pair of the races actually at the table.
-        List<Faction> roster = raceRoster(state);
+        List<Race> roster = raceRoster(state);
         int needed = state.getPlayers().size()
             + pairCount(roster);
 
@@ -165,8 +165,8 @@ public class TensionUnrestTrackerPanel extends JPanel {
         for (int i = 0; i < players.size(); i++) {
             Player p = players.get(i);
             Row r = rowPool.get(slot++);
-            r.icon.setText(InfluenceTrackerPanel.factionIcon(p.getFaction()));
-            r.name.setText(p.getName() + " " + shortName(p.getFaction()));
+            r.icon.setText(InfluenceTrackerPanel.factionIcon(p.getRace()));
+            r.name.setText(p.getName() + " " + shortName(p.getRace()));
             r.value.setText(pad(clamp(p.getUnrest(), UNREST_MIN, UNREST_MAX)));
             r.bar.setText(bar(p.getUnrest(), UNREST_MIN, UNREST_MAX));
         }
@@ -174,8 +174,8 @@ public class TensionUnrestTrackerPanel extends JPanel {
         TensionMatrix matrix = state.getTensionMatrix();
         for (int i = 0; i < roster.size(); i++) {
             for (int j = i + 1; j < roster.size(); j++) {
-                Faction a = roster.get(i);
-                Faction b = roster.get(j);
+                Race a = roster.get(i);
+                Race b = roster.get(j);
                 boolean atWar = state.isAtWar(a, b);
                 boolean recorded = isRecorded(matrix, a, b);
                 int shown = recorded ? matrix.getTension(a, b)
@@ -195,17 +195,17 @@ public class TensionUnrestTrackerPanel extends JPanel {
      * seat get a tension row: an unseatable race has no pair the engine could
      * hold tension for, so a row for it would be pure decoration.
      */
-    static List<Faction> raceRoster(GameState state) {
-        Set<Faction> seen = new LinkedHashSet<Faction>();
+    static List<Race> raceRoster(GameState state) {
+        Set<Race> seen = new LinkedHashSet<Race>();
         List<Player> players = state.getPlayers();
         for (int i = 0; i < players.size(); i++) {
-            Faction f = players.get(i).getFaction();
+            Race f = players.get(i).getRace();
             if (f != null) seen.add(f);
         }
-        return new ArrayList<Faction>(seen);
+        return new ArrayList<Race>(seen);
     }
 
-    private static int pairCount(List<Faction> roster) {
+    private static int pairCount(List<Race> roster) {
         int n = roster.size();
         return n * (n - 1) / 2;
     }
@@ -217,9 +217,9 @@ public class TensionUnrestTrackerPanel extends JPanel {
      * one direction and nothing for the other is still an engine statement, not
      * an unstarted pair.
      */
-    static boolean isRecorded(TensionMatrix m, Faction a, Faction b) {
+    static boolean isRecorded(TensionMatrix m, Race a, Race b) {
         if (m == null || a == null || b == null || a == b) return false;
-        java.util.Map<Faction, java.util.Map<Faction, Integer>> map = m.getTensionMap();
+        java.util.Map<Race, java.util.Map<Race, Integer>> map = m.getTensionMap();
         return map.containsKey(a) && map.get(a).containsKey(b)
             || map.containsKey(b) && map.get(b).containsKey(a);
     }
@@ -279,7 +279,7 @@ public class TensionUnrestTrackerPanel extends JPanel {
     }
 
     /** A three-letter race tag; stdlib-only, so no name table is loaded. */
-    static String shortName(Faction f) {
+    static String shortName(Race f) {
         if (f == null) return "???";
         String s = f.name();
         return s.length() <= 3 ? s : s.substring(0, 3);

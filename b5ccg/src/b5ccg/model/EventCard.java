@@ -5,7 +5,7 @@ import b5ccg.model.enums.*;
 public class EventCard extends Card {
 
     public EventCard(String id, String title, String subtype,
-                     Rarity rarity, Faction faction, CardSet cardSet,
+                     Rarity rarity, Loyalty faction, CardSet cardSet,
                      String imageKey, String text) {
         super(id, title, CardType.EVENT, subtype, rarity, faction,
               cardSet, imageKey, text);

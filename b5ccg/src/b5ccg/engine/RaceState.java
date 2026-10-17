@@ -15,17 +15,17 @@ package b5ccg.engine;
  * {@code b5ccg.model.enums.TensionMatrix}, and the rulebook says states
  * are the <em>additional</em> relationships layered on top of tension.
  * {@code NONE} is not a constant here either: "no state" is the absence of
- * every constant, which is what {@link FactionStateBook} reports.
+ * every constant, which is what {@link RaceStateBook} reports.
  *
  * <p>A pair may hold more than one of these at once EXCEPT war, which the
  * rulebook makes exclusive by the "all other states ... are cancelled"
  * clause at :807. That exclusion is enforced in
- * {@link FactionStateBook#enterWar}, not here, because it is a
+ * {@link RaceStateBook#enterWar}, not here, because it is a
  * transition and not a property of the value.
  *
  * Java 6 only. Enum, no external libraries.
  */
-public enum FactionState {
+public enum RaceState {
     /** Rulebook :803 "various forms of alliances". */
     ALLIANCE,
     /** Rulebook :803 "trade pacts (a state of free trade)". */

@@ -2,7 +2,8 @@ package b5ccg.ui;
 
 import b5ccg.model.enums.CardType;
 import b5ccg.model.enums.CardSet;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
+import b5ccg.model.enums.Loyalty;
 import b5ccg.model.enums.MarkType;
 import b5ccg.model.enums.Rarity;
 
@@ -48,7 +49,7 @@ public class HeadlessCardEditorModelTest {
         model.setType(CardType.CHARACTER);
         model.setSubtype("Ambassador");
         model.setRarity(Rarity.FIXED);
-        model.setFaction(Faction.MINBARI);
+        model.setLoyalty(Loyalty.MINBARI);
         model.setSet(CardSet.PREMIERE);
         model.setImageKey("test_envoy_4111");
         model.setText("Draw 1 card.");
@@ -72,7 +73,7 @@ public class HeadlessCardEditorModelTest {
         check(tag + ": type", m.getType() == CardType.CHARACTER);
         check(tag + ": subtype", "Ambassador".equals(m.getSubtype()));
         check(tag + ": rarity", m.getRarity() == Rarity.FIXED);
-        check(tag + ": faction", m.getFaction() == Faction.MINBARI);
+        check(tag + ": faction", m.getLoyalty() == Loyalty.MINBARI);
         check(tag + ": set", m.getSet() == CardSet.PREMIERE);
         check(tag + ": imageKey", "test_envoy_4111".equals(m.getImageKey()));
         check(tag + ": text", "Draw 1 card.".equals(m.getText()));

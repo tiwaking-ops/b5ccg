@@ -233,9 +233,9 @@ public class RulesEngine {
      */
     public int promotionCost(Player p, CharacterCard ch) {
         int base = ch.getCost();   // B5-0323: the card's influence cost
-        if (ch.getFaction() != p.getFaction()
-                && ch.getFaction() != Faction.NEUTRAL
-                && ch.getFaction() != Faction.ANY) {
+        if (ch.getLoyalty() != Loyalty.fromRace(p.getRace())
+                && ch.getLoyalty() != Loyalty.NEUTRAL
+                && ch.getLoyalty() != Loyalty.ANY) {
             base = base * 2;   // double-cost for other-race loyal characters
         }
         return base + p.getInnerCircle().size();
@@ -367,7 +367,7 @@ public class RulesEngine {
         if (p == null || gr == null) return false;
         if (!p.getHand().contains(gr)) return false;
         if (p.getAppliedPool() < groupSponsorshipCost(gr)) return false;
-        return gr.getFaction().isPlayableBy(p.getFaction());   // :496 absolute
+        return gr.getLoyalty().isPlayableBy(p.getRace());   // :496 absolute
     }
 
     /**
@@ -411,7 +411,7 @@ public class RulesEngine {
      *  loyalty; neutral characters at no additional cost. */
     public int baseRecruitCost(Player p, CharacterCard ch) {
         int base = ch.getCost();
-        if (isDoubleCostRequired(ch, p.getFaction())) {
+        if (isDoubleCostRequired(ch, p.getRace())) {
             base = base * 2;
         }
         return base;
@@ -421,11 +421,11 @@ public class RulesEngine {
      * Rulebook §Sponsor (:659): loyal characters whose race differs from the
      * sponsoring faction cost double; neutral characters are exempt.
      */
-    public boolean isDoubleCostRequired(CharacterCard ch, Faction faction) {
+    public boolean isDoubleCostRequired(CharacterCard ch, Race faction) {
         if (ch == null || faction == null) return false;
-        Faction cardFaction = ch.getFaction();
-        return cardFaction != faction && cardFaction != Faction.NEUTRAL
-                && cardFaction != Faction.ANY;
+        Loyalty cardRace = ch.getLoyalty();
+        return cardRace != Loyalty.fromRace(faction) && cardRace != Loyalty.NEUTRAL
+                && cardRace != Loyalty.ANY;
     }
 
     /** B5-0339: effective sponsor cost — the base minus the ambassador's
@@ -548,7 +548,7 @@ public class RulesEngine {
                 || c instanceof FleetCard)) return false;
         if (!p.getHand().contains(c)) return false;
         if (!hasReadySponsor(p)) return false;
-        if (!c.getFaction().isPlayableBy(p.getFaction())) return false;   // :664 / :665 absolute
+        if (!c.getLoyalty().isPlayableBy(p.getRace())) return false;   // :664 / :665 absolute
         return p.getAppliedPool() >= sponsorshipCost(p, c);
     }
 
@@ -612,7 +612,7 @@ public class RulesEngine {
      * Sponsor legality (one-major rule, rulebook :520 "sponsor a new one if
      * your faction does not currently have an agenda card in play"; row scope
      * = this gate only — the :719 sponsor ROTATION cost is a pre-existing
-     * gap recorded for a later task). Faction playability stays with the
+     * gap recorded for a later task). Race playability stays with the
      * offer layers (AI gate) as today.
      */
     public boolean canSponsorAgenda(Player p, AgendaCard ag) {
@@ -641,7 +641,7 @@ public class RulesEngine {
         if (current == replacement) return false;
         if (!p.getHand().contains(replacement)) return false;
         if (replacement.isFaceDown()) return false;
-        if (!replacement.getFaction().isPlayableBy(p.getFaction())) return false;
+        if (!replacement.getLoyalty().isPlayableBy(p.getRace())) return false;
         if (current.isMajorAgenda() && !replacement.isMajorAgenda()) return false;
         if (leader == null || !p.getInnerCircle().contains(leader)) return false;
         if (leader.isRotated() || leader.isFaceDown() || !leader.canActAfterNeutralization()) return false;
@@ -840,7 +840,7 @@ public class RulesEngine {
                 && winner == initiator) {
             LocationCard loc = conflict.getTargetLocation();
             boolean wasSuppressed = loc.isEffectsSuppressed();
-            if (wasSuppressed && loc.getFaction() == winner.getFaction()) {
+            if (wasSuppressed && loc.getLoyalty() == Loyalty.fromRace(winner.getRace())) {
                 loc.setCapturedBy(null);
                 loc.setEffectsSuppressed(false);
                 state.log("War outcome: " + winner.getName()
@@ -869,26 +869,26 @@ public class RulesEngine {
             // Tension runs toward the location's original faction owner (the
             // printed faction), not the current occupier — capture mutates
             // capturedBy before this block, so read the card's faction here.
-            Faction owner = conflict.getTargetLocation() != null
-                    ? conflict.getTargetLocation().getFaction() : null;
+            Loyalty owner = conflict.getTargetLocation() != null
+                    ? conflict.getTargetLocation().getLoyalty() : null;
             target = null;
             if (owner != null) {
                 for (Player pp : state.getPlayers()) {
-                    if (pp.getFaction() == owner) { target = pp; break; }
+                    if (Loyalty.fromRace(pp.getRace()) == owner) { target = pp; break; }
                 }
             }
         } else {
             target = conflict.getTarget();
         }
         if (target != null) {
-            Faction targetFaction = target.getFaction();
-            Faction initiatorFaction = initiator.getFaction();
-            if (targetFaction != null && initiatorFaction != null
-                    && targetFaction != initiatorFaction) {
-                state.raiseTension(targetFaction, initiatorFaction, 1);
-                state.log("Tension: " + targetFaction + " toward "
-                        + initiatorFaction + " raised to "
-                        + state.getTensionMatrix().getTension(targetFaction, initiatorFaction)
+            Race targetRace = target.getRace();
+            Race initiatorRace = initiator.getRace();
+            if (targetRace != null && initiatorRace != null
+                    && targetRace != initiatorRace) {
+                state.raiseTension(targetRace, initiatorRace, 1);
+                state.log("Tension: " + targetRace + " toward "
+                        + initiatorRace + " raised to "
+                        + state.getTensionMatrix().getTension(targetRace, initiatorRace)
                         + " (war outcome).");
             }
         }
@@ -926,7 +926,7 @@ public class RulesEngine {
         if (!state.isPlayerActive(p)) return false;
         if (p.getActionsLeft() <= 0) return false;
         if (state.hasInitiatedConflictThisTurn(p)) return false;
-        return state.isAtWar(p.getFaction());
+        return state.isAtWar(p.getRace());
     }
 
     /**
@@ -942,13 +942,13 @@ public class RulesEngine {
         if (!canDeclareWarConflict(p, state)) return false;
         if (kind == WarKind.RACE_TARGET) {
             if (raceTarget == null) return false;
-            return state.isAtWar(p.getFaction(), raceTarget.getFaction());
+            return state.isAtWar(p.getRace(), raceTarget.getRace());
         }
         if (kind == WarKind.LOCATION_TARGET) {
             if (locTarget == null) return false;
             Player owner = state.findLocationOwner(locTarget);
             if (owner == null) return false;
-            return state.isAtWar(p.getFaction(), owner.getFaction());
+            return state.isAtWar(p.getRace(), owner.getRace());
         }
         return false;
     }
@@ -1289,10 +1289,10 @@ public class RulesEngine {
         if (p.hasSurrendered() || p.hasForfeited()) return false;
         if (target == null || target == p) return false;
         if (target.hasSurrendered() || target.hasForfeited()) return false;
-        Faction myFaction = p.getFaction();
-        Faction theirFaction = target.getFaction();
-        if (myFaction == null || theirFaction == null) return false;
-        if (!state.isAtWar(myFaction, theirFaction)) return false;
+        Race myRace = p.getRace();
+        Race theirRace = target.getRace();
+        if (myRace == null || theirRace == null) return false;
+        if (!state.isAtWar(myRace, theirRace)) return false;
         // B5-0661: the surrendering player must have an ambassador in play to
         // place in asylum (rulebook :819).
         if (p.getAmbassador() == null) return false;
@@ -1443,7 +1443,7 @@ public class RulesEngine {
         if (!p.getHand().contains(c)) {
             return c.getTitle() + " is no longer in your hand";
         }
-        if (!c.getFaction().isPlayableBy(p.getFaction())) {
+        if (!c.getLoyalty().isPlayableBy(p.getRace())) {
             return "a race-restricted card is playable only by its own faction";
         }
         Participation part = c.getParticipation();
@@ -1520,7 +1520,7 @@ public class RulesEngine {
             return "the target is neutralized and cannot be attacked";
         }
         Player targetOwner = ownerOfCard(target, conflict);
-        if (targetOwner == null || targetOwner.getFaction() == p.getFaction()) {
+        if (targetOwner == null || targetOwner.getRace() == p.getRace()) {
             return "the target belongs to your own faction";
         }
         if (attacker.getPrimaryStatValue(conflict.getConflictType()) <= 0) {
@@ -1612,7 +1612,7 @@ public class RulesEngine {
         if (p.getActionsLeft() <= 0) return false;
         if (state.hasInitiatedConflictThisTurn(p)) return false;   // B5-0302
         if (!p.getHand().contains(c)) return false;
-        if (!c.getFaction().isPlayableBy(p.getFaction())) return false;
+        if (!c.getLoyalty().isPlayableBy(p.getRace())) return false;
         Participation part = c.getParticipation();
         if (part != null && part.isRequiresTarget() && target == null) return false;
         return true;
@@ -1623,7 +1623,7 @@ public class RulesEngine {
         // B5-1038: affordability gate — the generic play path now charges
         // card cost, so a card the player cannot afford is not playable.
         if (p.getAppliedPool() < c.getCost()) return false;
-        return c.getFaction().isPlayableBy(p.getFaction());
+        return c.getLoyalty().isPlayableBy(p.getRace());
     }
 
     /**
@@ -1648,7 +1648,7 @@ public class RulesEngine {
         if (p == null || contingency == null || host == null
                 || p.isPassed() || p.getActionsLeft() <= 0
                 || !p.getHand().contains(contingency)
-                || !contingency.getFaction().isPlayableBy(p.getFaction())
+                || !contingency.getLoyalty().isPlayableBy(p.getRace())
                 || !contingency.canTarget(host)) return false;
         return controlsInPlay(p, host);
     }
@@ -1778,7 +1778,7 @@ public class RulesEngine {
             // Non-Aligned Support grants one ready Non-Aligned fleet entry;
             // it does not consume influence or rotate the fleet.
             for (FleetCard fleet : p.getFleets()) {
-                if (fleet.getFaction() == Faction.NON_ALIGNED
+                if (fleet.getLoyalty() == Loyalty.NON_ALIGNED
                         && !fleet.isRotated() && conflict.canCommitCard(p, fleet)) {
                     conflict.commitCard(p, fleet, support);
                     break;
@@ -1810,7 +1810,7 @@ public class RulesEngine {
         target.reconcileDamage();
         if (target.isNeutralized() || target.isFaceDown()) return false;
         Player targetOwner = ownerOfCard(target, conflict);
-        if (targetOwner == null || targetOwner.getFaction() == p.getFaction()) return false;
+        if (targetOwner == null || targetOwner.getRace() == p.getRace()) return false;
         if (attacker.getPrimaryStatValue(conflict.getConflictType()) <= 0) return false;
         // B5-1999: a group has no ability (:496) and is never a participant
         // (:434/:607), so it can never be the attacking card either. Stated
@@ -2661,7 +2661,7 @@ public class RulesEngine {
         Babylon5Station stn = state.getStation();
         boolean sourceFired = state.isStationSourceFired();
         for (Player p : state.getPlayers()) {
-            if (p.getFaction() == Faction.VORLON) {
+            if (p.getRace() == Race.VORLON) {
                 for (Card c : p.getLocations()) {
                     if (c instanceof LocationCard) {
                         LocationCard lc = (LocationCard) c;
@@ -3032,7 +3032,7 @@ public class RulesEngine {
         if (state == null) return null;
         for (Player p : state.getPlayers()) {
             if (p == null || !isEligibleAgendaVoter(p)) continue;
-            if (p.getFaction() == Faction.HUMAN) return p;
+            if (p.getRace() == Race.HUMAN) return p;
         }
         if (requiring != null) {
             for (Player p : state.getPlayers()) {
@@ -3208,8 +3208,8 @@ public class RulesEngine {
         }
 
         // Council races that are always part of the vote (rulebook :791)
-        final Faction[] councilRaces = new Faction[] {
-            Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN, Faction.VORLON
+        final Race[] councilRaces = new Race[] {
+            Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN, Race.VORLON
         };
 
         // Tally votes from players who cast ballots
@@ -3227,10 +3227,10 @@ public class RulesEngine {
         // Add default ABSTAIN for council races not represented by a player
         // (rulebook :793: "Ambassadors from races not currently being played
         // are considered to be part of the vote, but by default they abstain")
-        for (Faction race : councilRaces) {
+        for (Race race : councilRaces) {
             boolean hasPlayer = false;
             for (Player p : state.getPlayers()) {
-                if (p.getFaction() == race) {
+                if (p.getRace() == race) {
                     hasPlayer = true;
                     break;
                 }
@@ -3272,7 +3272,7 @@ public class RulesEngine {
      *  transition a no-op, which is the "absence of an error is not presence
      *  of a value" failure. One RulesEngine serves one game, which is how
      *  GameController and AIPlayer already hold it. */
-    private FactionStateBook factionStates;
+    private RaceStateBook factionStates;
 
     /** Rulebook :801-803 "States": a pair's relationship is primarily its
      *  tension, plus any additional relationships -- alliances, trade pacts,
@@ -3283,34 +3283,34 @@ public class RulesEngine {
      *  Returns null for a game this engine is not bound to, and for a second
      *  distinct game: the book holds mutable relationship state and one
      *  engine instance must not answer for two games at once. */
-    public FactionStateBook getFactionStates(GameState state) {
+    public RaceStateBook getRaceStates(GameState state) {
         if (state == null) return null;
-        if (factionStates == null) factionStates = new FactionStateBook(state);
+        if (factionStates == null) factionStates = new RaceStateBook(state);
         return factionStates.forSameGame(state) ? factionStates : null;
     }
 
     /** True when the pair is in the named state (rulebook :801-803). */
-    public boolean areInState(Faction a, Faction b, FactionState s, GameState state) {
-        FactionStateBook book = getFactionStates(state);
+    public boolean areInState(Race a, Race b, RaceState s, GameState state) {
+        RaceStateBook book = getRaceStates(state);
         return book != null && book.isInState(a, b, s);
     }
 
-    public boolean areAllied(Faction a, Faction b, GameState state) {
-        return areInState(a, b, FactionState.ALLIANCE, state);
+    public boolean areAllied(Race a, Race b, GameState state) {
+        return areInState(a, b, RaceState.ALLIANCE, state);
     }
 
-    public boolean areTrading(Faction a, Faction b, GameState state) {
-        return areInState(a, b, FactionState.TRADE_PACT, state);
+    public boolean areTrading(Race a, Race b, GameState state) {
+        return areInState(a, b, RaceState.TRADE_PACT, state);
     }
 
     /** Enter an alliance or a trade pact between two races. */
-    public boolean enterFactionState(Faction a, Faction b, FactionState s, GameState state) {
-        FactionStateBook book = getFactionStates(state);
+    public boolean enterRaceState(Race a, Race b, RaceState s, GameState state) {
+        RaceStateBook book = getRaceStates(state);
         return book != null && book.enterState(a, b, s);
     }
 
-    public boolean exitFactionState(Faction a, Faction b, FactionState s, GameState state) {
-        FactionStateBook book = getFactionStates(state);
+    public boolean exitRaceState(Race a, Race b, RaceState s, GameState state) {
+        RaceStateBook book = getRaceStates(state);
         return book != null && book.exitState(a, b, s);
     }
 }

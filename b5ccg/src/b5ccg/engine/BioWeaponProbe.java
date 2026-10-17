@@ -36,20 +36,20 @@ public class BioWeaponProbe {
         // Fill the LOSER's (initiator's) hand so the discard is observable.
 
         // ── B: deluxe de_conf_bio_weapon_discovery — discard-2 AND lose 1 influence ─
-        Player dOwner = new Player("D-owner", Faction.CENTAURI, false);
-        Player dRival = new Player("D-rival", Faction.HUMAN, false);
+        Player dOwner = new Player("D-owner", Race.CENTAURI, false);
+        Player dRival = new Player("D-rival", Race.HUMAN, false);
         GameState dSt = makeState(dOwner, dRival);
         dOwner.setAmbassador(new CharacterCard("d_amb", "Amb", "CHARACTER_CENTAURI",
-                Rarity.FIXED, Faction.CENTAURI, CardSet.DELUXE, "x", "text", 3, 3, 3, 3, true));
+                Rarity.FIXED, Loyalty.CENTAURI, CardSet.DELUXE, "x", "text", 3, 3, 3, 3, true));
         dRival.setAmbassador(new CharacterCard("d_ramb", "Amb", "CHARACTER_HUMAN",
-                Rarity.FIXED, Faction.HUMAN, CardSet.DELUXE, "x", "text", 3, 3, 3, 3, true));
+                Rarity.FIXED, Loyalty.HUMAN, CardSet.DELUXE, "x", "text", 3, 3, 3, 3, true));
         for (int i = 0; i < 5; i++) {
             dRival.getHand().add(new EventCard("d_fill_" + i, "Fill", "EVENT",
-                    Rarity.COMMON, Faction.ANY, CardSet.DELUXE, "x", "text"));
+                    Rarity.COMMON, Loyalty.ANY, CardSet.DELUXE, "x", "text"));
         }
         ConflictCard dCard = new ConflictCard("de_conf_bio_weapon_discovery",
                 "Bio-Weapon Discovery", "CONFLICT_INTRIGUE", Rarity.COMMON,
-                Faction.ANY, CardSet.DELUXE, "x",
+                Loyalty.ANY, CardSet.DELUXE, "x",
                 "Intrigue conflict. Winner gains 3 Influence. Loser must discard 2 "
                         + "cards. (Deluxe text change: loser also loses 1 Influence.)",
                 ConflictType.INTRIGUE, 1);
@@ -71,18 +71,18 @@ public class BioWeaponProbe {
 
         // ── C: prior paths unchanged ──
         // conf_loss_of_support: loser loses 1 AND discards 1 (both registries).
-        Player lOwner = new Player("L-owner", Faction.NARN, false);
-        Player lRival = new Player("L-rival", Faction.MINBARI, false);
+        Player lOwner = new Player("L-owner", Race.NARN, false);
+        Player lRival = new Player("L-rival", Race.MINBARI, false);
         GameState lSt = makeState(lOwner, lRival);
         lOwner.setAmbassador(new CharacterCard("l_amb", "Amb", "CHARACTER_NARN",
-                Rarity.FIXED, Faction.NARN, CardSet.PREMIERE, "x", "text", 3, 3, 3, 3, true));
+                Rarity.FIXED, Loyalty.NARN, CardSet.PREMIERE, "x", "text", 3, 3, 3, 3, true));
         lRival.setAmbassador(new CharacterCard("l_ramb", "Amb", "CHARACTER_MINBARI",
-                Rarity.FIXED, Faction.MINBARI, CardSet.PREMIERE, "x", "text", 3, 3, 3, 3, true));
+                Rarity.FIXED, Loyalty.MINBARI, CardSet.PREMIERE, "x", "text", 3, 3, 3, 3, true));
         lRival.getHand().add(new EventCard("l_fill", "Fill", "EVENT",
-                Rarity.COMMON, Faction.ANY, CardSet.PREMIERE, "x", "text"));
+                Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "text"));
         ConflictCard lCard = new ConflictCard("conf_loss_of_support",
                 "Loss of Support", "CONFLICT_MILITARY", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text", ConflictType.MILITARY, 1);
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text", ConflictType.MILITARY, 1);
         Conflict lConflict = new Conflict(lCard, lOwner);
         lConflict.commitCard(lOwner, lOwner.getAmbassador());
         lConflict.commitCard(lRival, lRival.getAmbassador());

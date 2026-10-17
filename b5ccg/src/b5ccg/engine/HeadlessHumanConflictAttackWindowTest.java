@@ -17,10 +17,10 @@ public class HeadlessHumanConflictAttackWindowTest {
         if (!ok) failed++;
     }
 
-    private static Player player(String name, Faction faction, boolean human) {
+    private static Player player(String name, Race faction, boolean human) {
         Player p = new Player(name, faction, human);
         CharacterCard ambassador = new CharacterCard("amb_" + name, "Ambassador",
-                "CHARACTER_" + faction, Rarity.FIXED, faction, CardSet.PREMIERE,
+                "CHARACTER_" + faction, Rarity.FIXED, Loyalty.fromRace(faction), CardSet.PREMIERE,
                 "x", "text", 3, 3, 3, 3, true);
         p.setAmbassador(ambassador);
         p.getInnerCircle().add(ambassador);
@@ -40,15 +40,15 @@ public class HeadlessHumanConflictAttackWindowTest {
 
     private static Conflict conflict(Player initiator) {
         ConflictCard card = new ConflictCard("atk_window_conflict", "Window Conflict",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 1);
         return new Conflict(card, initiator);
     }
 
-    private static CharacterCard character(String id, Faction faction,
+    private static CharacterCard character(String id, Race faction,
                                           int diplomacy, int leadership) {
         return new CharacterCard(id, id, "CHARACTER_" + faction, Rarity.RARE,
-                faction, CardSet.PREMIERE, "x", "text", diplomacy, 1, 0,
+                Loyalty.fromRace(faction), CardSet.PREMIERE, "x", "text", diplomacy, 1, 0,
                 leadership, false);
     }
 
@@ -85,10 +85,10 @@ public class HeadlessHumanConflictAttackWindowTest {
     }
 
     private static Fixture fixture() {
-        Player human = player("AtkWindowHuman", Faction.NARN, true);
-        Player initiator = player("AtkWindowInitiator", Faction.MINBARI, false);
-        CharacterCard attacker = character("atk_window_attacker", Faction.NARN, 3, 1);
-        CharacterCard target = character("atk_window_target", Faction.MINBARI, 2, 1);
+        Player human = player("AtkWindowHuman", Race.NARN, true);
+        Player initiator = player("AtkWindowInitiator", Race.MINBARI, false);
+        CharacterCard attacker = character("atk_window_attacker", Race.NARN, 3, 1);
+        CharacterCard target = character("atk_window_target", Race.MINBARI, 2, 1);
         human.getSupportingRole().add(attacker);
         initiator.getInnerCircle().add(target);
         Conflict conflict = conflict(initiator);
@@ -159,8 +159,8 @@ public class HeadlessHumanConflictAttackWindowTest {
     }
 
     private static void testNoOffer() throws Exception {
-        Player human = player("AtkWindowSolo", Faction.NARN, true);
-        CharacterCard attacker = character("atk_window_solo_attacker", Faction.NARN, 3, 1);
+        Player human = player("AtkWindowSolo", Race.NARN, true);
+        CharacterCard attacker = character("atk_window_solo_attacker", Race.NARN, 3, 1);
         human.getSupportingRole().add(attacker);
         Conflict conflict = conflict(human);
         List<Player> players = new ArrayList<Player>();

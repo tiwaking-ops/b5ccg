@@ -1,7 +1,8 @@
 package b5ccg.engine;
 
 import b5ccg.model.GameState;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Loyalty;
+import b5ccg.model.enums.Race;
 import b5ccg.model.enums.TensionMatrix;
 
 import java.util.Collections;
@@ -52,16 +53,16 @@ import java.util.Set;
  * <p>Java 6 only, stdlib only. No diamond, no lambdas, no enhanced for
  * over anything but an Iterable/array.
  */
-public class FactionStateBook {
+public class RaceStateBook {
 
     /** Unordered pair of factions carrying the non-war states. */
     private static final class Pair {
-        final Faction a;
-        final Faction b;
+        final Race a;
+        final Race b;
 
-        Pair(Faction x, Faction y) {
+        Pair(Race x, Race y) {
             // Order by ordinal so (x,y) and (y,x) are the same key, matching
-            // TensionMatrix.FactionPair's own canonicalisation.
+            // TensionMatrix.RacePair's own canonicalisation.
             if (x.ordinal() <= y.ordinal()) { this.a = x; this.b = y; }
             else                           { this.a = y; this.b = x; }
         }
@@ -80,19 +81,19 @@ public class FactionStateBook {
     }
 
     /** pair -> the non-war states in force. War lives in TensionMatrix. */
-    private final Map<Pair, Set<FactionState>> states =
-            new HashMap<Pair, Set<FactionState>>();
+    private final Map<Pair, Set<RaceState>> states =
+            new HashMap<Pair, Set<RaceState>>();
 
     /** The game whose TensionMatrix owns the war fact. */
     private final GameState state;
 
-    public FactionStateBook(GameState state) {
+    public RaceStateBook(GameState state) {
         this.state = state;
     }
 
     /** The book attached to a game, or null when the game is null. */
-    public static FactionStateBook forState(GameState state) {
-        return state == null ? null : new FactionStateBook(state);
+    public static RaceStateBook forState(GameState state) {
+        return state == null ? null : new RaceStateBook(state);
     }
 
     /** True when this book is the one bound to the given game. Identity, not
@@ -109,23 +110,23 @@ public class FactionStateBook {
      * the TensionMatrix rather than from local storage, so this can never
      * disagree with {@code GameState.isAtWar}.
      */
-    public boolean isInState(Faction x, Faction y, FactionState s) {
+    public boolean isInState(Race x, Race y, RaceState s) {
         if (!valid(x, y) || s == null) return false;
-        if (s == FactionState.WAR) return isAtWar(x, y);
-        Set<FactionState> set = states.get(new Pair(x, y));
+        if (s == RaceState.WAR) return isAtWar(x, y);
+        Set<RaceState> set = states.get(new Pair(x, y));
         return set != null && set.contains(s);
     }
 
-    public boolean isAllied(Faction x, Faction y) {
-        return isInState(x, y, FactionState.ALLIANCE);
+    public boolean isAllied(Race x, Race y) {
+        return isInState(x, y, RaceState.ALLIANCE);
     }
 
-    public boolean isTrading(Faction x, Faction y) {
-        return isInState(x, y, FactionState.TRADE_PACT);
+    public boolean isTrading(Race x, Race y) {
+        return isInState(x, y, RaceState.TRADE_PACT);
     }
 
     /** Reads through to the TensionMatrix, which owns the at-war fact. */
-    public boolean isAtWar(Faction x, Faction y) {
+    public boolean isAtWar(Race x, Race y) {
         if (state == null || !valid(x, y)) return false;
         return state.isAtWar(x, y);
     }
@@ -135,22 +136,22 @@ public class FactionStateBook {
      * pair yields an empty set, never null -- "no state" is the absence of
      * every constant, not a fourth value.
      */
-    public Set<FactionState> getStates(Faction x, Faction y) {
-        Set<FactionState> out = EnumSet.noneOf(FactionState.class);
+    public Set<RaceState> getStates(Race x, Race y) {
+        Set<RaceState> out = EnumSet.noneOf(RaceState.class);
         if (!valid(x, y)) return out;
         Pair key = new Pair(x, y);
-        Set<FactionState> set = states.get(key);
+        Set<RaceState> set = states.get(key);
         if (set != null) out.addAll(set);
-        if (isAtWar(x, y)) out.add(FactionState.WAR);
+        if (isAtWar(x, y)) out.add(RaceState.WAR);
         return out;
     }
 
     /** Pairs currently in the named state, for "who is at war with whom" queries. */
-    public Set<Faction> getFactionsInState(FactionState s, Iterable<Faction> roster) {
-        Set<Faction> out = EnumSet.noneOf(Faction.class);
+    public Set<Race> getRacesInState(RaceState s, Iterable<Race> roster) {
+        Set<Race> out = EnumSet.noneOf(Race.class);
         if (s == null || roster == null) return out;
-        java.util.List<Faction> members = new java.util.ArrayList<Faction>();
-        for (Faction f : roster) if (f != null) members.add(f);
+        java.util.List<Race> members = new java.util.ArrayList<Race>();
+        for (Race f : roster) if (f != null) members.add(f);
         for (int i = 0; i < members.size(); i++) {
             for (int j = i + 1; j < members.size(); j++) {
                 if (isInState(members.get(i), members.get(j), s)) {
@@ -171,14 +172,14 @@ public class FactionStateBook {
      * the rulebook says no longer exists. Returns false and changes nothing
      * in that case.
      */
-    public boolean enterState(Faction x, Faction y, FactionState s) {
+    public boolean enterState(Race x, Race y, RaceState s) {
         if (!valid(x, y) || s == null) return false;
-        if (s == FactionState.WAR) return enterWar(x, y);
+        if (s == RaceState.WAR) return enterWar(x, y);
         if (isAtWar(x, y)) return false;
         Pair key = new Pair(x, y);
-        Set<FactionState> set = states.get(key);
+        Set<RaceState> set = states.get(key);
         if (set == null) {
-            set = EnumSet.noneOf(FactionState.class);
+            set = EnumSet.noneOf(RaceState.class);
             states.put(key, set);
         }
         if (!set.add(s)) return false;
@@ -195,7 +196,7 @@ public class FactionStateBook {
      * <p>Returns false when the pair was already at war, which makes the
      * call idempotent rather than a silent re-entry.
      */
-    public boolean enterWar(Faction x, Faction y) {
+    public boolean enterWar(Race x, Race y) {
         if (state == null || !valid(x, y)) return false;
         if (state.isAtWar(x, y)) return false;
         clearOtherStates(x, y);
@@ -208,7 +209,7 @@ public class FactionStateBook {
      * Leave war. The rulebook gives no automatic successor state, so the
      * pair simply has no state afterwards: tension remains, per :801.
      */
-    public boolean exitWar(Faction x, Faction y) {
+    public boolean exitWar(Race x, Race y) {
         if (state == null || !valid(x, y)) return false;
         if (!state.isAtWar(x, y)) return false;
         state.getTensionMatrix().exitWar(x, y);
@@ -217,10 +218,10 @@ public class FactionStateBook {
     }
 
     /** Leave a non-war state. */
-    public boolean exitState(Faction x, Faction y, FactionState s) {
-        if (!valid(x, y) || s == null || s == FactionState.WAR) return false;
+    public boolean exitState(Race x, Race y, RaceState s) {
+        if (!valid(x, y) || s == null || s == RaceState.WAR) return false;
         Pair key = new Pair(x, y);
-        Set<FactionState> set = states.get(key);
+        Set<RaceState> set = states.get(key);
         if (set == null || !set.remove(s)) return false;
         if (set.isEmpty()) states.remove(key);
         log(x, y, "ends " + s + " with " + y);
@@ -228,9 +229,9 @@ public class FactionStateBook {
     }
 
     /** Every non-war state between the pair, cancelled by entering war (:807). */
-    private void clearOtherStates(Faction x, Faction y) {
+    private void clearOtherStates(Race x, Race y) {
         Pair key = new Pair(x, y);
-        Set<FactionState> set = states.get(key);
+        Set<RaceState> set = states.get(key);
         if (set == null || set.isEmpty()) return;
         states.remove(key);
         if (state != null) {
@@ -239,7 +240,7 @@ public class FactionStateBook {
         }
     }
 
-    private void log(Faction x, Faction y, String what) {
+    private void log(Race x, Race y, String what) {
         if (state != null) state.log(x + " " + what);
     }
 
@@ -248,20 +249,20 @@ public class FactionStateBook {
      * nulls are refused by every transition and answered false by every
      * query, so no caller has to pre-check.
      */
-    private static boolean valid(Faction x, Faction y) {
+    private static boolean valid(Race x, Race y) {
         return x != null && y != null && x != y;
     }
 
     /** Unmodifiable view of the non-war pairs, for inspection and tests. */
-    public Map<Faction, Map<Faction, Set<FactionState>>> getStateMap() {
-        Map<Faction, Map<Faction, Set<FactionState>>> out =
-                new HashMap<Faction, Map<Faction, Set<FactionState>>>();
-        for (Iterator<Map.Entry<Pair, Set<FactionState>>> it = states.entrySet().iterator();
+    public Map<Race, Map<Race, Set<RaceState>>> getStateMap() {
+        Map<Race, Map<Race, Set<RaceState>>> out =
+                new HashMap<Race, Map<Race, Set<RaceState>>>();
+        for (Iterator<Map.Entry<Pair, Set<RaceState>>> it = states.entrySet().iterator();
              it.hasNext(); ) {
-            Map.Entry<Pair, Set<FactionState>> e = it.next();
-            Map<Faction, Set<FactionState>> row = out.get(e.getKey().a);
+            Map.Entry<Pair, Set<RaceState>> e = it.next();
+            Map<Race, Set<RaceState>> row = out.get(e.getKey().a);
             if (row == null) {
-                row = new HashMap<Faction, Set<FactionState>>();
+                row = new HashMap<Race, Set<RaceState>>();
                 out.put(e.getKey().a, row);
             }
             row.put(e.getKey().b, Collections.unmodifiableSet(
@@ -274,7 +275,7 @@ public class FactionStateBook {
      * The at-war pairs, sourced from the TensionMatrix rather than from
      * this book, so the two can never report different wars.
      */
-    public Set<TensionMatrix.FactionPair> getWarPairs() {
+    public Set<TensionMatrix.RacePair> getWarPairs() {
         if (state == null) return Collections.emptySet();
         return state.getTensionMatrix().getAtWarPairs();
     }

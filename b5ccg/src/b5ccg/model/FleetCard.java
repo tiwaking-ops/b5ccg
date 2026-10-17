@@ -26,7 +26,7 @@ public class FleetCard extends Card {
     private final Map<MarkType, Integer> marks = new HashMap<MarkType, Integer>();
 
     public FleetCard(String id, String title, String subtype,
-                     Rarity rarity, Faction faction, CardSet cardSet,
+                     Rarity rarity, Loyalty faction, CardSet cardSet,
                      String imageKey, String text, int military) {
         super(id, title, CardType.FLEET, subtype, rarity, faction,
               cardSet, imageKey, text);

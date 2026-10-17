@@ -1,5 +1,5 @@
 #!/bin/bash
-# Compile the B5 CCG Java project (Java 6 only, no external libraries).
+# Compile the B5 CCG Java project (JDK 25 --release 8, stdlib only; Hop 1 per B5-0007/D2).
 set -e
 
 # Resolve the directory this script lives in, then work with RELATIVE paths.
@@ -26,7 +26,21 @@ echo "Output: $(pwd)/$OUT"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-# Collect all .java files (relative; word-split below on IFS incl. newlines)
+# B5-0016 (b): the file list is scratch, written INSIDE b5ccg/ as a RELATIVE
+# path and removed on both the success and the failure path by the trap below.
+#
+# Why relative, and not ${TMPDIR}: TMPDIR on this host expands to a MSYS
+# short-name path (/c/Users/TIWAPE~1/AppData/Local/Temp). Handed to the NATIVE
+# Windows javac, that path is not reliably resolvable, and the failure is
+# SILENT — measured on this tree, javac compiled only a subset of the list,
+# exited 0, and compiled-sources later died at runtime with
+# NoClassDefFoundError: b5ccg/engine/RulesEngine over a partially-populated
+# out/ that still carried the build marker. This script already refuses absolute
+# POSIX paths for the same reason (B5-0306), so the temp list follows that rule.
+LIST="b5ccg_compile_list.tmp"
+trap 'rm -f "$LIST"' EXIT INT TERM
+
+# Collect all .java files (relative; one per line in the response file)
 JAVA_FILES=$(find "$SRC" -name "*.java")
 
 if [ -z "$JAVA_FILES" ]; then
@@ -34,13 +48,31 @@ if [ -z "$JAVA_FILES" ]; then
   exit 1
 fi
 
-echo "Compiling $(echo "$JAVA_FILES" | wc -l | tr -d ' ') source files…"
+printf '%s\n' "$JAVA_FILES" > "$LIST"
+
+SRC_COUNT=$(echo "$JAVA_FILES" | wc -l | tr -d ' ')
+echo "Compiling $SRC_COUNT source files…"
 # shellcheck disable=SC2086 — no spaces in source filenames in this repo
 # B5-3487: -Xmaxerrs 2000 so a failure reports every error rather than the first
 # 100. javac's DEFAULT cap is what made the tree's 248 errors read as "100 errors
 # in 13 files", and what let two builds be recorded as agreeing when both had
 # simply stopped at the same cap. A capped count is a floor, never a total.
-javac -source 6 -target 6 -encoding UTF-8 -Xmaxerrs 2000 -d "$OUT" $JAVA_FILES
+javac --release 8 -encoding UTF-8 -Xmaxerrs 2000 -d "$OUT" @"$LIST"
+
+# B5-0016 (b): LOUD guard for the empty-output failure the B5-3487 marker exists
+# to prevent. A javac that reads an unusable response file can exit 0 having
+# emitted nothing, and the marker written further down would then stamp an empty
+# out/ as "complete" — run.bat guards on that marker, so the next run dies at
+# runtime with NoClassDefFoundError instead of reporting the build failure that
+# caused it. Class count is the only evidence that the compile actually landed,
+# so a zero matches a hard failure: remove out/, write no marker, exit non-zero.
+CLASS_COUNT=$(find "$OUT" -name "*.class" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$CLASS_COUNT" -eq 0 ]; then
+  echo "ERROR: compiled $SRC_COUNT sources but out/ holds 0 class files."
+  echo "       The response file was probably not readable by javac. out/ removed so no empty build can be marked complete."
+  rm -rf "$OUT"
+  exit 1
+fi
 
 echo "Copying resources…"
 if [ -d "$RES" ]; then
@@ -89,18 +121,19 @@ if [ "${RUN_TESTS:-0}" = "1" ]; then
   #   HeadlessReportingTiebreakTest  15.4s - its live round-cap leg reads
   #     NOT_APPLICABLE (0/4 players at 20+) on an ordinary run, so the live
   #     check silently does not fire; keep it a report-only probe.
-  #   HeadlessHumanSeatProbe        80.3s - its own header records that
-  #     Deck.java's constructor shuffle takes no Random, so hand contents
-  #     cannot be made deterministic from the harness (B5-0482 relaxed a
-  #     coverage gate to soft for exactly this reason).
   #   HeadlessMultiRoundTest      1268.6s (21.1 min) - measurement rig; it has
   #     no failure exit at all (0 or 3 only), so it cannot gate anything.
   #   HeadlessStallSoakProbe       978.6s (16.3 min) - its own final line says
   #     "classifications are reporting, not failures"; exit 2/3 are argument
   #     and harness errors, not verdicts.
-  # The last two are soak runners whose runtime alone disqualifies them, and
+  # The last three are soak runners whose runtime alone disqualifies them, and
   # their exit codes carry no pass/fail semantics. Run them on demand.
   java -cp "$OUT" b5ccg.engine.B52481HumanPassRoundProbe
+  # B5-0008 (WP-07/A5): determinism gates — seeded double-run probe plus the
+  # now-deterministic human-seat probe (Deck seeded, controller derives AI
+  # streams from GameState.getSeed(), seed recorded in replay header).
+  java -cp "$OUT" b5ccg.engine.HeadlessDoubleRunProbe
+  java -cp "$OUT" b5ccg.engine.HeadlessHumanSeatProbe
   # B5-3487: B52494AgendaMightyCostProbe and B52495AgendaPowerVictoryProbe were
   # removed from this gate list, not from the repo. Both called agenda-effect
   # members of RulesEngine/Player/VictoryPathResult that were never authored, so
@@ -134,6 +167,17 @@ if [ "${RUN_TESTS:-0}" = "1" ]; then
   java -cp "$OUT" b5ccg.engine.HeadlessCardIdNamespaceProbe
   java -cp "$OUT" b5ccg.engine.CardSetManifestChecker
   java -cp "$OUT" b5ccg.engine.CardSetManifestCrossCheck
+  # B5-0003: canonical-key parity probe (WP-02/A1a, 0/1/2 exit contract).
+  java -cp "$OUT" b5ccg.engine.HeadlessCanonicalParityProbe
+  # B5-0004: printing-diff triage scenario probe (WP-03, 0/1 exit contract).
+  # Verifies both ids resolve for all 9 single-literal printing-diff titles
+  # under canonical-key routing (5 changed-text ambassadors, 1 unchanged event,
+  # 3 VANILLA-no-table characters) plus aftermath slug-divergence negative control.
+  java -cp "$OUT" b5ccg.engine.HeadlessPrintingDiffTriageProbe
+  # B5-0005: effect-census checker (WP-04/A2, 0/1/2 exit contract).
+  java -cp "$OUT" b5ccg.model.EffectCensusChecker
+  # B5-0002: rulebook pin + encoding probe (0/1 exit contract).
+  java -cp "$OUT" b5ccg.engine.HeadlessRulebookPinProbe
   # B5-4114: GameState.detachAftermath primitive pinned by this probe (24 checks,
   # DETACH1-D4) but was deliberately not wired when shipped; now observed in the
   # gate so the D4 name-slot release invariant is continuously verified.

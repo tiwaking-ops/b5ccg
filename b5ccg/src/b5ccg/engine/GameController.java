@@ -162,6 +162,17 @@ public class GameController {
         this.state      = state;
         this.aiPlayers  = aiPlayers;
         this.uiCallback = uiCallback;
+        // B5-0008 (WP-07/A5): when the game carries a seed, derive a
+        // deterministic RNG stream per AI seat (B5-0349 precedent formula).
+        // Seats with no entry in the list are simply unseeded. Deck streams
+        // use seed + 1_000_000L * (seat + 1) so they never collide with these.
+        long gameSeed = state.getSeed();
+        if (gameSeed != 0L && aiPlayers != null) {
+            for (int i = 0; i < aiPlayers.size(); i++) {
+                AIPlayer ai = aiPlayers.get(i);
+                if (ai != null) ai.setSeed(gameSeed + i * 1000L);
+            }
+        }
     }
 
     /** B5-4167: set an optional callback for round-end notifications. */
@@ -269,9 +280,9 @@ public class GameController {
                               + "Ambassador per race).");
                 }
             }
-            // B5-1973: Faction-specific starting setup (homeworld, starting fleet, starting agenda)
+            // B5-1973: Race-specific starting setup (homeworld, starting fleet, starting agenda)
             if (pool != null) {
-                StarterDeckBuilder.StartingSetup setup = StarterDeckBuilder.getStartingSetup(p.getFaction(), pool);
+                StarterDeckBuilder.StartingSetup setup = StarterDeckBuilder.getStartingSetup(p.getRace(), pool);
                 if (setup != null) {
                     List<Card> seatedSetup = new ArrayList<Card>();
                     if (setup.homeworld != null) {
@@ -312,7 +323,7 @@ public class GameController {
         for (Card c : p.getHand()) {
             if (c instanceof CharacterCard) {
                 CharacterCard ch = (CharacterCard) c;
-                if (ch.isAmbassador() && ch.getFaction() == p.getFaction()) return ch;
+                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(p.getRace())) return ch;
             }
         }
         return null;
@@ -397,7 +408,7 @@ public class GameController {
         if (c == null || !(c instanceof CharacterCard)) return false;
         CharacterCard ch = (CharacterCard) c;
         if (!ch.isAmbassador()) return false;
-        if (ch.getFaction() != seated.getFaction()) return false;
+        if (ch.getLoyalty() != seated.getLoyalty()) return false;
         String seatedTitle = seated.getTitle();
         String thisTitle   = ch.getTitle();
         return seatedTitle != null && seatedTitle.equals(thisTitle);
@@ -959,7 +970,7 @@ public class GameController {
                     AgendaCard hid = (AgendaCard) action.getCard();
                     // :719 — if it is one you could not sponsor at that time,
                     // it is discarded instead of being revealed.
-                    if (!hid.getFaction().isPlayableBy(p.getFaction())) {
+                    if (!hid.getLoyalty().isPlayableBy(p.getRace())) {
                         // Hidden agenda had no effect (was face-down), so no marks to remove
                         p.setAgenda(null);
                         p.getDeck().discard(hid);
@@ -1550,27 +1561,7 @@ public class GameController {
         // no registered effect (unknown ids keep the old
         // behaviour, matching the events rule).
         String amId = am.getId();
-        boolean dispatched = amId != null
-                && (CardEffects.isNegotiatedSurrender(amId)
-                    || CardEffects.isDiplomaticAdvantage(amId)
-                    || CardEffects.isUnitedFront(amId)
-                    || CardEffects.isDrawTwoIntrigue(amId)
-                    || CardEffects.isHiddenAgent(amId)
-                    || CardEffects.isRefugees(amId)
-                    || CardEffects.isRiseToPower(amId)
-                    || CardEffects.isWarHero(amId)
-                    || CardEffects.isApprovalOfTheGrey(amId)
-                    || CardEffects.isFocusYourEfforts(amId)
-                    || CardEffects.isGlory(amId)
-                    || CardEffects.isRetribution(amId)
-                    || CardEffects.isReverseAdvances(amId)
-                    || CardEffects.isOpponentLoseOneInf(amId)
-                    || CardEffects.isOpponentLoseTwoInf(amId)
-                    || CardEffects.isCrisisOfSelf(amId)
-                    || CardEffects.isHealFaceDown(amId)
-                    || CardEffects.isBattleTested(amId)
-                    || CardEffects.isRescue(amId)
-                    || CardEffects.isMartyr(amId));
+        boolean dispatched = amId != null && CardEffects.hasRegisteredEffect(amId);
         if (dispatched) {
             CardEffects.applyAftermathEffect(state, conflict,
                     am, target, winner);

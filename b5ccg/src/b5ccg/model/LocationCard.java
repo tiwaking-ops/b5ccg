@@ -23,14 +23,14 @@ public class LocationCard extends Card {
     public void setEffectsSuppressed(boolean suppressed) { this.effectsSuppressed = suppressed; }
 
     public LocationCard(String id, String title, String subtype,
-                        Rarity rarity, Faction faction, CardSet cardSet,
+                        Rarity rarity, Loyalty faction, CardSet cardSet,
                         String imageKey, String text, int influencePerRound) {
         this(id, title, subtype, rarity, faction, cardSet, imageKey, text,
                 influencePerRound, 0);
     }
 
     public LocationCard(String id, String title, String subtype,
-                        Rarity rarity, Faction faction, CardSet cardSet,
+                        Rarity rarity, Loyalty faction, CardSet cardSet,
                         String imageKey, String text, int influencePerRound,
                         int military) {
         super(id, title, CardType.LOCATION, subtype, rarity, faction,

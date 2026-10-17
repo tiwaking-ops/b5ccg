@@ -30,11 +30,11 @@ public class HeadlessJoinTimingProbe {
         if (!ok) failed++;
     }
 
-    private static Player seat(String name, Faction f, int dip) {
+    private static Player seat(String name, Race f, int dip) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name,
                 "Ambassador " + name, "CHARACTER_" + f, Rarity.FIXED,
-                f, CardSet.PREMIERE, "x", "text",
+                Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 dip, 1, 1, 1, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);
@@ -53,7 +53,7 @@ public class HeadlessJoinTimingProbe {
 
     private static ConflictCard conflictCard(String id, int reward) {
         return new ConflictCard(id, "Probe Conflict " + id,
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY,
                 CardSet.PREMIERE, "x", "", ConflictType.DIPLOMACY, reward);
     }
 
@@ -91,7 +91,7 @@ public class HeadlessJoinTimingProbe {
 
         // ── S1: declareConflictCard queues the conflict, does not resolve ──
         {
-            Player init = seat("T1Init", Faction.MINBARI, 3);
+            Player init = seat("T1Init", Race.MINBARI, 3);
             GameState g = state(init);
             g.setPhase(GamePhase.ACTION);
             ConflictCard cc = conflictCard("t1", 2);
@@ -119,7 +119,7 @@ public class HeadlessJoinTimingProbe {
 
         // ── S2: initiator ambassador is NOT auto-committed at declaration ──
         {
-            Player init = seat("T2Init", Faction.MINBARI, 3);
+            Player init = seat("T2Init", Race.MINBARI, 3);
             GameState g = state(init);
             g.setPhase(GamePhase.ACTION);
             ConflictCard cc = conflictCard("t2", 2);
@@ -145,8 +145,8 @@ public class HeadlessJoinTimingProbe {
 
         // ── S3: no AI join auto-collected inside resolveCurrentConflict ──
         {
-            Player init = seat("T3Init", Faction.MINBARI, 3);
-            Player joiner = seat("T3Join", Faction.NARN, 6);
+            Player init = seat("T3Init", Race.MINBARI, 3);
+            Player joiner = seat("T3Join", Race.NARN, 6);
             GameState g = state(init, joiner);
             g.setPhase(GamePhase.ACTION);
             ConflictCard cc = conflictCard("t3", 2);
@@ -179,8 +179,8 @@ public class HeadlessJoinTimingProbe {
         // Uses two different initiators so each can initiate without
         // tripping the one-conflict-per-turn gate (hasInitiatedConflictThisTurn).
         {
-            Player initA = seat("T4A", Faction.MINBARI, 3);
-            Player initB = seat("T4B", Faction.NARN, 3);
+            Player initA = seat("T4A", Race.MINBARI, 3);
+            Player initB = seat("T4B", Race.NARN, 3);
             GameState g = state(initA, initB);
             g.setPhase(GamePhase.ACTION);
             ConflictCard cc1 = conflictCard("t4a", 1);
@@ -223,8 +223,8 @@ public class HeadlessJoinTimingProbe {
 
         // ── S5: join applied as action-round act during the ACTION phase ──
         {
-            Player init = seat("T5Init", Faction.MINBARI, 3);
-            Player joiner = seat("T5Join", Faction.NARN, 6);
+            Player init = seat("T5Init", Race.MINBARI, 3);
+            Player joiner = seat("T5Join", Race.NARN, 6);
             GameState g = state(init, joiner);
             g.setPhase(GamePhase.ACTION);
             ConflictCard cc = conflictCard("t5", 2);
@@ -254,7 +254,7 @@ public class HeadlessJoinTimingProbe {
 
         // ── S6: phase is ACTION (not CONFLICT) during the action round ──
         {
-            Player init = seat("T6Init", Faction.MINBARI, 3);
+            Player init = seat("T6Init", Race.MINBARI, 3);
             GameState g = state(init);
             g.setPhase(GamePhase.ACTION);
             ConflictCard cc = conflictCard("t6", 2);
@@ -280,8 +280,8 @@ public class HeadlessJoinTimingProbe {
         // After resolution, c1 resolves first (initiator A wins on its own
         // commitment), then c2 resolves. Verify both are resolved and cleared.
         {
-            Player initA = seat("T7A", Faction.MINBARI, 3);
-            Player initB = seat("T7B", Faction.NARN, 3);
+            Player initA = seat("T7A", Race.MINBARI, 3);
+            Player initB = seat("T7B", Race.NARN, 3);
             GameState g = state(initA, initB);
             g.setPhase(GamePhase.ACTION);
             ConflictCard cc1 = conflictCard("t7a", 1);

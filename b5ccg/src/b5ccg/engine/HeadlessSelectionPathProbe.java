@@ -89,7 +89,7 @@ public class HeadlessSelectionPathProbe {
         System.out.println("=== B5-4184 selection-path probe ===");
         RulesEngine rules = new RulesEngine();
 
-        Player human = new Player("Human", Faction.HUMAN, true);
+        Player human = new Player("Human", Race.HUMAN, true);
         List<Player> players = new ArrayList<Player>();
         players.add(human);
         GameState state = new GameState(players);
@@ -173,17 +173,17 @@ public class HeadlessSelectionPathProbe {
 
     static CharacterCard charCard(String id, String title, boolean amb) {
         return new CharacterCard(id, title, "OFFICER", Rarity.COMMON,
-                Faction.HUMAN, CardSet.PREMIERE, "x", "probe",
+                Loyalty.HUMAN, CardSet.PREMIERE, "x", "probe",
                 1, 1, 0, 3, amb);
     }
 
     static FleetCard fleetCard(String id, String title) {
         return new FleetCard(id, title, "LINE", Rarity.COMMON,
-                Faction.HUMAN, CardSet.PREMIERE, "x", "probe", 3);
+                Loyalty.HUMAN, CardSet.PREMIERE, "x", "probe", 3);
     }
 
     static LocationCard locCard(String id, String title) {
         return new LocationCard(id, title, "BASE", Rarity.COMMON,
-                Faction.HUMAN, CardSet.PREMIERE, "x", "probe", 1, 3);
+                Loyalty.HUMAN, CardSet.PREMIERE, "x", "probe", 1, 3);
     }
 }

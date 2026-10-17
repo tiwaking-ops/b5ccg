@@ -23,7 +23,7 @@ public class AsylumCharacterCard extends CharacterCard {
      * so elevation to the Inner Circle is refused (B5-0661 rulebook :819).
      */
     public AsylumCharacterCard(String id, String title, String subtype,
-                                Rarity rarity, Faction faction, CardSet cardSet,
+                                Rarity rarity, Loyalty faction, CardSet cardSet,
                                 String imageKey, String text,
                                 int diplomacy, int intrigue, int psi, int leadership,
                                 CharacterCard originalAmbassador) {

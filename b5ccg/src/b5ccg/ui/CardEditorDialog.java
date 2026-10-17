@@ -2,7 +2,7 @@ package b5ccg.ui;
 
 import b5ccg.model.enums.CardType;
 import b5ccg.model.enums.CardSet;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Loyalty;
 import b5ccg.model.enums.MarkType;
 import b5ccg.model.enums.Rarity;
 
@@ -164,13 +164,13 @@ public class CardEditorDialog extends JDialog {
         }
         row = addLabeledField(formPanel, gc, row, "Rarity:", rarityCombo);
 
-        // ── Faction ──
+        // ── Loyalty ──
         factionCombo = new JComboBox();
-        Faction[] factions = Faction.values();
+        Loyalty[] factions = Loyalty.values();
         for (int i = 0; i < factions.length; i++) {
             factionCombo.addItem(factions[i]);
         }
-        row = addLabeledField(formPanel, gc, row, "Faction:", factionCombo);
+        row = addLabeledField(formPanel, gc, row, "Loyalty:", factionCombo);
 
         // ── Set ──
         setCombo = new JComboBox();
@@ -382,7 +382,7 @@ public class CardEditorDialog extends JDialog {
             p.add(spinner, gc);
         }
 
-        // Faction-level opposing-marks warning (rulebook Anatomy item 6:
+        // Loyalty-level opposing-marks warning (rulebook Anatomy item 6:
         // a faction cannot possess Shadow and Vorlon marks at the same
         // time). Warning only — saving is never blocked.
         marksWarningLabel = new JLabel("");
@@ -432,7 +432,7 @@ public class CardEditorDialog extends JDialog {
         typeCombo.setSelectedItem(model.getType());
         subtypeField.setText(model.getSubtype() != null ? model.getSubtype() : "");
         rarityCombo.setSelectedItem(model.getRarity());
-        factionCombo.setSelectedItem(model.getFaction());
+        factionCombo.setSelectedItem(model.getLoyalty());
         setCombo.setSelectedItem(model.getSet());
         imageKeyField.setText(model.getImageKey() != null ? model.getImageKey() : "");
         costSpinner.setValue(new Integer(model.getCost()));
@@ -471,8 +471,8 @@ public class CardEditorDialog extends JDialog {
             model.setRarity((Rarity) rSel);
         }
         Object fSel = factionCombo.getSelectedItem();
-        if (fSel instanceof Faction) {
-            model.setFaction((Faction) fSel);
+        if (fSel instanceof Loyalty) {
+            model.setLoyalty((Loyalty) fSel);
         }
         Object sSel = setCombo.getSelectedItem();
         if (sSel instanceof CardSet) {
@@ -586,7 +586,7 @@ public class CardEditorDialog extends JDialog {
                 model.setType(loaded.getType());
                 model.setSubtype(loaded.getSubtype());
                 model.setRarity(loaded.getRarity());
-                model.setFaction(loaded.getFaction());
+                model.setLoyalty(loaded.getLoyalty());
                 model.setSet(loaded.getSet());
                 model.setImageKey(loaded.getImageKey());
                 model.setText(loaded.getText());

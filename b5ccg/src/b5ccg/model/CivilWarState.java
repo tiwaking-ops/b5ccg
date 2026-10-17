@@ -6,7 +6,7 @@ import java.util.*;
 /**
  * B5-0691 (rulebook :990–:1009; B5-0669 proposal §5.1/§5.3/§5.4): the Civil
  * War state machine for ONE race. Synthetic dual-race boards (two Players of
- * the same Faction) are expressible today, so the machine operates on the
+ * the same Race) are expressible today, so the machine operates on the
  * players of a race without the parked multi-faction identity slice — the
  * players list is injected, never derived, and the standard single-faction
  * game never enters the machine (entry requires same-race tension at 5,
@@ -18,7 +18,7 @@ public class CivilWarState {
 
     public enum Phase { UNIFIED, CIVIL_WAR }
 
-    private final Faction race;
+    private final Race race;
     /** The players of this race, in board order (injected by GameState). */
     private final List<Player> racePlayers;
     private Phase phase = Phase.UNIFIED;
@@ -31,15 +31,15 @@ public class CivilWarState {
      * of the new races equal to their old tension toward the race as a
      * whole") and merged back at non-surrender exit as the rounded-up average.
      */
-    private final Map<String, Map<Faction, Integer>> splitTensions =
-            new LinkedHashMap<String, Map<Faction, Integer>>();
+    private final Map<String, Map<Race, Integer>> splitTensions =
+            new LinkedHashMap<String, Map<Race, Integer>>();
 
-    public CivilWarState(Faction race, List<Player> racePlayers) {
+    public CivilWarState(Race race, List<Player> racePlayers) {
         this.race = race;
         this.racePlayers = new ArrayList<Player>(racePlayers);
     }
 
-    public Faction       getRace()         { return race; }
+    public Race       getRace()         { return race; }
     public Phase         getPhase()        { return phase; }
     public int           getEnteredRound() { return enteredRound; }
     public List<Player>  getRacePlayers()  { return Collections.unmodifiableList(racePlayers); }
@@ -76,25 +76,25 @@ public class CivilWarState {
      * individually and be merged at exit. Called by GameState after a
      * successful enter (the caller supplies the race-level matrix read).
      */
-    public void snapshotSplitTensions(Map<Faction, Integer> raceLevelTensions) {
+    public void snapshotSplitTensions(Map<Race, Integer> raceLevelTensions) {
         splitTensions.clear();
         for (Player p : racePlayers) {
-            splitTensions.put(p.getName(), new LinkedHashMap<Faction, Integer>(raceLevelTensions));
+            splitTensions.put(p.getName(), new LinkedHashMap<Race, Integer>(raceLevelTensions));
         }
     }
 
     /** Civil-War-era divergence: one faction's tension toward one target race. */
-    public void setSplitTension(Player factionOfRace, Faction targetRace, int value) {
-        Map<Faction, Integer> row = splitTensions.get(factionOfRace.getName());
+    public void setSplitTension(Player factionOfRace, Race targetRace, int value) {
+        Map<Race, Integer> row = splitTensions.get(factionOfRace.getName());
         if (row != null && row.containsKey(targetRace)) {
             row.put(targetRace, Math.max(0, Math.min(5, value)));
         }
     }
 
-    public Map<Faction, Integer> getSplitTensions(Player factionOfRace) {
-        Map<Faction, Integer> row = splitTensions.get(factionOfRace.getName());
+    public Map<Race, Integer> getSplitTensions(Player factionOfRace) {
+        Map<Race, Integer> row = splitTensions.get(factionOfRace.getName());
         return row == null
-                ? Collections.<Faction, Integer>emptyMap()
+                ? Collections.<Race, Integer>emptyMap()
                 : Collections.unmodifiableMap(row);
     }
 
@@ -105,11 +105,11 @@ public class CivilWarState {
      * ROUNDED-UP AVERAGE, which becomes the reunified race's tension.
      * Returns the merged tensions (empty when the exit precondition fails).
      */
-    public Map<Faction, Integer> exitByWarEnd() {
+    public Map<Race, Integer> exitByWarEnd() {
         if (phase != Phase.CIVIL_WAR) {
             return Collections.emptyMap();
         }
-        Map<Faction, Integer> merged = mergeSplitTensions();
+        Map<Race, Integer> merged = mergeSplitTensions();
         lowerUnrestOfRace();
         phase = Phase.UNIFIED;
         enteredRound = -1;
@@ -123,7 +123,7 @@ public class CivilWarState {
      * NO merge happens (the surrendered factions' tensions are not averaged;
      * the survivor's own split row governs).
      */
-    public Map<Faction, Integer> exitBySurrender(Player survivor) {
+    public Map<Race, Integer> exitBySurrender(Player survivor) {
         if (phase != Phase.CIVIL_WAR || !racePlayers.contains(survivor)) {
             return Collections.emptyMap();
         }
@@ -132,20 +132,20 @@ public class CivilWarState {
         }
         phase = Phase.UNIFIED;
         enteredRound = -1;
-        Map<Faction, Integer> row = splitTensions.get(survivor.getName());
+        Map<Race, Integer> row = splitTensions.get(survivor.getName());
         return row == null
-                ? Collections.<Faction, Integer>emptyMap()
-                : new LinkedHashMap<Faction, Integer>(row);
+                ? Collections.<Race, Integer>emptyMap()
+                : new LinkedHashMap<Race, Integer>(row);
     }
 
     /** Rounded-up average of the split factions' tensions per target race (:1000). */
-    private Map<Faction, Integer> mergeSplitTensions() {
-        Map<Faction, Integer> merged = new LinkedHashMap<Faction, Integer>();
+    private Map<Race, Integer> mergeSplitTensions() {
+        Map<Race, Integer> merged = new LinkedHashMap<Race, Integer>();
         if (splitTensions.isEmpty()) return merged;
-        Set<Faction> targets = splitTensions.values().iterator().next().keySet();
-        for (Faction target : targets) {
+        Set<Race> targets = splitTensions.values().iterator().next().keySet();
+        for (Race target : targets) {
             int sum = 0;
-            for (Map<Faction, Integer> row : splitTensions.values()) {
+            for (Map<Race, Integer> row : splitTensions.values()) {
                 Integer v = row.get(target);
                 sum += v == null ? 0 : v.intValue();
             }
@@ -157,7 +157,7 @@ public class CivilWarState {
     }
 
     /** Rulebook :994 — every faction of the race is at war with each other faction. */
-    public boolean isFactionAtWarWithRival(Player factionOfRace) {
+    public boolean isRaceAtWarWithRival(Player factionOfRace) {
         if (phase != Phase.CIVIL_WAR) return false;
         return racePlayers.contains(factionOfRace);
     }

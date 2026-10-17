@@ -11,7 +11,7 @@ public class AgendaCard extends Card {
     private final Map<MarkType, Integer> marks = new HashMap<MarkType, Integer>();
 
     public AgendaCard(String id, String title, String subtype,
-                      Rarity rarity, Faction faction, CardSet cardSet,
+                      Rarity rarity, Loyalty faction, CardSet cardSet,
                       String imageKey, String text,
                       boolean isMajorAgenda, String winConditionKey) {
         super(id, title, CardType.AGENDA, subtype, rarity, faction,

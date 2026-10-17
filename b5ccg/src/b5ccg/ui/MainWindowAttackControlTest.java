@@ -29,32 +29,32 @@ public class MainWindowAttackControlTest {
         if (!ok) failed++;
     }
 
-    private static Player player(String name, Faction faction, boolean human) {
+    private static Player player(String name, Race faction, boolean human) {
         Player player = new Player(name, faction, human);
         CharacterCard ambassador = new CharacterCard("amb_" + name, "Ambassador",
-            "CHARACTER_" + faction, Rarity.FIXED, faction, CardSet.PREMIERE,
+            "CHARACTER_" + faction, Rarity.FIXED, Loyalty.fromRace(faction), CardSet.PREMIERE,
             "x", "text", 3, 3, 3, 3, true);
         player.setAmbassador(ambassador);
         player.getInnerCircle().add(ambassador);
         return player;
     }
 
-    private static CharacterCard character(String id, Faction faction, int value) {
+    private static CharacterCard character(String id, Race faction, int value) {
         return new CharacterCard(id, id, "CHARACTER_" + faction, Rarity.RARE,
-            faction, CardSet.PREMIERE, "x", "text", value, 1, 0, 1, false);
+            Loyalty.fromRace(faction), CardSet.PREMIERE, "x", "text", value, 1, 0, 1, false);
     }
 
     private static Fixture fixture() {
-        Player human = player("AtkUiHuman", Faction.NARN, true);
-        Player initiator = player("AtkUiInitiator", Faction.MINBARI, false);
-        CharacterCard attacker = character("atk_ui_attacker", Faction.NARN, 3);
-        CharacterCard firstTarget = character("atk_ui_first_target", Faction.MINBARI, 5);
-        CharacterCard chosenTarget = character("atk_ui_chosen_target", Faction.MINBARI, 1);
+        Player human = player("AtkUiHuman", Race.NARN, true);
+        Player initiator = player("AtkUiInitiator", Race.MINBARI, false);
+        CharacterCard attacker = character("atk_ui_attacker", Race.NARN, 3);
+        CharacterCard firstTarget = character("atk_ui_first_target", Race.MINBARI, 5);
+        CharacterCard chosenTarget = character("atk_ui_chosen_target", Race.MINBARI, 1);
         human.getSupportingRole().add(attacker);
         initiator.getInnerCircle().add(firstTarget);
         initiator.getInnerCircle().add(chosenTarget);
         ConflictCard conflictCard = new ConflictCard("atk_ui_conflict", "Attack UI Conflict",
-            "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+            "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
             "x", "text", ConflictType.DIPLOMACY, 1);
         Conflict conflict = new Conflict(conflictCard, initiator);
         firstTarget.rotate();

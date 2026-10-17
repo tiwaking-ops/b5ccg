@@ -32,7 +32,7 @@ public class CharacterCard extends Card {
     private final Map<MarkType, Integer> marks = new HashMap<MarkType, Integer>();
 
     public CharacterCard(String id, String title, String subtype,
-                         Rarity rarity, Faction faction, CardSet cardSet,
+                         Rarity rarity, Loyalty faction, CardSet cardSet,
                          String imageKey, String text,
                          int diplomacy, int intrigue, int psi, int leadership,
                          boolean isAmbassador) {
@@ -136,7 +136,7 @@ public class CharacterCard extends Card {
         // identity (refused Inner Circle elevation via canPromote's instanceof
         // guard), not merely the flag on a plain CharacterCard.
         return new AsylumCharacterCard(newId, getTitle(), getSubtype(),
-                getRarity(), getFaction(), getCardSet(), getImageKey(), getText(),
+                getRarity(), getLoyalty(), getCardSet(), getImageKey(), getText(),
                 getDiplomacy(), getIntrigue(), getPsi(), getLeadership(), this);
     }
 

@@ -58,9 +58,9 @@ public class HeadlessParticipationGatesProbe {
             fail("data shape changed: Border Raid no longer INITIATOR_TARGET/requiresTarget");
             return;
         }
-        Player init = new Player("BRIinit", raid.getFaction(), false);
-        Player tgt  = new Player("BRItgt",  Faction.MINBARI, false);
-        Player out  = new Player("BRIout",  Faction.CENTAURI, false);
+        Player init = new Player("BRIinit", raid.getLoyalty().toRace(), false);
+        Player tgt  = new Player("BRItgt",  Race.MINBARI, false);
+        Player out  = new Player("BRIout",  Race.CENTAURI, false);
         GameState st = state(init, tgt, out);
 
         // (a) requiresTarget: initiation illegal without, legal with a target.
@@ -77,25 +77,25 @@ public class HeadlessParticipationGatesProbe {
 
         // (c) cardTypes: events refuse, fleets accept (no fleetSubtypes here).
         EventCard ev = new EventCard("br_ev", "BR Event", "EVENT", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text");
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text");
         FleetCard f1 = new FleetCard("br_f1", "BR Fleet 1", "FLEET", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text", 3);
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text", 3);
         check("BR event commit refused (FLEET-only)", !c.commitCard(tgt, ev, false));
         check("BR first fleet commit accepted", c.commitCard(tgt, f1, false));
 
         // (d) perPlayerQuota FLEET=1: a second fleet refuses.
         FleetCard f2 = new FleetCard("br_f2", "BR Fleet 2", "FLEET", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text", 4);
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text", 4);
         check("BR second fleet commit refused (quota FLEET=1)", !c.commitCard(tgt, f2, false));
 
         // (e) leadersIncluded: a character commits ONLY alongside the
         //     committed fleet. Target has fleet f1 committed, so allowed;
         //     the initiator has no fleet, so refused.
         CharacterCard tChar = new CharacterCard("br_tc", "BR Target Char",
-                "CHARACTER_MINBARI", Rarity.RARE, Faction.MINBARI, CardSet.PREMIERE,
+                "CHARACTER_MINBARI", Rarity.RARE, Loyalty.MINBARI, CardSet.PREMIERE,
                 "x", "text", 2, 2, 0, 3, false);
         CharacterCard iChar = new CharacterCard("br_ic", "BR Init Char",
-                "CHARACTER_NARN", Rarity.RARE, raid.getFaction(), CardSet.PREMIERE,
+                "CHARACTER_NARN", Rarity.RARE, raid.getLoyalty(), CardSet.PREMIERE,
                 "x", "text", 2, 2, 0, 3, false);
         check("BR character commits alongside the allowed fleet (leadersIncluded)",
                 c.commitCard(tgt, tChar, false));
@@ -111,8 +111,8 @@ public class HeadlessParticipationGatesProbe {
             fail("data shape changed: Limited Strike lost its fleetSubtypes filter");
             return;
         }
-        Player init = new Player("LSinit", Faction.NARN, false);
-        Player out  = new Player("LSout",  Faction.MINBARI, false);
+        Player init = new Player("LSinit", Race.NARN, false);
+        Player out  = new Player("LSout",  Race.MINBARI, false);
         GameState st = state(init, out);
         Conflict c = new Conflict(limited, init);
 
@@ -133,17 +133,17 @@ public class HeadlessParticipationGatesProbe {
 
         // (b) an in-subtype class passes; an out-of-subtype class refuses.
         FleetCard picket = new FleetCard("ls_p", "LS Picket", "FLEET", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text", 3);
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text", 3);
         picket.setFleetClass("PICKET");
         check("PICKET-class fleet commit accepted", c.commitCard(out, picket, false));
         FleetCard raider = new FleetCard("ls_r", "LS Raider", "FLEET", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text", 3);
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text", 3);
         raider.setFleetClass("raider");
         check("out-of-subtype fleet commit refused", !c.commitCard(out, raider, false));
 
         // (c) cardTypes filter still applies alongside subtypes.
         EventCard ev = new EventCard("ls_ev", "LS Event", "EVENT", Rarity.COMMON,
-                Faction.ANY, CardSet.PREMIERE, "x", "text");
+                Loyalty.ANY, CardSet.PREMIERE, "x", "text");
         check("event commit refused (FLEET-only)", !c.commitCard(out, ev, false));
         check("RulesEngine seen consistent: state untouched by refusals",
                 st.getActiveConflict() == null);
@@ -158,15 +158,15 @@ public class HeadlessParticipationGatesProbe {
         check("complete participation is mustTakeSide", eff != null && eff.isMustTakeSide());
         Participation mandate = Participation.parse("{\"mustTakeSide\":true}");
         ConflictCard csCard = new ConflictCard("probe_cs", "CS (mandate semantics)",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Faction.ANY, CardSet.PREMIERE,
+                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
                 "x", "text", ConflictType.DIPLOMACY, 1);
         csCard.setParticipation(mandate);
 
         // Players need ambassadors for the mandatory-commit path (the suite's
         // player() helper does the same; bare Player has none).
-        Player init = playerWithAmbassador("CSinit", Faction.NARN);
-        Player p2   = playerWithAmbassador("CSp2",   Faction.MINBARI);
-        Player p3   = playerWithAmbassador("CSp3",   Faction.CENTAURI);
+        Player init = playerWithAmbassador("CSinit", Race.NARN);
+        Player p2   = playerWithAmbassador("CSp2",   Race.MINBARI);
+        Player p3   = playerWithAmbassador("CSp3",   Race.CENTAURI);
         GameState st = state(init, p2, p3);
 
         Conflict c = new Conflict(csCard, init);
@@ -232,10 +232,10 @@ public class HeadlessParticipationGatesProbe {
     }
 
     /** Player with an ambassador in the Inner Circle (mirrors the suite helper). */
-    private static Player playerWithAmbassador(String name, Faction f) {
+    private static Player playerWithAmbassador(String name, Race f) {
         Player p = new Player(name, f, false);
         CharacterCard amb = new CharacterCard("amb_" + name, "Amb " + name,
-                "CHARACTER_" + f, Rarity.FIXED, f, CardSet.PREMIERE, "x", "text",
+                "CHARACTER_" + f, Rarity.FIXED, Loyalty.fromRace(f), CardSet.PREMIERE, "x", "text",
                 3, 3, 3, 3, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);

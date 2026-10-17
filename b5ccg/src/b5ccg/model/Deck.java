@@ -5,14 +5,36 @@ import java.util.*;
 public class Deck {
     private final LinkedList<Card> drawPile    = new LinkedList<Card>();
     private final List<Card>       discardPile = new ArrayList<Card>();
+    /** B5-0008 (WP-07/A5): per-deck shuffle source. null = legacy unseeded
+     *  Collections.shuffle, so every existing unseeded caller is unchanged. */
+    private Random rng = null;
 
     public Deck(List<Card> cards) {
         drawPile.addAll(cards);
         shuffle();
     }
 
+    /** B5-0008: seeded constructor — same deal order for the same seed.
+     *  Derivation convention: seed + 1_000_000L * (seatIndex + 1), so deck
+     *  streams never collide with AIPlayer streams (seed + i * 1000L,
+     *  B5-0349 precedent) or StarterDeckBuilder's (randomSeed + faction
+     *  ordinal). */
+    public Deck(List<Card> cards, long seed) {
+        rng = new Random(seed);
+        drawPile.addAll(cards);
+        shuffle();
+    }
+
+    /** B5-0008: (re)seed this deck's shuffle source and re-shuffle the draw
+     *  pile, for harnesses that build a deck before choosing a seed. */
+    public void setSeed(long seed) {
+        rng = new Random(seed);
+        shuffle();
+    }
+
     public void shuffle() {
-        Collections.shuffle(drawPile);
+        if (rng != null) Collections.shuffle(drawPile, rng);
+        else             Collections.shuffle(drawPile);
     }
 
     public Card draw() {
@@ -35,11 +57,12 @@ public class Deck {
         discardPile.addAll(cards);
     }
 
-    /** Shuffle discard pile back into draw pile. */
+    /** Shuffle discard pile back into draw pile. B5-0008: uses the deck's
+     *  shuffle source, so a seeded deck recycles deterministically too. */
     public void recycleDiscard() {
         drawPile.addAll(discardPile);
         discardPile.clear();
-        Collections.shuffle(drawPile);
+        shuffle();
     }
 
     /** Peek at the top N cards without removing them. */

@@ -37,7 +37,7 @@ public class GroupCard extends Card {
     private boolean multiple = false;
 
     public GroupCard(String id, String title, String subtype,
-                     Rarity rarity, Faction faction, CardSet cardSet,
+                     Rarity rarity, Loyalty faction, CardSet cardSet,
                      String imageKey, String text) {
         super(id, title, CardType.GROUP, subtype, rarity, faction,
               cardSet, imageKey, text);
@@ -89,9 +89,9 @@ public class GroupCard extends Card {
      * §IV:484 double-cost treatment that characters loyal to another race get.
      */
     public boolean isRaceRestricted() {
-        Faction f = getFaction();
+        Loyalty f = getLoyalty();
         return f != null
-            && f != Faction.ANY
-            && f != Faction.NEUTRAL;
+            && f != Loyalty.ANY
+            && f != Loyalty.NEUTRAL;
     }
 }

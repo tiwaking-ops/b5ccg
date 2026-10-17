@@ -8,7 +8,8 @@ import b5ccg.model.GameAction;
 import b5ccg.model.GameState;
 import b5ccg.model.Player;
 import b5ccg.model.enums.AIDifficulty;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
+import b5ccg.model.enums.Loyalty;
 import b5ccg.model.enums.GamePhase;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -122,8 +123,8 @@ public class HeadlessPlayableReleaseChecklist {
     /** What loadBothSets() actually serves: the 383 reprints collapse onto Deluxe. */
     private static final int EXPECTED_POOL             = 446;
 
-    private static final Faction[] PLAYABLE_FACTIONS = {
-        Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN
+    private static final Race[] PLAYABLE_FACTIONS = {
+        Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN
     };
 
     // ── Tallies ───────────────────────────────────────────────────────────────
@@ -298,7 +299,7 @@ public class HeadlessPlayableReleaseChecklist {
         StarterDeckBuilder.setRandomSeed(42L);
         try {
             for (int i = 0; i < PLAYABLE_FACTIONS.length; i++) {
-                Faction f = PLAYABLE_FACTIONS[i];
+                Race f = PLAYABLE_FACTIONS[i];
                 List<Card> deck = StarterDeckBuilder.build(f, pool);
                 check(f + " starter deck is non-empty (got " + deck.size() + ")", !deck.isEmpty());
                 boolean legal;
@@ -344,10 +345,10 @@ public class HeadlessPlayableReleaseChecklist {
         StarterDeckBuilder.setRandomSeed(42L);
         try {
             for (int i = 0; i < PLAYABLE_FACTIONS.length; i++) {
-                Faction f = PLAYABLE_FACTIONS[i];
+                Race f = PLAYABLE_FACTIONS[i];
                 List<Player> players = new ArrayList<Player>();
                 for (int j = 0; j < PLAYABLE_FACTIONS.length; j++) {
-                    Faction fj = PLAYABLE_FACTIONS[j];
+                    Race fj = PLAYABLE_FACTIONS[j];
                     List<Card> deck = new ArrayList<Card>(StarterDeckBuilder.build(fj, pool));
                     Player p = new Player("Checklist" + fj, fj, fj == f);
                     CharacterCard amb = findAmbassador(deck, fj);
@@ -407,10 +408,10 @@ public class HeadlessPlayableReleaseChecklist {
         }
     }
 
-    private static CharacterCard findAmbassador(List<Card> deck, Faction f) {
+    private static CharacterCard findAmbassador(List<Card> deck, Race f) {
         for (int i = 0; i < deck.size(); i++) {
             Card c = deck.get(i);
-            if (c instanceof CharacterCard && c.getFaction() == f) {
+            if (c instanceof CharacterCard && c.getLoyalty() == Loyalty.fromRace(f)) {
                 CharacterCard ch = (CharacterCard) c;
                 if (ch.isAmbassador()) return ch;
             }

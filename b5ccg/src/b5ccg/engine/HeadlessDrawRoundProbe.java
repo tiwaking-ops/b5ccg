@@ -35,7 +35,7 @@ public class HeadlessDrawRoundProbe {
     /** A non-ambassador character, usable as Inner Circle or supporting role. */
     private static CharacterCard character(String id, boolean ambassador) {
         return new CharacterCard(id, id, "CHARACTER_NARN", Rarity.COMMON,
-                Faction.NARN, CardSet.PREMIERE, "", "", 2, 2, 2, 2, ambassador);
+                Loyalty.NARN, CardSet.PREMIERE, "", "", 2, 2, 2, 2, ambassador);
     }
 
     private static List<Card> drawPile(int n) {
@@ -45,7 +45,7 @@ public class HeadlessDrawRoundProbe {
     }
 
     private static Player seat(String name, int drawPileCards) {
-        Player p = new Player(name, Faction.NARN, false);
+        Player p = new Player(name, Race.NARN, false);
         CharacterCard amb = character("amb_" + name, true);
         p.setAmbassador(amb);
         p.getInnerCircle().add(amb);

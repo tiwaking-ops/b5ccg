@@ -9,7 +9,7 @@ public abstract class Card {
     private final CardType type;
     private final String   subtype;
     private final Rarity   rarity;
-    private final Faction  faction;
+    private final Loyalty  loyalty;
     private final CardSet  cardSet;
     private final String   imageKey;
     private final String   text;
@@ -33,14 +33,14 @@ public abstract class Card {
     private final List<ContingencyCard> contingencies = new ArrayList<ContingencyCard>();
 
     protected Card(String id, String title, CardType type, String subtype,
-                   Rarity rarity, Faction faction, CardSet cardSet,
+                   Rarity rarity, Loyalty loyalty, CardSet cardSet,
                    String imageKey, String text) {
         this.id       = id;
         this.title    = title;
         this.type     = type;
         this.subtype  = subtype;
         this.rarity   = rarity;
-        this.faction  = faction;
+        this.loyalty  = loyalty;
         this.cardSet  = cardSet;
         this.imageKey = imageKey;
         this.text     = text;
@@ -51,7 +51,7 @@ public abstract class Card {
     public CardType getType()     { return type; }
     public String   getSubtype()  { return subtype; }
     public Rarity   getRarity()   { return rarity; }
-    public Faction  getFaction()  { return faction; }
+    public Loyalty  getLoyalty()  { return loyalty; }
     public CardSet  getCardSet()  { return cardSet; }
     public String   getImageKey() { return imageKey; }
     public String   getText()     { return text; }

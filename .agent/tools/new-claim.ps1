@@ -237,6 +237,13 @@ if (-not $AgentId) {
     Write-Error "[B5-1462] REFUSED: -AgentId is required in create mode."
     exit 1
 }
+# B5-0016 (c): agent-id pattern check. Report file names are built from the
+# agent id, so an id carrying spaces, parentheses or punctuation produces a
+# name nothing can join on later (AGENTS.md section 2, provenance rule).
+if ($AgentId -notmatch "^[A-Za-z0-9-]+$") {
+    Write-Error ("[B5-0016] REFUSED: agent id '{0}' is not letters, digits and hyphens only. Report file names are built from it; use the pattern in AGENTS.md section 2. No claim was created." -f $AgentId)
+    exit 1
+}
 
 $now = [DateTimeOffset]::UtcNow          # B5-1462: the TOOL authors the timestamp, not the agent
 $stamp = $now.ToString('yyyy-MM-ddTHH:mm:ssZ')

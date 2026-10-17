@@ -2,7 +2,7 @@ package b5ccg.engine;
 
 import b5ccg.model.CivilWarState;
 import b5ccg.model.Player;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -56,15 +56,15 @@ public class HeadlessCivilWarProbe {
     /** :990 / :956 — a freshly built machine is UNIFIED, has no entry round,
      *  and reports dual only when two factions of the race were injected. */
     private static void scenarioFreshState() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         check(":990 fresh machine starts UNIFIED",
               cw.getPhase() == CivilWarState.Phase.UNIFIED);
         check(":992 fresh machine has no entry round",
               cw.getEnteredRound() == -1);
         check(":956 dual race reports dual",
               cw.isDualRace());
-        check("race is CENTAURI", cw.getRace() == Faction.CENTAURI);
+        check("race is CENTAURI", cw.getRace() == Race.CENTAURI);
         check("two race players were injected",
               cw.getRacePlayers().size() == 2);
     }
@@ -73,8 +73,8 @@ public class HeadlessCivilWarProbe {
      *  when same-race tension 5 is present; a missing precondition fails
      *  softly (returns false) rather than throwing. */
     private static void scenarioEntryGuard() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         check(":992 entry refused without same-race tension 5",
               !cw.enterCivilWar(3, false));
         check(":992 phase still UNIFIED after the refused entry",
@@ -90,8 +90,8 @@ public class HeadlessCivilWarProbe {
     /** :992 second sentence — a war declaration triggers entry without the
      *  tension-5 precondition (duality still required). */
     private static void scenarioEntryByDeclaration() {
-        List<Player> race = dualRacePlayers(Faction.NARN);
-        CivilWarState cw = new CivilWarState(Faction.NARN, race);
+        List<Player> race = dualRacePlayers(Race.NARN);
+        CivilWarState cw = new CivilWarState(Race.NARN, race);
         check(":992 declaration entry fires",
               cw.enterByDeclaration(11));
         check(":992 declaration sets phase + round",
@@ -103,8 +103,8 @@ public class HeadlessCivilWarProbe {
      *  responsibility once the machine is in CIVIL_WAR; the bump is clamped
      *  at 5). The machine's own raiseUnrestOfRace performs it. */
     private static void scenarioUnrestBumpOnEntry() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         cw.enterCivilWar(1, true);
         int beforeA = race.get(0).getUnrest();
         int beforeB = race.get(1).getUnrest();
@@ -123,13 +123,13 @@ public class HeadlessCivilWarProbe {
     /** :1000 — at entry each faction snapshots the race-level tension row;
      *  during the war the factions diverge per target race; the clamps 0..5. */
     private static void scenarioSnapshotAndSplitTensionDivergence() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         cw.enterCivilWar(1, true);
 
-        Map<Faction, Integer> raceLevel = new LinkedHashMap<Faction, Integer>();
-        raceLevel.put(Faction.NARN, 3);
-        raceLevel.put(Faction.MINBARI, 1);
+        Map<Race, Integer> raceLevel = new LinkedHashMap<Race, Integer>();
+        raceLevel.put(Race.NARN, 3);
+        raceLevel.put(Race.MINBARI, 1);
         cw.snapshotSplitTensions(raceLevel);
 
         check(":1000 each faction snapshot the full race-level row",
@@ -137,43 +137,43 @@ public class HeadlessCivilWarProbe {
               && cw.getSplitTensions(race.get(1)).size() == 2);
 
         // Diverge; setSplitTension clamps 0..5.
-        cw.setSplitTension(race.get(0), Faction.NARN, 5);
-        cw.setSplitTension(race.get(0), Faction.MINBARI, -2);   // clamp -> 0
+        cw.setSplitTension(race.get(0), Race.NARN, 5);
+        cw.setSplitTension(race.get(0), Race.MINBARI, -2);   // clamp -> 0
         check(":1000 divergence is per-faction, per-target",
-              cw.getSplitTensions(race.get(0)).get(Faction.NARN).intValue() == 5);
+              cw.getSplitTensions(race.get(0)).get(Race.NARN).intValue() == 5);
         check(":1000 split tension clamps at 0 (:280 band)",
-              cw.getSplitTensions(race.get(0)).get(Faction.MINBARI).intValue() == 0);
+              cw.getSplitTensions(race.get(0)).get(Race.MINBARI).intValue() == 0);
         // A target race absent from the snapshot is not a key to write.
         check(":1000 only snapshot targets are writable",
-              cw.getSplitTensions(race.get(0)).get(Faction.HUMAN) == null);
+              cw.getSplitTensions(race.get(0)).get(Race.HUMAN) == null);
     }
 
     /** :998 / :1000 — exit by war end merges the split rows as the ROUNDED-UP
      *  AVERAGE, drops unrest -1 for every faction, and returns to UNIFIED. */
     private static void scenarioExitByWarEndMerge() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         cw.enterCivilWar(4, true);
         cw.raiseUnrestOfRace();   // 1 -> 2 for both
 
-        Map<Faction, Integer> raceLevel = new LinkedHashMap<Faction, Integer>();
-        raceLevel.put(Faction.NARN, 3);
-        raceLevel.put(Faction.MINBARI, 1);
+        Map<Race, Integer> raceLevel = new LinkedHashMap<Race, Integer>();
+        raceLevel.put(Race.NARN, 3);
+        raceLevel.put(Race.MINBARI, 1);
         cw.snapshotSplitTensions(raceLevel);
         // CA->NARN 2, CB->NARN 5 -> (2+5+1)/2 = 4 ; MINBARI stays 1,1 -> 1.
-        cw.setSplitTension(race.get(0), Faction.NARN, 2);
-        cw.setSplitTension(race.get(1), Faction.NARN, 5);
+        cw.setSplitTension(race.get(0), Race.NARN, 2);
+        cw.setSplitTension(race.get(1), Race.NARN, 5);
 
         int unrestBeforeA = race.get(0).getUnrest();
         int unrestBeforeB = race.get(1).getUnrest();
 
-        Map<Faction, Integer> merged = cw.exitByWarEnd();
+        Map<Race, Integer> merged = cw.exitByWarEnd();
         check(":1000 merge is the rounded-up average (2 and 5 -> 4)",
-              merged.get(Faction.NARN) != null
-              && merged.get(Faction.NARN).intValue() == 4);
+              merged.get(Race.NARN) != null
+              && merged.get(Race.NARN).intValue() == 4);
         check(":1000 unaffected target averages unchanged (1 and 1 -> 1)",
-              merged.get(Faction.MINBARI) != null
-              && merged.get(Faction.MINBARI).intValue() == 1);
+              merged.get(Race.MINBARI) != null
+              && merged.get(Race.MINBARI).intValue() == 1);
         check(":998 unrest -1 for every faction of the race on exit",
               race.get(0).getUnrest() == unrestBeforeA - 1
               && race.get(1).getUnrest() == unrestBeforeB - 1);
@@ -190,23 +190,23 @@ public class HeadlessCivilWarProbe {
      *  losers drop unrest -1, NO merge happens, and the survivor's own split
      *  row is returned. */
     private static void scenarioExitBySurrender() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         cw.enterByDeclaration(9);
         cw.raiseUnrestOfRace();   // both -> 2
 
-        Map<Faction, Integer> raceLevel = new LinkedHashMap<Faction, Integer>();
-        raceLevel.put(Faction.NARN, 2);
+        Map<Race, Integer> raceLevel = new LinkedHashMap<Race, Integer>();
+        raceLevel.put(Race.NARN, 2);
         cw.snapshotSplitTensions(raceLevel);
-        cw.setSplitTension(race.get(0), Faction.NARN, 3);   // survivor diverges
+        cw.setSplitTension(race.get(0), Race.NARN, 3);   // survivor diverges
 
         int survivorUnrest = race.get(0).getUnrest();
         int loserUnrest = race.get(1).getUnrest();
 
-        Map<Faction, Integer> row = cw.exitBySurrender(race.get(0));
+        Map<Race, Integer> row = cw.exitBySurrender(race.get(0));
         check(":1006 survivor's own split row returned (no merge)",
-              row.get(Faction.NARN) != null
-              && row.get(Faction.NARN).intValue() == 3);
+              row.get(Race.NARN) != null
+              && row.get(Race.NARN).intValue() == 3);
         check(":1006 loser unrest -1 on surrender",
               race.get(1).getUnrest() == loserUnrest - 1);
         check(":1006 survivor unrest untouched",
@@ -217,7 +217,7 @@ public class HeadlessCivilWarProbe {
         // Surrender precondition: a survivor not in the race returns empty and
         // leaves the machine in CIVIL_WAR.
         cw.enterByDeclaration(9);
-        Player outsider = new Player("Outsider", Faction.MINBARI, false);
+        Player outsider = new Player("Outsider", Race.MINBARI, false);
         check(":1006 surrender refused for a non-race survivor",
               cw.exitBySurrender(outsider).isEmpty());
         check(":1006 refused surrender leaves the machine at war",
@@ -227,25 +227,25 @@ public class HeadlessCivilWarProbe {
     /** :994 — every faction of the race is at war with each other faction
      *  while the machine is in CIVIL_WAR, and never before. */
     private static void scenarioWarRelation() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         check(":994 no war relation before entry",
-              !cw.isFactionAtWarWithRival(race.get(0)));
+              !cw.isRaceAtWarWithRival(race.get(0)));
         cw.enterCivilWar(1, true);
         check(":994 a race faction is at war with its rival (:994)",
-              cw.isFactionAtWarWithRival(race.get(0)));
+              cw.isRaceAtWarWithRival(race.get(0)));
         check(":994 the other race faction is also at war with its rival",
-              cw.isFactionAtWarWithRival(race.get(1)));
-        Player other = new Player("Other", Faction.MINBARI, false);
+              cw.isRaceAtWarWithRival(race.get(1)));
+        Player other = new Player("Other", Race.MINBARI, false);
         check(":994 a non-race faction is never a rival",
-              !cw.isFactionAtWarWithRival(other));
+              !cw.isRaceAtWarWithRival(other));
     }
 
     /** :992 — once CIVIL_WAR, entry is idempotently refused (it is not a
      *  re-trigger), for both the tension and the declaration paths. */
     private static void scenarioReentryRefused() {
-        List<Player> race = dualRacePlayers(Faction.CENTAURI);
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, race);
+        List<Player> race = dualRacePlayers(Race.CENTAURI);
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, race);
         cw.enterCivilWar(1, true);
         check(":992 re-entry by tension refused while at war",
               !cw.enterCivilWar(2, true));
@@ -258,8 +258,8 @@ public class HeadlessCivilWarProbe {
     /** :992 / :956 — a single-faction race can never enter the machine. */
     private static void scenarioNonDualRaceRefused() {
         List<Player> lone = new ArrayList<Player>();
-        lone.add(new Player("Solo", Faction.CENTAURI, false));
-        CivilWarState cw = new CivilWarState(Faction.CENTAURI, lone);
+        lone.add(new Player("Solo", Race.CENTAURI, false));
+        CivilWarState cw = new CivilWarState(Race.CENTAURI, lone);
         check(":956 single-faction race is not dual",
               !cw.isDualRace());
         check(":992 entry refused for a non-dual race",
@@ -273,7 +273,7 @@ public class HeadlessCivilWarProbe {
     // ── fixtures ────────────────────────────────────────────────────────────
 
     /** Two Players of the same faction — the synthetic dual race (:956). */
-    private static List<Player> dualRacePlayers(Faction f) {
+    private static List<Player> dualRacePlayers(Race f) {
         List<Player> players = new ArrayList<Player>();
         players.add(new Player(f + "-A", f, false));
         players.add(new Player(f + "-B", f, false));

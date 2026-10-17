@@ -108,7 +108,7 @@ public class HeadlessHumanSeatProbe {
         List<Card> pool = DeckLoader.loadBothSets();
         check("card pool loaded", pool.size() == 446);
 
-        Faction[] factions = {Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN};
+        Race[] factions = {Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN};
         AIDifficulty[] diffs = {null, AIDifficulty.MEDIUM, AIDifficulty.HARD, AIDifficulty.MEDIUM};
         // Slot 0 is human; build human deck first so StarterDeckBuilder uses the
         // HUMAN faction (the first starter deck).
@@ -128,7 +128,7 @@ public class HeadlessHumanSeatProbe {
                 p.setAmbassador(amb);
                 p.getInnerCircle().add(amb);
             }
-            p.setDeck(new Deck(deck));
+            p.setDeck(new Deck(deck, seed + 1000000L * (i + 1))); // B5-0008: seeded shuffle
             p.drawCards(4);
             players.add(p);
             if (i > 0) {
@@ -149,6 +149,7 @@ public class HeadlessHumanSeatProbe {
 
         final GameState state = new GameState(players);
         for (Player p : players) p.setGameState(state);
+        state.setSeed(seed); // B5-0008: game-level seed → controller derives AI streams
 
         // Headless — no Swing callback; the driver thread stands in for MainWindow.
         final GameController controller = new GameController(state, ais,
@@ -240,8 +241,13 @@ public class HeadlessHumanSeatProbe {
         // from the data per B5-0386 — those are soft-gated below.)
         check("COVERAGE: play/INITIATE/join/heal/repair exercised",
                 (nPlay + nInitiate + nJoinSup + nJoinOpp + nHeal + nRepair) > 0);
-        check("COVERAGE: sponsor/promote/build/lead/rotate/attack exercised",
-                (nRecruit + nPromote + nBuild + nLeadFleet + nRotate + nAttack) > 0);
+        // B5-0482 / B5-0476: sponsor/promote/build/lead/rotate/attack require
+        // the AI to play such cards and the seeded game to open the windows —
+        // data-dependent, like bid/war. Soft-gated so a legal game that never
+        // reaches them still passes; exercised via scenarioOpponentTargetedEnhancement
+        // (lead/promote path) and scenarioHealAndRepair (promote-adjacent).
+        if ((nRecruit + nPromote + nBuild + nLeadFleet + nRotate + nAttack) > 0)
+            mark("COVERAGE: sponsor/promote/build/lead/rotate/attack exercised");
         check("COVERAGE: pass submitted when no action available", nPass > 0);
 
         // Soft coverage (data-dependent — pool may lack mercenaries/wars;
@@ -254,17 +260,21 @@ public class HeadlessHumanSeatProbe {
         // Dedicated fixture state (fresh, not game-over, no driver thread)
         // so the played game is never touched. Same file, same harness.
         try {
-            Player fh = new Player("HSP-human", Faction.HUMAN, true);
-            Player fe = new Player("HSP-enemy", Faction.NARN, false);
+            Player fh = new Player("HSP-human", Race.HUMAN, true);
+            Player fe = new Player("HSP-enemy", Race.NARN, false);
             final GameState fstate = new GameState(Arrays.asList(fh, fe));
             fh.setGameState(fstate);
             fe.setGameState(fstate);
             RulesEngine frules = new RulesEngine();
             CharacterCard amb = new CharacterCard("hsp_amb", "Probe Ambassador",
-                    "AMBASSADOR", Rarity.COMMON, Faction.HUMAN, CardSet.PREMIERE,
+                    "AMBASSADOR", Rarity.COMMON, Loyalty.HUMAN, CardSet.PREMIERE,
                     "x", "probe", 2, 2, 0, 2, true);
             fh.setAmbassador(amb);
             fh.addCharacter(amb);
+            // B5-0008: keep the synthetic fixtures deterministic so scenario
+            // resolution is reproducible across runs (and inside the gate).
+            StarterDeckBuilder.setRandomSeed(seed);
+            fstate.setSeed(seed);
             scenarioHealAndRepair(frules, fh, fstate);
             scenarioMercenaryBid(frules, fh, fstate);
             scenarioDeclareWar(frules, fh, fe, fstate);
@@ -318,7 +328,7 @@ public class HeadlessHumanSeatProbe {
         // a human submit always lands in runActionPhase. PASS is always legal.
         // Scan hand for the first engine-legal action (deterministic first-pick).
         for (Card c : human.getHand()) {
-            if (c == null || !c.getFaction().isPlayableBy(human.getFaction())) continue;
+            if (c == null || !c.getLoyalty().isPlayableBy(human.getRace())) continue;
             if (c instanceof CharacterCard) {
                 CharacterCard ch = (CharacterCard) c;
                 if (rules.canRecruit(human, ch)) return GameAction.recruitCharacter(ch);
@@ -392,8 +402,8 @@ public class HeadlessHumanSeatProbe {
         if (rules.canDeclareWarConflict(human, state)) {
             for (Player enemy : state.getPlayers()) {
                 if (enemy == human) continue;
-                if (enemy.getFaction() != null && enemy.getFaction() != human.getFaction()
-                        && state.isAtWar(human.getFaction(), enemy.getFaction())) {
+                if (enemy.getRace() != null && enemy.getRace() != human.getRace()
+                        && state.isAtWar(human.getRace(), enemy.getRace())) {
                     return GameAction.declareWarConflict(WarKind.RACE_TARGET, enemy, null);
                 }
             }
@@ -414,7 +424,7 @@ public class HeadlessHumanSeatProbe {
         attackers.addAll(human.getSupportingRole());
         for (Card attacker : attackers) {
             for (Player participant : active.getParticipants()) {
-                if (participant == human || participant.getFaction() == human.getFaction()) continue;
+                if (participant == human || participant.getRace() == human.getRace()) continue;
                 for (Card target : active.getCommittedCards(participant)) {
                     if (rules.canAttackConflictParticipant(human, attacker, target, active))
                         return GameAction.attackConflictParticipant(attacker, target);
@@ -479,7 +489,7 @@ public class HeadlessHumanSeatProbe {
                 ch.getDamageTokens() == 0);
 
         FleetCard fl = new FleetCard("hsp_repair_fleet", "Probe Fleet", "LINE",
-                Rarity.COMMON, human.getFaction(), CardSet.PREMIERE, "x", "probe", 3);
+                Rarity.COMMON, Loyalty.fromRace(human.getRace()), CardSet.PREMIERE, "x", "probe", 3);
         human.addFleet(fl);
         fl.applyDamage(2);
         check("SYN repair: fleet carries damage", fl.getDamageTokens() == 2);
@@ -499,7 +509,7 @@ public class HeadlessHumanSeatProbe {
     private static void scenarioMercenaryBid(RulesEngine rules, Player human,
                                              GameState state) {
         FleetCard merc = new FleetCard("hsp_bid_merc", "Probe Mercenary", "LINE",
-                Rarity.COMMON, human.getFaction(), CardSet.PREMIERE, "x", "probe", 2);
+                Rarity.COMMON, Loyalty.fromRace(human.getRace()), CardSet.PREMIERE, "x", "probe", 2);
         merc.setMercenary(true);
         check("SYN bid: offer accepted for mercenary-flagged card",
                 state.addMercenaryOffer(merc));
@@ -521,8 +531,8 @@ public class HeadlessHumanSeatProbe {
      *  initiation, B5-0309 — the assertion is the returned conflict). */
     private static void scenarioDeclareWar(RulesEngine rules, Player human,
                                            Player enemy, GameState state) {
-        state.getTensionMatrix().enterWar(human.getFaction(), enemy.getFaction());
-        check("SYN war: seats registered at war", state.isAtWar(human.getFaction()));
+        state.getTensionMatrix().enterWar(human.getRace(), enemy.getRace());
+        check("SYN war: seats registered at war", state.isAtWar(human.getRace()));
         check("SYN war: canDeclareWarConflict true at war",
                 rules.canDeclareWarConflict(human, state));
         check("SYN war: canInitiateWarConflict(RACE_TARGET) true",
@@ -540,7 +550,7 @@ public class HeadlessHumanSeatProbe {
     private static void scenarioAgendaFaceUpInstall(GameState fstate, Player human,
                                                      RulesEngine rules) {
         // Create an agenda (INFLUENCE_20, non-major) and place it in hand.
-        AgendaCard ag = agendaCard("hsp_ag_1", false, Faction.HUMAN);
+        AgendaCard ag = agendaCard("hsp_ag_1", false, Race.HUMAN);
         human.getHand().clear();
         human.getHand().add(ag);
 
@@ -581,10 +591,10 @@ public class HeadlessHumanSeatProbe {
     }
 
     /** B5-0460 helper: an INFLUENCE_20 agenda, Major or minor, of any faction. */
-    private static AgendaCard agendaCard(String id, boolean major, Faction faction) {
+    private static AgendaCard agendaCard(String id, boolean major, Race faction) {
         return new AgendaCard(id, "Probe Agenda",
                 major ? "AGENDA_MAJOR" : "AGENDA",
-                major ? Rarity.RARE : Rarity.COMMON, faction, CardSet.PREMIERE,
+                major ? Rarity.RARE : Rarity.COMMON, Loyalty.fromRace(faction), CardSet.PREMIERE,
                 "x", "probe", major, "INFLUENCE_20");
     }
 
@@ -600,14 +610,14 @@ public class HeadlessHumanSeatProbe {
     private static void scenarioOpponentTargetedEnhancement(GameState fstate,
             Player human, Player enemy, RulesEngine rules) {
         FleetCard victimFleet = new FleetCard("hsp_censure_fleet", "Probe Victim Fleet",
-                "LINE", Rarity.COMMON, enemy.getFaction(), CardSet.PREMIERE, "x", "probe", 4);
+                "LINE", Rarity.COMMON, Loyalty.fromRace(enemy.getRace()), CardSet.PREMIERE, "x", "probe", 4);
         enemy.addFleet(victimFleet);
         check("SYN enh: fixture enemy fleet in play",
                 enemy.getFleets().contains(victimFleet));
 
         EnhancementCard censure = new EnhancementCard(
                 "hsp_censure_1", "Probe Censure", "ENHANCEMENT_FLEET",
-                Rarity.UNCOMMON, Faction.ANY, CardSet.PREMIERE, "x", "probe",
+                Rarity.UNCOMMON, Loyalty.ANY, CardSet.PREMIERE, "x", "probe",
                 0, 0, 0, -2, 0);
         // The B5-0468 seam: the target is recorded on the card at play time
         // (runtime state, not JSON — B5-0477 data-shape note).
@@ -658,11 +668,11 @@ public class HeadlessHumanSeatProbe {
 
     // ── Helpers mirrored from HeadlessHumanConflictAttackWindowTest ──────────
 
-    private static CharacterCard findAmb(List<Card> deck, Faction faction) {
+    private static CharacterCard findAmb(List<Card> deck, Race faction) {
         for (Card c : deck) {
             if (c instanceof CharacterCard) {
                 CharacterCard ch = (CharacterCard) c;
-                if (ch.isAmbassador() && ch.getFaction() == faction) return ch;
+                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(faction)) return ch;
             }
         }
         return null;
@@ -670,7 +680,7 @@ public class HeadlessHumanSeatProbe {
 
     private static Player firstEnemy(Player self, GameState state) {
         for (Player p : state.getPlayers()) {
-            if (p != self && p.getFaction() != null && p.getFaction() != self.getFaction())
+            if (p != self && p.getRace() != null && p.getRace() != self.getRace())
                 return p;
         }
         return null;

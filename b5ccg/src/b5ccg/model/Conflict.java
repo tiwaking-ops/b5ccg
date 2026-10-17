@@ -1,7 +1,7 @@
 package b5ccg.model;
 
 import b5ccg.model.enums.ConflictType;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
 import b5ccg.model.enums.WarKind;
 import java.util.*;
 
@@ -156,8 +156,8 @@ public class Conflict {
         if (card == null) {
             // B5-0376: war conflict — accept any player at war with initiator
             if (p == initiator) return true;
-            Faction initiatorRace = initiator.getFaction();
-            Faction playerRace = p.getFaction();
+            Race initiatorRace = initiator.getRace();
+            Race playerRace = p.getRace();
             return initiatorRace != null && playerRace != null
                 && initiatorRace != playerRace
                 && p.getGameState().getTensionMatrix().isAtWar(initiatorRace, playerRace);
@@ -301,9 +301,9 @@ public class Conflict {
 
     /** B5-0376: returns the faction of the player who controls this location,
      *  or null if the location is unowned. */
-    public Faction getTargetLocationOwner() {
+    public Race getTargetLocationOwner() {
         if (targetLocation == null) return null;
         Player owner = targetLocation.getCapturedBy();
-        return owner != null ? owner.getFaction() : null;
+        return owner != null ? owner.getRace() : null;
     }
 }

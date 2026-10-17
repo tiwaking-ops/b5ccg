@@ -2,7 +2,7 @@ package b5ccg.ui;
 
 import b5ccg.model.GameState;
 import b5ccg.model.Player;
-import b5ccg.model.enums.Faction;
+import b5ccg.model.enums.Race;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.ArrayList;
@@ -75,8 +75,8 @@ public final class InfluenceTrackerPoolColumnTest {
 
         // ── 1. the header names the column, so the number is readable ──────────
         InfluenceTrackerPanel panel = new InfluenceTrackerPanel();
-        Player a = player("Ivanova", Faction.HUMAN);
-        Player b = player("Londo", Faction.NARN);
+        Player a = player("Ivanova", Race.HUMAN);
+        Player b = player("Londo", Race.NARN);
         GameState state = state(a, b);
 
         panel.update(state);
@@ -162,7 +162,7 @@ public final class InfluenceTrackerPoolColumnTest {
                 (labels.size() - 1) == LABELS_PER_ROW);
         check("the surviving row still shows a pool", !"".equals(labels.get(1 + 4).getText()));
 
-        GameState threePlayers = state(a, b, player("Kosh", Faction.VORLON));
+        GameState threePlayers = state(a, b, player("Kosh", Race.VORLON));
         panel.update(threePlayers);
         labels = labelsOf(panel);
         check("growing to three players adds a whole row of labels",
@@ -204,7 +204,7 @@ public final class InfluenceTrackerPoolColumnTest {
         }
     }
 
-    private static Player player(String name, Faction faction) {
+    private static Player player(String name, Race faction) {
         return new Player(name, faction, false);
     }
 

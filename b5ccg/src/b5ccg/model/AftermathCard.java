@@ -6,7 +6,7 @@ public class AftermathCard extends Card {
     private final String triggerCondition;
 
     public AftermathCard(String id, String title, String subtype,
-                         Rarity rarity, Faction faction, CardSet cardSet,
+                         Rarity rarity, Loyalty faction, CardSet cardSet,
                          String imageKey, String text, String triggerCondition) {
         super(id, title, CardType.AFTERMATH, subtype, rarity, faction,
               cardSet, imageKey, text);

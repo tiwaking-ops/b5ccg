@@ -81,7 +81,7 @@ public class HeadlessMultiRoundTest {
         String[] gameWinners = new String[numGames];
 
         String[] names = {"Alpha", "Beta", "Gamma", "Delta"};
-        Faction[] factions = {Faction.HUMAN, Faction.MINBARI, Faction.CENTAURI, Faction.NARN};
+        Race[] factions = {Race.HUMAN, Race.MINBARI, Race.CENTAURI, Race.NARN};
         AIDifficulty[] difficulties = {AIDifficulty.EASY, AIDifficulty.MEDIUM,
                                         AIDifficulty.HARD, AIDifficulty.MEDIUM};
 
@@ -98,7 +98,7 @@ public class HeadlessMultiRoundTest {
 
             for (int i = 0; i < names.length; i++) {
                 Player p = new Player(names[i], factions[i], false);
-                List<Card> deckCards = buildFactionDeck(allCards, factions[i]);
+                List<Card> deckCards = buildRaceDeck(allCards, factions[i]);
                 if (deckCards.isEmpty()) {
                     System.err.println("FAILED: no cards for faction " + factions[i]);
                     System.exit(3);
@@ -295,9 +295,9 @@ public class HeadlessMultiRoundTest {
         return line;
     }
 
-    // ── Deck-building helper (mirrors HeadlessSmokeTest.buildFactionDeck) ─────
+    // ── Deck-building helper (mirrors HeadlessSmokeTest.buildRaceDeck) ─────
 
-    private static List<Card> buildFactionDeck(List<Card> all, Faction faction) {
+    private static List<Card> buildRaceDeck(List<Card> all, Race faction) {
         if (StarterDeckBuilder.isAvailable()) {
             try {
                 return StarterDeckBuilder.build(faction, all);
@@ -309,7 +309,7 @@ public class HeadlessMultiRoundTest {
         List<Card> deck = new ArrayList<Card>();
         for (int i = 0; i < all.size() && deck.size() < 60; i++) {
             Card c = all.get(i);
-            if (c.getFaction() == faction) deck.add(c);
+            if (c.getLoyalty() == Loyalty.fromRace(faction)) deck.add(c);
         }
         int conflicts = 0;
         for (int i = 0; i < all.size() && conflicts < 12; i++) {
@@ -323,20 +323,20 @@ public class HeadlessMultiRoundTest {
         }
         for (int i = 0; i < all.size() && deck.size() < 60; i++) {
             Card c = all.get(i);
-            Faction f = c.getFaction();
-            if (f == Faction.ANY || f == Faction.NEUTRAL || f == Faction.NON_ALIGNED) {
+            Loyalty f = c.getLoyalty();
+            if (f == Loyalty.ANY || f == Loyalty.NEUTRAL || f == Loyalty.NON_ALIGNED) {
                 deck.add(c);
             }
         }
         return deck;
     }
 
-    private static CharacterCard findAmbassadorCard(List<Card> deckCards, Faction faction) {
+    private static CharacterCard findAmbassadorCard(List<Card> deckCards, Race faction) {
         for (int i = 0; i < deckCards.size(); i++) {
             Card c = deckCards.get(i);
             if (c instanceof CharacterCard) {
                 CharacterCard ch = (CharacterCard) c;
-                if (ch.isAmbassador() && ch.getFaction() == faction) return ch;
+                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(faction)) return ch;
             }
         }
         return null;
