@@ -232,18 +232,29 @@ GATE_EOF
     # must be part of an OR-list or the shell exits before CODE is assigned.
     # `java ... || CODE=$?` makes the assignment happen on failure AND keeps
     # `set -e` from aborting, which is the entire point of this loop.
-    # `< /dev/null` is REQUIRED, not hygiene. This loop's body runs with stdin
-    # still connected to the `printf | grep` pipe, so `java` inherits that pipe
-    # as its own stdin. Any class that reads a single byte from stdin consumes
-    # the remaining class names, and `read -r cls` then hits EOF and the loop
-    # stops early.
+    # `< /dev/null` is DEFENSIVE, not required. An earlier version of this
+    # comment claimed it was REQUIRED, and gave a reason that does not hold:
     #
-    # Measured 2026-10-19 (B5-0026): with stdin inherited the gate recorded only
-    # 4 of 31 classes and exited via the "loop did not complete" guard, leaving
-    # HeadlessHumanSeatProbe.log empty. The same tree with `< /dev/null` ran all
-    # 31 and reported the real failing-name set of 4. Without this the gate
-    # cannot report its own verdict, which is the precondition AGENTS.md section 4
-    # makes every promotion depend on.
+    #   "This loop's body runs with stdin still connected to the printf-grep
+    #    pipeline, so java inherits that pipe as its own stdin. Any class that
+    #    reads a single byte from stdin consumes the remaining class names,
+    #    and read -r cls then hits EOF and the loop stops early."
+    #
+    # FALSIFIED. No Java source reads System.in: zero occurrences across all
+    # 189 files under b5ccg/src, and no Scanner, System.console or readLine.
+    # A class that never reads stdin cannot consume the pipeline, so the loop
+    # could not have stopped early for the stated reason. The B5-0026
+    # measurement that only 4 of 31 classes ran without the redirect was real,
+    # but its cause was the table writer/counting race, not this - and that
+    # race is what the synchronous .row writes and the pre-verdict invariant
+    # above now fix.
+    #
+    # The redirect is KEPT: it is free, correct, and forecloses a whole class
+    # of future surprise, because if some class ever does read stdin it will
+    # see EOF instead of eating the pipeline. The falsified justification is
+    # recorded rather than silently deleted so the next reader is not misled
+    # into re-deriving a false cause. Adjudication:
+    # .agent/REPORTS/2026-10-19-opencode-big-pickle-01-gate-run4-adjudication.md
     CODE=0
     java -cp "$OUT" "$cls" < /dev/null > "$LOG" 2>&1 || CODE=$?
 
