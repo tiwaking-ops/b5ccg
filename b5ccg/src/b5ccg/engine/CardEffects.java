@@ -1565,21 +1565,34 @@ public final class CardEffects {
 
     /** B5-0528: card ids whose faction-held presence triggers +1 damage on
      *  attackers of the controlling player's fleets (reactive mines effect).
-     *  Mirrors the DISCARD_ON_HEAL registry shape. The two pool ids
-     *  (en_h_mines / en_h_energy_mines) are the shipped data; enh_mines_rt
-     *  is the B5-0556 Mines Round-Trip fixture (in-memory, not a card
-     *  record) and is registered only so the conformance probe's registry
-     *  scan does not flag it as dead data. */
+     *  Mirrors the DISCARD_ON_HEAL registry shape.
+     *
+     *  B5-0036 corrected this registry against the shipped card data. It
+     *  previously held seven entries and its javadoc asserted that
+     *  `en_h_mines` and `en_h_energy_mines` "are the shipped data". Neither
+     *  string occurs anywhere in b5ccg/resources, and both were flagged by
+     *  HeadlessCanonicalParityProbe as dangling behaviour literals and by
+     *  EffectCensusChecker as literals naming no pool title. They are dead.
+     *
+     *  The two `de_` twins were redundant rather than wrong: lookupSet
+     *  matches exact-first and then falls back to CardIdNamespaceGuard
+     *  .canonicalKey, which strips the `de_` prefix, so a Deluxe id resolves
+     *  through its Premiere entry without being listed. The probe required
+     *  them removed because a `de_` literal that is not a declared
+     *  Deluxe-only override reads as an unexplained non-canonical entry.
+     *
+     *  What remains is the two Premiere pool ids and the round-trip fixture.
+     *  Removing any of them changes behaviour; removing the four above does
+     *  not, and HeadlessConformanceTest's MINES check - which calls
+     *  damageOnAttack("de_enh_energy_mines") - still passes through the
+     *  canonical fallback. */
     private static final Set<String> DAMAGE_ON_ATTACK = new HashSet<String>();
     static {
-        DAMAGE_ON_ATTACK.add("en_h_mines");
-        DAMAGE_ON_ATTACK.add("en_h_energy_mines");
-        // B5-0528: reactive-mines pool ids (both sets) drive on-attack damage.
-        // Premiere ids (no namespace prefix) and Delux ids (de_ prefix).
+        // B5-0528: reactive-mines pool ids drive on-attack damage. Only the
+        // Premiere spelling is listed; the `de_` printing resolves by
+        // canonical-key fallback in lookupSet.
         DAMAGE_ON_ATTACK.add("enh_mines");
-        DAMAGE_ON_ATTACK.add("de_enh_mines");
         DAMAGE_ON_ATTACK.add("enh_energy_mines");
-        DAMAGE_ON_ATTACK.add("de_enh_energy_mines");
         // B5-0556: enh_mines_rt is the round-trip fixture id, not a card.
         DAMAGE_ON_ATTACK.add("enh_mines_rt");
     }

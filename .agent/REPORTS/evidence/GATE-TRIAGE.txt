@@ -1,0 +1,179 @@
+=== B5 CCG Build ===
+Source: /c/temp/projects/b5ccg/b5ccg/src
+Output: /c/temp/projects/b5ccg/b5ccg/out
+Compiling 189 source files…
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resources…
+
+✓ Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 31 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 189  |  Compiled class count: 577
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      13925ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5687ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5112ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      2006ms   PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      186763ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      356ms    PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      233ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      236ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      197ms    PASS       b5ccg.engine.HeadlessDrawRoundProbe
+1      215ms    FAIL       b5ccg.engine.HeadlessJoinTimingProbe
+0      292ms    PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      197ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      405ms    PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      182ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      444ms    PASS       b5ccg.engine.HeadlessWarConflictProbe
+1      155ms    FAIL       b5ccg.engine.HeadlessFactionStateProbe
+0      154ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      194ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      280ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+1      350ms    FAIL       b5ccg.engine.CardSetManifestChecker
+0      351ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+1      430ms    FAIL       b5ccg.engine.HeadlessCanonicalParityProbe
+0      174ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+1      363ms    FAIL       b5ccg.model.EffectCensusChecker
+0      353ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      167ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      1901ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      1614ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      3391ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      1842ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      2378ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 26 passed, 5 failed (of 31 gate classes run)
+Total gate time: 230347ms
+Per-class logs: out_gate/
+
+FAILING-NAME SET (compare by name, never by count):
+  - b5ccg.engine.HeadlessJoinTimingProbe
+  - b5ccg.engine.HeadlessFactionStateProbe
+  - b5ccg.engine.CardSetManifestChecker
+  - b5ccg.engine.HeadlessCanonicalParityProbe
+  - b5ccg.model.EffectCensusChecker
+
+----- tail of b5ccg.engine.HeadlessJoinTimingProbe (out_gate/HeadlessJoinTimingProbe.log) -----
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+B5-4160: join-timing — queued declaration, deferred resolution
+  [PASS] S1: conflict queued (activeConflict set after initiate)
+  [PASS] S1: conflict is in the queue
+  [PASS] S1: initiator's hand no longer has the conflict card
+  [PASS] S2: initiator ambassador NOT auto-committed at declaration
+  [PASS] S2: initiator is on support side but with no committed cards
+  [PASS] S3: joiner NOT auto-collected during resolution setup (not yet resolved)
+  [FAIL] S3: after resolution, joiner still NOT a participant (AI auto-join removed)
+  [PASS] S4: first conflict queued as activeConflict
+  [PASS] S4: second conflict queued, becomes activeConflict
+  [PASS] S4: two conflicts queued in declaration order
+  [PASS] S4: queue drained after resolveQueuedConflicts
+  [PASS] S4: active conflict is null after resolution
+  [PASS] S5: conflict queued, joiner not yet a participant
+  [PASS] S5: joiner joined as support during ACTION phase
+  [PASS] S6: phase stays ACTION during the action round (joins are offered)
+  [PASS] S6: active conflict is live during ACTION phase
+  [PASS] S7: two conflicts queued before resolution
+  [PASS] S7: queue empty after resolution
+  [PASS] S7: active conflict null after resolution
+  [PASS] S7: game not over (both sides had equal commitment)
+B5-4160 join-timing probe: 20 checks, 1 failures.
+----- end b5ccg.engine.HeadlessJoinTimingProbe -----
+----- tail of b5ccg.engine.HeadlessFactionStateProbe (out_gate/HeadlessFactionStateProbe.log) -----
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+Error: Could not find or load main class b5ccg.engine.HeadlessFactionStateProbe
+Caused by: java.lang.ClassNotFoundException: b5ccg.engine.HeadlessFactionStateProbe
+----- end b5ccg.engine.HeadlessFactionStateProbe -----
+----- tail of b5ccg.engine.CardSetManifestChecker (out_gate/CardSetManifestChecker.log) -----
+  Title appears in multiple sets: 'Exploitation' (count=2)
+  Title appears in multiple sets: 'Tu'Pari' (count=2)
+  Title appears in multiple sets: 'Bester' (count=2)
+  Title appears in multiple sets: 'Centauri Telepath' (count=2)
+  Title appears in multiple sets: 'Extreme Sanction' (count=2)
+  Title appears in multiple sets: 'Secret Police' (count=2)
+  Title appears in multiple sets: 'Spin Doctors' (count=2)
+  Title appears in multiple sets: 'Alliance' (count=2)
+  Title appears in multiple sets: 'Diplomatic Advantage' (count=2)
+  Title appears in multiple sets: 'Avert Incident' (count=2)
+  Title appears in multiple sets: 'Secret Strike' (count=2)
+  Title appears in multiple sets: 'War College' (count=2)
+  Title appears in multiple sets: 'Minbari Aide' (count=2)
+  Title appears in multiple sets: 'News of Galactic Import' (count=2)
+  Title appears in multiple sets: 'Develop Relationship' (count=2)
+  Title appears in multiple sets: 'Commerce Raiding' (count=2)
+  Title appears in multiple sets: 'Approval of the Grey' (count=2)
+  Title appears in multiple sets: 'Disaffected Human' (count=2)
+  Title appears in multiple sets: 'Competing Interests' (count=2)
+  Title appears in multiple sets: 'What Do You Want?' (count=2)
+  Title appears in multiple sets: 'Diplomatic Corps' (count=2)
+  Title appears in multiple sets: 'Declaration of War' (count=2)
+  Title appears in multiple sets: 'Concentrated Effort' (count=2)
+  Title appears in multiple sets: 'Guilt' (count=2)
+  Title appears in multiple sets: 'Medical Assistance' (count=2)
+----- end b5ccg.engine.CardSetManifestChecker -----
+----- tail of b5ccg.engine.HeadlessCanonicalParityProbe (out_gate/HeadlessCanonicalParityProbe.log) -----
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+CANONICAL PARITY PROBE (B5-0003)
+[B5-0003] registry declares 2 sets: PASS
+[B5-0003] every required prefix is stripped by canonicalKey: PASS
+[B5-0003] canonicalKey strips de_: PASS
+[B5-0003] canonicalKey leaves bare ids alone: PASS
+[B5-0003] canonicalKey maps null to null: PASS
+  files read:       2
+  pool ids:         829
+[B5-0003] pool is non-empty: PASS
+[B5-0003] pool holds 829 ids (denominator non-zero): PASS
+  behaviour refs:   97
+[B5-0003] behaviour reference set is non-empty: PASS
+[B5-0003] fixture exemption still referenced: mer_metric_fixture: PASS
+[B5-0003] fixture exemption still referenced: probe_multi_side_conflict: PASS
+[B5-0003] fixture exemption still referenced: enh_mines_rt: PASS
+[B5-0003] every behaviour literal is an exact pool id: FAIL -- 2 dangling: en_h_energy_mines | en_h_mines
+[B5-0003] no unexplained non-canonical literal remains: FAIL -- 2: de_enh_energy_mines | de_enh_mines
+  canonical pairs:  325
+[B5-0003] every canonical collision is a same-title printing pair: PASS
+[B5-0003] mutation 1: a removed dangling literal resolves to zero entries: PASS
+[B5-0003] mutation 2: a changed-title twin is flagged undeclared: PASS
+[B5-0003] mutation 3: a same-title twin is accepted as printings: PASS
+HeadlessCanonicalParityProbe: 15/17 checks passed
+HeadlessCanonicalParityProbe: FAILED (2)
+----- end b5ccg.engine.HeadlessCanonicalParityProbe -----
+----- tail of b5ccg.model.EffectCensusChecker (out_gate/EffectCensusChecker.log) -----
+  starter titles:   146
+[B5-0005] fixture exemption still referenced: mer_metric_fixture: PASS
+[B5-0005] fixture exemption still referenced: probe_multi_side_conflict: PASS
+[B5-0005] fixture exemption still referenced: enh_mines_rt: PASS
+[B5-0005] every live behaviour literal names a pool title: FAIL -- 2: [en_h_energy_mines, en_h_mines]
+[B5-0005] covered flags equal the live behaviour-reference title set: PASS
+  covered titles:   58
+  ── class table ──
+  AGENDA_WIN      26
+  BESPOKE         6
+  CONFLICT_VARIANT59
+  COST_MODIFIER   7
+  DECK_HAND       33
+  ONE_SHOT        93
+  RESTRICTION     30
+  STAT_MODIFIER   63
+  TRAIT_ONLY      19
+  TRIGGERED       67
+  VANILLA         43
+[B5-0005] class counts sum to 446: PASS
+[B5-0005] mutation 1: a dropped title is detected as unclassified: PASS
+[B5-0005] mutation 2: an unknown class is outside the taxonomy: PASS
+[B5-0005] mutation 3: a wrong starter flag is detected: PASS
+EffectCensusChecker: 24/25 checks passed
+EffectCensusChecker: FAILED (1)
+----- end b5ccg.model.EffectCensusChecker -----
+
+ERROR: 5 gate class(es) failed. Exit non-zero.

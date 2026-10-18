@@ -1,0 +1,1025 @@
+===== b5ccg.engine.HeadlessHumanConflictAttackWindowTest =====
+=== Human conflict-attack window conformance ===
+  [ATKW] human join window opens before attack: PASS
+  [ATKW] attack window opens after join: PASS
+  [ATKW] invalid attack keeps the window open: PASS
+  [ATKW] valid attack resolves and closes the window: PASS
+  [ATKW] attack keeps the human on the joined opposition side: PASS
+  [ATKW] valid attack executes the existing B5-0370 mutation path: PASS
+  [ATKW] pass path reaches the attack window: PASS
+  [ATKW] pass closes the window without attacking: PASS
+  [ATKW] no legal opposing participant means no attack wait: PASS
+ATTACK WINDOW SUITE PASSED (9 checks)
+EXIT=0
+===== b5ccg.engine.HeadlessLeadFleetScenarioProbe =====
+  [LEAD-PROBE] ready leader and own unled fleet form a legal pair: PASS
+  [LEAD-PROBE] action preserves the selected leader and fleet: PASS
+  [LEAD-PROBE] executing the action rotates the leader and links the fleet: PASS
+  [LEAD-PROBE] leader Leadership adds to fleet Military: PASS
+  [LEAD-PROBE] handler rotates leader + links fleet (D6: no per-handler spend): PASS
+  [LEAD-PROBE] a second leader cannot lead the already-led fleet: PASS
+  [LEAD-PROBE] round start clears the fleet link and leader rotation: PASS
+  [LEAD-PROBE] round expiry restores base Military and makes the pair legal: PASS
+  [LEAD-PROBE] owner-less fleet reads base Military with no registry or crash: PASS
+Lead-a-fleet scenario probe: 9 checks, 0 failures.
+EXIT=0
+===== b5ccg.engine.HeadlessParticipationGatesProbe =====
+== Border Raid: INITIATOR_TARGET + requiresTarget + FLEET quota=1 + leadersIncluded ==
+  [PGR] BR initiation without target is illegal (requiresTarget): PASS
+  [PGR] BR initiation with the declared target is legal: PASS
+  [PGR] BR outsider join refused (INITIATOR_TARGET): PASS
+  [PGR] BR declared target join accepted: PASS
+  [PGR] BR event commit refused (FLEET-only): PASS
+  [PGR] BR first fleet commit accepted: PASS
+  [PGR] BR second fleet commit refused (quota FLEET=1): PASS
+  [PGR] BR character commits alongside the allowed fleet (leadersIncluded): PASS
+  [PGR] BR character without a committed fleet refused: PASS
+== Limited Strike: fleetSubtypes gate, reject-unproven on unmapped fleetClass ==
+  [PGR] loaded out-of-subtype fleet has non-matching fleetClass: PASS
+  [PGR] out-of-subtype class fleet commit refused (reject-unproven): PASS
+  [PGR] PICKET-class fleet commit accepted: PASS
+  [PGR] out-of-subtype fleet commit refused: PASS
+  [PGR] event commit refused (FLEET-only): PASS
+  [PGR] RulesEngine seen consistent: state untouched by refusals: PASS
+== Complete Support: mustTakeSide mandatory participation ==
+  [PGR] complete participation data present: PASS
+  [PGR] complete participation is mustTakeSide: PASS
+  [PGR] both other players compelled to participate: PASS
+  [PGR] compelled participants committed their ambassadors: PASS
+  [PGR] initiator on support side: PASS
+  [PGR] compelled players on the opposition side: PASS
+
+B5-0383 PROBE PASSED (all participation-gate scenarios)
+EXIT=0
+===== b5ccg.engine.HeadlessStationVictoryTest =====
+  [STA] 19 station influence with strict leader does not crown: PASS
+  [STA] 20 station influence crowns the unique strict leader: PASS
+  [STA] 20 station influence with tied leaders crowns nobody: PASS
+  [STA] Shadow War suppresses station condition 2: PASS
+  [STA] Vorlon-triggered Shadow War suppresses station condition 2: PASS
+  [STA] clearing Shadow War restores station condition 2: PASS
+Station victory scenario probe: 6 checks, 0 failures.
+EXIT=0
+===== b5ccg.engine.HeadlessWarConflictProbe =====
+== S1: DECLARE_WAR_CONFLICT legality (at peace -> at war -> wrong target) ==
+  [WAR] S1 cannot declare war conflict with no war at all: PASS
+  [WAR] S1 cannot declare vs race not at war: PASS
+  [WAR] S1 can declare war conflict when at war: PASS
+  [WAR] S1 war partner can also declare: PASS
+  [WAR] S1 action type DECLARE_WAR_CONFLICT: PASS
+  [WAR] S1 action carries null card (no synthetic card): PASS
+  [WAR] S1 action race target is minbari: PASS
+  [WAR] S1 action no location target: PASS
+  [WAR] S1 canInitiateWarConflict accepts the declared target: PASS
+  [WAR] S1 declareWarConflict produced a war conflict: PASS
+  [WAR] S1 war conflict has null card: PASS
+  [WAR] S1 war conflict targets minbari: PASS
+  [WAR] S1 war conflict type is MILITARY: PASS
+  [WAR] S1 war conflict carries zero influence reward: PASS
+  [WAR] S1 initiator can join own war conflict: PASS
+  [WAR] S1 at-war target can join: PASS
+  [WAR] S1 peaceful third party cannot join: PASS
+  [WAR] S1 third party joins once at war: PASS
+  [WAR] S1 declaration against peace-bound race refused: PASS
+== S2: tension increment on uncontested outcome, clamped at 5 ==
+  [WAR] S2 tension starts at 0: PASS
+  [WAR] S2 uncontested race war lowers the target's influence by 1: PASS
+  [WAR] S2 uncontested race war raises the winner's influence by 1: PASS
+  [WAR] S2 tension target->initiator incremented to 1: PASS
+  [WAR] S2 pre-clamp tension raised to 5: PASS
+  [WAR] S2 tension increment clamped at 5 (not 6): PASS
+== S3: LOCATION_TARGET capture + recapture on real loaded location ==
+  [WAR] S3 loaded location is a real data card: PASS
+  [WAR] S3 canInitiateWarConflict accepts the real location target: PASS
+  [WAR] S3 location-target war conflict declared: PASS
+  [WAR] S3 conflict carries the location target: PASS
+  [WAR] S3 conflict has no race target: PASS
+  [WAR] S3 win goes to the initiator: PASS
+  [WAR] S3 location captured by winning initiator: PASS
+  [WAR] S3 captured location effects suppressed: PASS
+  [WAR] S3 captured location income suppressed to 0: PASS
+  [WAR] S3 captured location military suppressed to 0: PASS
+  [WAR] S3 LOCATION_TARGET tension runs toward printed-faction owner: PASS
+  [WAR] S3 owner may declare recapture against the occupier: PASS
+  [WAR] S3 recapture war conflict declared: PASS
+  [WAR] S3 recapture win goes to the printed-faction owner: PASS
+  [WAR] S3 recaptured location cleared of capture marker: PASS
+  [WAR] S3 recaptured location effects restored: PASS
+  [WAR] S3 recaptured location income restored: PASS
+  [WAR] S3 recaptured location military restored: PASS
+== S4: uncontested read both ways (opposers vs attack) ==
+  [WAR] S4a uncontested read: target loses 1: PASS
+  [WAR] S4a uncontested read: winner gains 1: PASS
+  [WAR] S4b initiator still wins with greater support: PASS
+  [WAR] S4b contested-by-opposer read: no target swing: PASS
+  [WAR] S4b contested-by-opposer read: no winner swing: PASS
+  [WAR] S4c attack action resolves against a committed participant: PASS
+  [WAR] S4c attack marks the war conflict contested: PASS
+  [WAR] S4c initiator wins support after mutual attack neutralization: PASS
+  [WAR] S4c contested-by-attack read: no target swing: PASS
+  [WAR] S4c contested-by-attack read: no winner swing: PASS
+== S5: Forfeited race member excluded from joint influence loss ==
+  [WAR] S5 winner is Narn1 (initiator won uncontested): PASS
+  [WAR] S5 Minbari loses 1 influence: PASS
+  [WAR] S5 Narn1 gains 1 influence: PASS
+  [WAR] S5 Forfeited Narn2 does NOT lose influence (joint loss filter): PASS
+  [WAR] S5b winner is Narn3 (initiator won uncontested): PASS
+  [WAR] S5b Minbari2 loses 1 influence: PASS
+  [WAR] S5b Narn3 gains 1 influence: PASS
+  [WAR] S5b Surrendered Narn4 does NOT lose influence (joint loss filter): PASS
+
+B5-0419 PROBE PASSED (all DECLARE_WAR_CONFLICT scenarios)
+EXIT=0
+===== b5ccg.engine.HeadlessFactionStateProbe =====
+EXIT=1
+===== b5ccg.engine.HeadlessBonusFloorProbe =====
+B5-2518 BONUS-FLOOR probe (rulebook :673 reading)
+  [PASS] rulebook :673: rating 9 may build
+  [PASS] rating 8 may build
+  [PASS] rulebook :673: rating 10 may not build
+  checks=3 failures=0
+  PAUSED (all checks PASS, 0 failures)
+EXIT=0
+===== b5ccg.engine.HeadlessTieBreakProbe =====
+
+== Vocabulary: every tie-break is named, cited, and classified ==
+  [TB] catalog declares every tie-break it plays by (6): PASS
+  [TB] every Context cites a rulebook line: PASS
+  [TB] every Context states its rule in words: PASS
+  [TB] the silent gap is DISCLOSED, not converted to a claim (1 expected): PASS
+  [TB] MERCENARY_CONTROL is the disclosed gap (rulebook :739): PASS
+  [TB] MERCENARY_CONTROL cites :739: PASS
+  [TB] INITIATIVE_ORDER is a QUOTED rule (:352): PASS
+  [TB] isKnownContext accepts a real name: PASS
+  [TB] isKnownContext rejects an invented name: PASS
+  [TB] isKnownContext rejects null rather than throwing: PASS
+
+== INITIATIVE_ORDER (:352): chain decides; the list order does not ==
+  [TB] initiative order is PERMUTATION-INVARIANT across 6 input rotations: PASS
+  [TB] lower Influence acts FIRST (:352): PASS
+  [TB] equal influence, lower Diplomacy acts first (:352 chain): PASS
+  [TB] equal influence and equal Diplomacy, lower Intrigue acts first: PASS
+  [TB] equal influence and equal Diplomacy and Intrigue, lower Psi first: PASS
+  [TB] the full chain exhausted reads 0 (:352 residual signal): PASS
+  [TB] the exhaustion is reported as such (not merely as 'equal'): PASS
+  [TB] one step off exhaustion is NOT exhausted: PASS
+  [TB] exhausted chain falls to SEAT NAME order, not list order: PASS
+  [TB] ...and the relation is antisymmetric: PASS
+  [TB] ...and it holds whichever order the seats arrived in: PASS
+  [TB] a face-down ambassador does not rank (:352 reads abilities): PASS
+  [TB] a single seat is its own order: PASS
+  [TB] a null seat list is empty, not a crash: PASS
+  [TB] a null member is dropped rather than sorted: PASS
+
+== MERCENARY_CONTROL (:739 SILENT, adopted :352 substitute) ==
+  [TB] the tie resolves to the EARLIEST seat in initiative order: PASS
+  [TB] ...and NOT the first element of the tied list (reversed input): PASS
+  [TB] a hand-reversed order moves the winner (the order IS the input): PASS
+  [TB] a tied set outside the order yields null, not an arbitrary seat: PASS
+  [TB] a null order yields null: PASS
+  [TB] an empty tied set yields null: PASS
+  [TB] engine mercenary tie matches the catalog's prediction: PASS
+  [TB] ...and the prediction is the :352-first seat, not the first bidder: PASS
+
+== CONFLICT_PARTICIPATION (:550): equal totals lose for the initiator ==
+  [TB] more support than opposition wins for the initiator: PASS
+  [TB] equal support and opposition LOSES for the initiator (:550 wording): PASS
+  [TB] more opposition than support loses for the initiator: PASS
+  [TB] uncontested (no opposition at all) wins for the initiator: PASS
+  [TB] support with zero opposition wins: PASS
+  [TB] fixture really is tied (support == opposition): PASS
+  [TB] a tied conflict is WON BY THE OPPOSITION (:550): PASS
+  [TB] one point of support is enough for the initiator: PASS
+  [TB] equal opposers: the FIRST participant to oppose takes it: PASS
+  [TB] ...and reversing the participation order reverses the winner: PASS
+  [TB] an unequal opposition is won on total, not on order: PASS
+  [TB] no opposers means no leader: PASS
+  [TB] a null opposers list is no leader either: PASS
+
+== COUNCIL_VOTE (:791 :908): the League is called on an exact tie ==
+  [TB] a tied measure calls the League: PASS
+  [TB] ...and the League votes Yes: PASS
+  [TB] ...so a tied measure PASSES (:908): PASS
+  [TB] a Yes lead of one passes without the League: PASS
+  [TB] ...and the League's tally is unchanged when not called: PASS
+  [TB] a No lead fails: PASS
+  [TB] a No lead does not call the League: PASS
+  [TB] a 0-0 measure is a tie and passes: PASS
+  [TB] an ABSTAIN is not a vote (a 0-0 YES/NO tally is still a tie): PASS
+  [TB] the vote session opens for a face-up agenda: PASS
+  [TB] an untied 1-1 measure is decided WITHOUT the League: PASS
+  [TB] an abstaining third race does not UNTIE the measure: PASS
+  [TB] ...and the engine's verdict matches the catalog's reading of 1-1: PASS
+
+== STANDARD_VICTORY (:176) / MAJOR_VICTORY (:182): strict ==
+  [TB] a strictly higher total is a strict lead (20 vs 19): PASS
+  [TB] an EQUAL total is NOT a lead (:176 "more than any other player"): PASS
+  [TB] a lower total is not a lead: PASS
+  [TB] a candidate is never blocked by ITSELF: PASS
+  [TB] a 10-point margin clears Major Victory (:182 "at least 10 more"): PASS
+  [TB] a 9-point margin does NOT (:182, 20 vs 11): PASS
+  [TB] an EQUAL total does NOT clear Major Victory either: PASS
+  [TB] a unique strict leader is returned (20 vs 19): PASS
+  [TB] the runner-up is not crowned: PASS
+  [TB] EQUAL totals crown NOBODY (the D12 arm): PASS
+  [TB] an empty candidate set crowns nobody: PASS
+  [TB] an equal 20-20 board crowns nobody through the engine: PASS
+  [TB] a 21-20 board crowns the leader through the engine: PASS
+
+B5-2554 PROBE PASSED (tie-break determinism)
+EXIT=0
+===== b5ccg.engine.HeadlessCardIdNamespaceProbe =====
+[B5-2576] registry declares 2 sets: PASS
+[B5-2576] registry declares DELUXE: PASS
+[B5-2576] DELUXE prefix is de_: PASS
+[B5-2576] DELUXE prefix is required: PASS
+[B5-2576] shipped data has 0 violations: PASS
+[B5-2576] shipped files read = 2 (denominator non-zero): PASS
+[B5-2576] shipped ids inspected = 829 (denominator non-zero): PASS
+[B5-2576] 0 deluxe ids lack the de_ prefix: PASS
+[B5-2576] mutation 1: cross-file collision is caught: PASS
+[B5-2576] mutation 1: violation is a C-NAMESPACE-1 collision: PASS
+[B5-2576] mutation 2: unprefixed deluxe id is caught: PASS
+[B5-2576] mutation 2: violation names the id and the prefix: PASS
+[B5-2576] mutation 2b: premiere id carrying de_ is caught: PASS
+[B5-2576] mutation 2b: violation names the squatting id: PASS
+[B5-2576] mutation 3: cardCount disagreement is caught: PASS
+[B5-2576] mutation 3: violation names the file and both counts: PASS
+[B5-2576] shipped data still clean after all mutations: PASS
+[B5-2576] shipped id count unchanged after mutations: PASS
+HeadlessCardIdNamespaceProbe: 18/18 checks passed
+HeadlessCardIdNamespaceProbe: PASSED
+EXIT=0
+===== b5ccg.engine.CardSetManifestChecker =====
+MANIFEST CHECK: FAIL — 383 violation(s):
+  Title appears in multiple sets: 'Latent Telepath' (count=2)
+  Title appears in multiple sets: 'Muddy the Waters' (count=2)
+  Title appears in multiple sets: 'Rescue' (count=2)
+  Title appears in multiple sets: 'Minbari Agent' (count=2)
+  Title appears in multiple sets: 'Court the Rebellious' (count=2)
+  Title appears in multiple sets: 'Heavy Fleet' (count=2)
+  Title appears in multiple sets: 'Delenn Transformed' (count=2)
+  Title appears in multiple sets: 'Seduction' (count=2)
+  Title appears in multiple sets: 'Rabble Rousers' (count=2)
+  Title appears in multiple sets: 'Defense in Depth' (count=2)
+  Title appears in multiple sets: 'Isolationism' (count=2)
+  Title appears in multiple sets: 'Triluminary' (count=2)
+  Title appears in multiple sets: 'Hour of the Wolf' (count=2)
+  Title appears in multiple sets: 'Ramming' (count=2)
+  Title appears in multiple sets: 'Knowledge of the Soul' (count=2)
+  Title appears in multiple sets: 'Reserve Fleet' (count=2)
+  Title appears in multiple sets: 'Deep Space Fleet (Centauri)' (count=2)
+  Title appears in multiple sets: 'Utility Fleet (Centauri)' (count=2)
+  Title appears in multiple sets: 'Knowledge of Shadows' (count=2)
+  Title appears in multiple sets: 'Imperial Telepaths' (count=2)
+  Title appears in multiple sets: 'Colonial Fleet (Human)' (count=2)
+  Title appears in multiple sets: 'Meddling with Others' (count=2)
+  Title appears in multiple sets: 'Non-Aggression Pact' (count=2)
+  Title appears in multiple sets: 'Sneak Attack' (count=2)
+  Title appears in multiple sets: 'Shunned' (count=2)
+  Title appears in multiple sets: 'Vendetta' (count=2)
+  Title appears in multiple sets: 'It Will Be His Undoing' (count=2)
+  Title appears in multiple sets: 'Diplomatic Immunity' (count=2)
+  Title appears in multiple sets: 'Disaffected Minbari' (count=2)
+  Title appears in multiple sets: 'Disgrace' (count=2)
+  Title appears in multiple sets: 'Rogue Soul Hunter' (count=2)
+  Title appears in multiple sets: 'Mr. Adams' (count=2)
+  Title appears in multiple sets: 'Lord Kiro' (count=2)
+  Title appears in multiple sets: 'Vorlon Rescue' (count=2)
+  Title appears in multiple sets: 'Counterintelligence' (count=2)
+  Title appears in multiple sets: 'ISN' (count=2)
+  Title appears in multiple sets: 'Combat Experience' (count=2)
+  Title appears in multiple sets: 'Secondary Control' (count=2)
+  Title appears in multiple sets: 'Higher Calling' (count=2)
+  Title appears in multiple sets: 'Covert Allies' (count=2)
+  Title appears in multiple sets: 'Unrecognized Data' (count=2)
+  Title appears in multiple sets: 'Grey Council Fleet' (count=2)
+  Title appears in multiple sets: 'News of Defeat' (count=2)
+  Title appears in multiple sets: 'Martyr' (count=2)
+  Title appears in multiple sets: 'Deep Space Fleet (Human)' (count=2)
+  Title appears in multiple sets: 'Quadrant 14' (count=2)
+  Title appears in multiple sets: 'Trade Pact' (count=2)
+  Title appears in multiple sets: 'Overworked' (count=2)
+  Title appears in multiple sets: 'Lovell' (count=2)
+  Title appears in multiple sets: 'Telepathic Scan' (count=2)
+  Title appears in multiple sets: 'Censure' (count=2)
+  Title appears in multiple sets: 'Wounded' (count=2)
+  Title appears in multiple sets: 'Prophecy' (count=2)
+  Title appears in multiple sets: 'Non-Aligned Support' (count=2)
+  Title appears in multiple sets: 'G'Drog' (count=2)
+  Title appears in multiple sets: 'Vree Saucers' (count=2)
+  Title appears in multiple sets: 'First Battle Fleet (Narn)' (count=2)
+  Title appears in multiple sets: 'Hire Raiders' (count=2)
+  Title appears in multiple sets: 'Sortie' (count=2)
+  Title appears in multiple sets: 'Affirmation of Power' (count=2)
+  Title appears in multiple sets: 'Psi Interrogation' (count=2)
+  Title appears in multiple sets: 'Early Warning' (count=2)
+  Title appears in multiple sets: 'Mass Drivers' (count=2)
+  Title appears in multiple sets: 'Blood Oath' (count=2)
+  Title appears in multiple sets: 'Concealed Weapon' (count=2)
+  Title appears in multiple sets: 'Disenchantment' (count=2)
+  Title appears in multiple sets: 'Soul Hunter' (count=2)
+  Title appears in multiple sets: 'Rangers Surveillance' (count=2)
+  Title appears in multiple sets: 'Loss of Face' (count=2)
+  Title appears in multiple sets: 'Quadrant 37' (count=2)
+  Title appears in multiple sets: 'Order Above All' (count=2)
+  Title appears in multiple sets: 'Universe Today Feature' (count=2)
+  Title appears in multiple sets: 'Na'Ka'Leen Feeder' (count=2)
+  Title appears in multiple sets: 'Delenn' (count=2)
+  Title appears in multiple sets: 'Black Market' (count=2)
+  Title appears in multiple sets: 'Knowledge is Power' (count=2)
+  Title appears in multiple sets: 'Contact with Shadows' (count=2)
+  Title appears in multiple sets: 'Rathenn' (count=2)
+  Title appears in multiple sets: 'G'Sten' (count=2)
+  Title appears in multiple sets: 'Sandra Hiroshi' (count=2)
+  Title appears in multiple sets: 'Peace In Our Time' (count=2)
+  Title appears in multiple sets: 'The Opposition Rises' (count=2)
+  Title appears in multiple sets: 'Maintain the Peace' (count=2)
+  Title appears in multiple sets: 'Na'Toth' (count=2)
+  Title appears in multiple sets: 'Strike Fleet' (count=2)
+  Title appears in multiple sets: 'Support Babylon 5' (count=2)
+  Title appears in multiple sets: 'Human Captain' (count=2)
+  Title appears in multiple sets: 'Hunter, Prey' (count=2)
+  Title appears in multiple sets: 'Attacking Pawns' (count=2)
+  Title appears in multiple sets: 'Grievance' (count=2)
+  Title appears in multiple sets: 'Luxuries of Homeworld' (count=2)
+  Title appears in multiple sets: 'Loss of Support' (count=2)
+  Title appears in multiple sets: 'Elric' (count=2)
+  Title appears in multiple sets: 'Bio-Weapon Discovery' (count=2)
+  Title appears in multiple sets: 'Secondary Experience' (count=2)
+  Title appears in multiple sets: 'Du'Nar' (count=2)
+  Title appears in multiple sets: 'A Rising Power' (count=2)
+  Title appears in multiple sets: 'Drazi Sunhawk' (count=2)
+  Title appears in multiple sets: 'Blockade' (count=2)
+  Title appears in multiple sets: 'Religious Caste' (count=2)
+  Title appears in multiple sets: 'Jeffrey Sinclair' (count=2)
+  Title appears in multiple sets: 'Narn Agent' (count=2)
+  Title appears in multiple sets: 'Test Their Mettle' (count=2)
+  Title appears in multiple sets: 'For My People' (count=2)
+  Title appears in multiple sets: 'Contact with Vorlons' (count=2)
+  Title appears in multiple sets: 'United Front' (count=2)
+  Title appears in multiple sets: 'Utility Fleet (Human)' (count=2)
+  Title appears in multiple sets: 'Precision Strike' (count=2)
+  Title appears in multiple sets: 'Planetary Defenses' (count=2)
+  Title appears in multiple sets: 'Salvage Yard' (count=2)
+  Title appears in multiple sets: 'Minister Malachi' (count=2)
+  Title appears in multiple sets: 'Under Pressure' (count=2)
+  Title appears in multiple sets: 'Centauri Agent' (count=2)
+  Title appears in multiple sets: 'Sleeper Personality' (count=2)
+  Title appears in multiple sets: 'Hidden Agent' (count=2)
+  Title appears in multiple sets: 'Self Doubt' (count=2)
+  Title appears in multiple sets: 'Consolidated Position' (count=2)
+  Title appears in multiple sets: 'Ragesh III' (count=2)
+  Title appears in multiple sets: 'Learning Experience' (count=2)
+  Title appears in multiple sets: 'Security Training' (count=2)
+  Title appears in multiple sets: 'Shal Mayan' (count=2)
+  Title appears in multiple sets: 'Technological Espionage' (count=2)
+  Title appears in multiple sets: 'Prolonged Talks' (count=2)
+  Title appears in multiple sets: 'General Hague' (count=2)
+  Title appears in multiple sets: 'Internal Strife' (count=2)
+  Title appears in multiple sets: 'Secret Vorlon Aid' (count=2)
+  Title appears in multiple sets: 'Short Term Goals' (count=2)
+  Title appears in multiple sets: 'Rise to Power' (count=2)
+  Title appears in multiple sets: 'Not Meant to Be' (count=2)
+  Title appears in multiple sets: 'Retribution' (count=2)
+  Title appears in multiple sets: 'Zack Allan' (count=2)
+  Title appears in multiple sets: 'First Battle Fleet (Human)' (count=2)
+  Title appears in multiple sets: 'First Battle Fleet (Centauri)' (count=2)
+  Title appears in multiple sets: 'Compatible Goals' (count=2)
+  Title appears in multiple sets: 'Armistice' (count=2)
+  Title appears in multiple sets: 'Backroom Dealing' (count=2)
+  Title appears in multiple sets: 'Forces Collide' (count=2)
+  Title appears in multiple sets: 'Commercial Telepaths' (count=2)
+  Title appears in multiple sets: 'Sleeping Z'ha'dum' (count=2)
+  Title appears in multiple sets: 'Londo Mollari' (count=2)
+  Title appears in multiple sets: 'Lord Valo' (count=2)
+  Title appears in multiple sets: 'Narn Aide' (count=2)
+  Title appears in multiple sets: 'Victory in My Grasp' (count=2)
+  Title appears in multiple sets: 'Complete Support' (count=2)
+  Title appears in multiple sets: 'Balance' (count=2)
+  Title appears in multiple sets: 'You Are Not Ready' (count=2)
+  Title appears in multiple sets: 'Lockdown' (count=2)
+  Title appears in multiple sets: 'Emperor Turhan' (count=2)
+  Title appears in multiple sets: 'Despair' (count=2)
+  Title appears in multiple sets: 'Imperialism' (count=2)
+  Title appears in multiple sets: 'Demonstrative Victory' (count=2)
+  Title appears in multiple sets: 'Conflicting Loyalties' (count=2)
+  Title appears in multiple sets: 'Personal Sacrifice' (count=2)
+  Title appears in multiple sets: 'Frederick Lantz' (count=2)
+  Title appears in multiple sets: 'Cynthia Torqueman' (count=2)
+  Title appears in multiple sets: 'Second Battle Fleet (Narn)' (count=2)
+  Title appears in multiple sets: 'Leading the Races' (count=2)
+  Title appears in multiple sets: 'Special Ops' (count=2)
+  Title appears in multiple sets: 'Wear and Tear' (count=2)
+  Title appears in multiple sets: 'Markab Fleet' (count=2)
+  Title appears in multiple sets: 'Seizing Advantage' (count=2)
+  Title appears in multiple sets: 'Pulling Strings' (count=2)
+  Title appears in multiple sets: 'Emergency Military Aid' (count=2)
+  Title appears in multiple sets: 'Intolerable Interference' (count=2)
+  Title appears in multiple sets: 'First Battle Fleet (Minbari)' (count=2)
+  Title appears in multiple sets: 'Fixed in Their Ways' (count=2)
+  Title appears in multiple sets: 'Raid Shipping' (count=2)
+  Title appears in multiple sets: 'Neroon' (count=2)
+  Title appears in multiple sets: 'Rally the People' (count=2)
+  Title appears in multiple sets: 'Sanctions' (count=2)
+  Title appears in multiple sets: 'Campaign for Support' (count=2)
+  Title appears in multiple sets: 'Picket Fleet (Narn)' (count=2)
+  Title appears in multiple sets: 'Personal Involvement' (count=2)
+  Title appears in multiple sets: 'John Sheridan' (count=2)
+  Title appears in multiple sets: 'Thenta Makur' (count=2)
+  Title appears in multiple sets: 'Narn Captain' (count=2)
+  Title appears in multiple sets: 'You Know My Reputation' (count=2)
+  Title appears in multiple sets: 'Neutrality Treaty' (count=2)
+  Title appears in multiple sets: 'Strafing Run' (count=2)
+  Title appears in multiple sets: 'Negotiated Surrender' (count=2)
+  Title appears in multiple sets: 'Mines' (count=2)
+  Title appears in multiple sets: 'Deep Space Fleet (Minbari)' (count=2)
+  Title appears in multiple sets: 'Hunted' (count=2)
+  Title appears in multiple sets: 'Casualty Reports' (count=2)
+  Title appears in multiple sets: 'Dhaliri' (count=2)
+  Title appears in multiple sets: 'Humanitarian Aid' (count=2)
+  Title appears in multiple sets: 'Peacekeeping' (count=2)
+  Title appears in multiple sets: 'Extended Contacts' (count=2)
+  Title appears in multiple sets: 'Mary Ann Cramer' (count=2)
+  Title appears in multiple sets: 'Diplomatic Blunder' (count=2)
+  Title appears in multiple sets: 'Nightmares' (count=2)
+  Title appears in multiple sets: 'Second Battle Fleet (Minbari)' (count=2)
+  Title appears in multiple sets: 'Sponsor Rebels' (count=2)
+  Title appears in multiple sets: 'Dan Randall' (count=2)
+  Title appears in multiple sets: 'Accident' (count=2)
+  Title appears in multiple sets: 'Older but Wiser' (count=2)
+  Title appears in multiple sets: 'A Good Bluff' (count=2)
+  Title appears in multiple sets: 'As It Was Meant To Be' (count=2)
+  Title appears in multiple sets: 'Centauri Captain' (count=2)
+  Title appears in multiple sets: 'Marcus Cole' (count=2)
+  Title appears in multiple sets: 'Minbari Protectorate' (count=2)
+  Title appears in multiple sets: 'Condemn Deportations' (count=2)
+  Title appears in multiple sets: 'Sarah' (count=2)
+  Title appears in multiple sets: 'Luis Santiago' (count=2)
+  Title appears in multiple sets: 'Political Realignment' (count=2)
+  Title appears in multiple sets: 'Interstellar Corporation' (count=2)
+  Title appears in multiple sets: 'Shakat' (count=2)
+  Title appears in multiple sets: 'Human Aide' (count=2)
+  Title appears in multiple sets: 'For the Good of All' (count=2)
+  Title appears in multiple sets: 'Motivated Leaders' (count=2)
+  Title appears in multiple sets: 'Kha'Mak' (count=2)
+  Title appears in multiple sets: 'Psi Bodyguard' (count=2)
+  Title appears in multiple sets: 'Lack of Subtlety' (count=2)
+  Title appears in multiple sets: 'Skeletons in the Closet' (count=2)
+  Title appears in multiple sets: 'Establish Base' (count=2)
+  Title appears in multiple sets: 'Lord Refa' (count=2)
+  Title appears in multiple sets: 'Warren Keffer' (count=2)
+  Title appears in multiple sets: 'Draft' (count=2)
+  Title appears in multiple sets: 'Psi Attack' (count=2)
+  Title appears in multiple sets: 'Chaos Reigns' (count=2)
+  Title appears in multiple sets: 'Border Raid' (count=2)
+  Title appears in multiple sets: 'Colonial Fleet (Narn)' (count=2)
+  Title appears in multiple sets: 'Racial Hatred' (count=2)
+  Title appears in multiple sets: 'Battle Tested' (count=2)
+  Title appears in multiple sets: 'Rally to the Cause' (count=2)
+  Title appears in multiple sets: 'Warleader Shakiri' (count=2)
+  Title appears in multiple sets: 'Ipsha Battleglobe' (count=2)
+  Title appears in multiple sets: 'Lamentations' (count=2)
+  Title appears in multiple sets: 'Military Telepaths' (count=2)
+  Title appears in multiple sets: 'Change of Plans' (count=2)
+  Title appears in multiple sets: 'Destiny Fulfilled' (count=2)
+  Title appears in multiple sets: 'Narn Rabble' (count=2)
+  Title appears in multiple sets: 'Transfer Point Io' (count=2)
+  Title appears in multiple sets: 'Confusion in Chaos' (count=2)
+  Title appears in multiple sets: 'Parliament of Dreams' (count=2)
+  Title appears in multiple sets: 'Saber Rattling' (count=2)
+  Title appears in multiple sets: 'Left Vulnerable' (count=2)
+  Title appears in multiple sets: 'Renowned Victory' (count=2)
+  Title appears in multiple sets: 'Harvest Souls' (count=2)
+  Title appears in multiple sets: 'Cut Supply Lines' (count=2)
+  Title appears in multiple sets: 'Immolan V' (count=2)
+  Title appears in multiple sets: 'War by Popular Decree' (count=2)
+  Title appears in multiple sets: 'Damage Control Team' (count=2)
+  Title appears in multiple sets: 'Witness Protection' (count=2)
+  Title appears in multiple sets: 'Rivalry' (count=2)
+  Title appears in multiple sets: 'Morden' (count=2)
+  Title appears in multiple sets: 'Intrigues Mature' (count=2)
+  Title appears in multiple sets: 'Third Battle Fleet (Minbari)' (count=2)
+  Title appears in multiple sets: 'Infiltrate and Exploit' (count=2)
+  Title appears in multiple sets: 'Human Agent' (count=2)
+  Title appears in multiple sets: 'Durlan' (count=2)
+  Title appears in multiple sets: 'Ranger Strike Team' (count=2)
+  Title appears in multiple sets: 'Deep Space Fleet (Narn)' (count=2)
+  Title appears in multiple sets: 'Successful Manipulation' (count=2)
+  Title appears in multiple sets: 'Lyndisty' (count=2)
+  Title appears in multiple sets: 'Coordinated Fire' (count=2)
+  Title appears in multiple sets: 'Picket Fleet (Centauri)' (count=2)
+  Title appears in multiple sets: 'Refugees' (count=2)
+  Title appears in multiple sets: 'Fleet Support Base' (count=2)
+  Title appears in multiple sets: 'Stop Hostilities' (count=2)
+  Title appears in multiple sets: 'Exploit Opportunities' (count=2)
+  Title appears in multiple sets: 'Assault Troops' (count=2)
+  Title appears in multiple sets: 'Stealth Technology' (count=2)
+  Title appears in multiple sets: 'Moral Quandary' (count=2)
+  Title appears in multiple sets: 'Ja'Doc' (count=2)
+  Title appears in multiple sets: 'Picket Fleet (Minbari)' (count=2)
+  Title appears in multiple sets: 'Du'Rog' (count=2)
+  Title appears in multiple sets: 'Forced Commitment' (count=2)
+  Title appears in multiple sets: 'Judgment by Success' (count=2)
+  Title appears in multiple sets: 'Government Opposition' (count=2)
+  Title appears in multiple sets: 'Forced Evolution' (count=2)
+  Title appears in multiple sets: 'Shadow Strike' (count=2)
+  Title appears in multiple sets: 'Energy Mines' (count=2)
+  Title appears in multiple sets: 'Adira Tyree' (count=2)
+  Title appears in multiple sets: 'Finish the War' (count=2)
+  Title appears in multiple sets: 'Fleet of the Line' (count=2)
+  Title appears in multiple sets: 'Recalled to Service' (count=2)
+  Title appears in multiple sets: 'In the Line of Duty' (count=2)
+  Title appears in multiple sets: 'Babylon 5 Unrest' (count=2)
+  Title appears in multiple sets: 'Short Term Investment' (count=2)
+  Title appears in multiple sets: 'Colonial Fleet (Minbari)' (count=2)
+  Title appears in multiple sets: 'Temptations' (count=2)
+  Title appears in multiple sets: 'G'Kar' (count=2)
+  Title appears in multiple sets: 'Second Battle Fleet (Centauri)' (count=2)
+  Title appears in multiple sets: 'Disaffected Narn' (count=2)
+  Title appears in multiple sets: 'Sabotage' (count=2)
+  Title appears in multiple sets: 'Senator Voudreau' (count=2)
+  Title appears in multiple sets: 'Crisis of Self' (count=2)
+  Title appears in multiple sets: 'Isolated' (count=2)
+  Title appears in multiple sets: 'General Franklin' (count=2)
+  Title appears in multiple sets: 'Garrison Fleet' (count=2)
+  Title appears in multiple sets: 'Power Posturing' (count=2)
+  Title appears in multiple sets: 'Personal Enemies' (count=2)
+  Title appears in multiple sets: 'The Hope of Peace' (count=2)
+  Title appears in multiple sets: 'Total War' (count=2)
+  Title appears in multiple sets: 'Repairing the Past' (count=2)
+  Title appears in multiple sets: 'Na'Far' (count=2)
+  Title appears in multiple sets: 'Support of the Mighty' (count=2)
+  Title appears in multiple sets: 'War Hero' (count=2)
+  Title appears in multiple sets: 'Personal Protection' (count=2)
+  Title appears in multiple sets: 'No Escape' (count=2)
+  Title appears in multiple sets: 'Carpe Diem' (count=2)
+  Title appears in multiple sets: 'Wind Swords' (count=2)
+  Title appears in multiple sets: 'Defame Ambassador' (count=2)
+  Title appears in multiple sets: 'Public Apology' (count=2)
+  Title appears in multiple sets: 'Protests' (count=2)
+  Title appears in multiple sets: 'Catherine Sakai' (count=2)
+  Title appears in multiple sets: 'Vital Interests' (count=2)
+  Title appears in multiple sets: 'Trade Windfall' (count=2)
+  Title appears in multiple sets: 'Servants of Order' (count=2)
+  Title appears in multiple sets: 'Military Cadre' (count=2)
+  Title appears in multiple sets: 'Second Battle Fleet (Human)' (count=2)
+  Title appears in multiple sets: 'Proxima III' (count=2)
+  Title appears in multiple sets: 'For the Common Good' (count=2)
+  Title appears in multiple sets: 'Crusade' (count=2)
+  Title appears in multiple sets: 'Colonial Fleet (Centauri)' (count=2)
+  Title appears in multiple sets: 'Liquidating Assets' (count=2)
+  Title appears in multiple sets: 'Who Are You?' (count=2)
+  Title appears in multiple sets: 'Terrorist Bombings' (count=2)
+  Title appears in multiple sets: 'Utility Fleet (Narn)' (count=2)
+  Title appears in multiple sets: 'Purge the Disloyal' (count=2)
+  Title appears in multiple sets: 'Vorlon Enhancement' (count=2)
+  Title appears in multiple sets: 'Growth in Chaos' (count=2)
+  Title appears in multiple sets: 'Strength in Adversity' (count=2)
+  Title appears in multiple sets: 'Subliminal Influence' (count=2)
+  Title appears in multiple sets: 'Shadow Assault' (count=2)
+  Title appears in multiple sets: 'Reverse Advances' (count=2)
+  Title appears in multiple sets: 'Warleader's Fleet' (count=2)
+  Title appears in multiple sets: 'Paying for Sins' (count=2)
+  Title appears in multiple sets: 'Armed Resistance' (count=2)
+  Title appears in multiple sets: 'Warrior Caste' (count=2)
+  Title appears in multiple sets: 'Meditation' (count=2)
+  Title appears in multiple sets: 'Hate Crime' (count=2)
+  Title appears in multiple sets: 'Kosh Naranek' (count=2)
+  Title appears in multiple sets: 'Long Term Investment' (count=2)
+  Title appears in multiple sets: 'Third Battle Fleet (Centauri)' (count=2)
+  Title appears in multiple sets: 'Influential Lords' (count=2)
+  Title appears in multiple sets: 'Fleets on the Border' (count=2)
+  Title appears in multiple sets: 'Enrage' (count=2)
+  Title appears in multiple sets: 'Chrysalis' (count=2)
+  Title appears in multiple sets: 'Merchandising B5' (count=2)
+  Title appears in multiple sets: 'Lady Ladira' (count=2)
+  Title appears in multiple sets: 'Changing Opinion' (count=2)
+  Title appears in multiple sets: 'Conflicting Desires' (count=2)
+  Title appears in multiple sets: 'Observers' (count=2)
+  Title appears in multiple sets: 'Inevitable Destiny' (count=2)
+  Title appears in multiple sets: 'Picket Fleet (Human)' (count=2)
+  Title appears in multiple sets: 'Working Relationship' (count=2)
+  Title appears in multiple sets: 'Gunboat Diplomacy' (count=2)
+  Title appears in multiple sets: 'Hidden Knowledge' (count=2)
+  Title appears in multiple sets: 'A Brighter Future' (count=2)
+  Title appears in multiple sets: 'Focus Your Efforts' (count=2)
+  Title appears in multiple sets: 'Glory' (count=2)
+  Title appears in multiple sets: 'Strategic Reassignment' (count=2)
+  Title appears in multiple sets: 'Minbari Captain' (count=2)
+  Title appears in multiple sets: 'Disaffected Centauri' (count=2)
+  Title appears in multiple sets: 'The Price of Power' (count=2)
+  Title appears in multiple sets: 'Centauri Aide' (count=2)
+  Title appears in multiple sets: 'Exploitation' (count=2)
+  Title appears in multiple sets: 'Tu'Pari' (count=2)
+  Title appears in multiple sets: 'Bester' (count=2)
+  Title appears in multiple sets: 'Centauri Telepath' (count=2)
+  Title appears in multiple sets: 'Extreme Sanction' (count=2)
+  Title appears in multiple sets: 'Secret Police' (count=2)
+  Title appears in multiple sets: 'Spin Doctors' (count=2)
+  Title appears in multiple sets: 'Alliance' (count=2)
+  Title appears in multiple sets: 'Diplomatic Advantage' (count=2)
+  Title appears in multiple sets: 'Avert Incident' (count=2)
+  Title appears in multiple sets: 'Secret Strike' (count=2)
+  Title appears in multiple sets: 'War College' (count=2)
+  Title appears in multiple sets: 'Minbari Aide' (count=2)
+  Title appears in multiple sets: 'News of Galactic Import' (count=2)
+  Title appears in multiple sets: 'Develop Relationship' (count=2)
+  Title appears in multiple sets: 'Commerce Raiding' (count=2)
+  Title appears in multiple sets: 'Approval of the Grey' (count=2)
+  Title appears in multiple sets: 'Disaffected Human' (count=2)
+  Title appears in multiple sets: 'Competing Interests' (count=2)
+  Title appears in multiple sets: 'What Do You Want?' (count=2)
+  Title appears in multiple sets: 'Diplomatic Corps' (count=2)
+  Title appears in multiple sets: 'Declaration of War' (count=2)
+  Title appears in multiple sets: 'Concentrated Effort' (count=2)
+  Title appears in multiple sets: 'Guilt' (count=2)
+  Title appears in multiple sets: 'Medical Assistance' (count=2)
+EXIT=1
+===== b5ccg.engine.CardSetManifestCrossCheck =====
+== B5-2496 card set manifest cross-check ==
+  files read:    2
+  cards seen:    829
+VERDICT: PASS — 0 violations across 829 cards in 2 file(s).
+EXIT=0
+===== b5ccg.engine.HeadlessCanonicalParityProbe =====
+CANONICAL PARITY PROBE (B5-0003)
+[B5-0003] registry declares 2 sets: PASS
+[B5-0003] every required prefix is stripped by canonicalKey: PASS
+[B5-0003] canonicalKey strips de_: PASS
+[B5-0003] canonicalKey leaves bare ids alone: PASS
+[B5-0003] canonicalKey maps null to null: PASS
+  files read:       2
+  pool ids:         829
+[B5-0003] pool is non-empty: PASS
+[B5-0003] pool holds 829 ids (denominator non-zero): PASS
+  behaviour refs:   97
+[B5-0003] behaviour reference set is non-empty: PASS
+[B5-0003] fixture exemption still referenced: mer_metric_fixture: PASS
+[B5-0003] fixture exemption still referenced: probe_multi_side_conflict: PASS
+[B5-0003] fixture exemption still referenced: enh_mines_rt: PASS
+[B5-0003] every behaviour literal is an exact pool id: FAIL -- 2 dangling: en_h_energy_mines | en_h_mines
+[B5-0003] no unexplained non-canonical literal remains: FAIL -- 2: de_enh_energy_mines | de_enh_mines
+  canonical pairs:  325
+[B5-0003] every canonical collision is a same-title printing pair: PASS
+[B5-0003] mutation 1: a removed dangling literal resolves to zero entries: PASS
+[B5-0003] mutation 2: a changed-title twin is flagged undeclared: PASS
+[B5-0003] mutation 3: a same-title twin is accepted as printings: PASS
+HeadlessCanonicalParityProbe: 15/17 checks passed
+HeadlessCanonicalParityProbe: FAILED (2)
+EXIT=1
+===== b5ccg.engine.HeadlessPrintingDiffTriageProbe =====
+PRINTING-DIFF TRIAGE PROBE (B5-0004)
+[B5-0004] [Adira Tyree] Premiere id resolves through CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Adira Tyree] Deluxe id resolves through CHARACTER_BEHAVIOUR_REFERENCES (canonical routing): PASS
+[B5-0004] [Adira Tyree] Deluxe id resolves through DELUXE_CHARACTER_EFFECTS: PASS
+[B5-0004] [Adira Tyree] Premiere id does NOT resolve through DELUXE_CHARACTER_EFFECTS (D5 separation): PASS
+[B5-0004] [Adira Tyree] Premiere id in behaviourReferences() scan: PASS
+[B5-0004] [Adira Tyree] Deluxe id in behaviourReferences() scan: PASS
+[B5-0004] [Delenn] Premiere id resolves through CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Delenn] Deluxe id resolves through CHARACTER_BEHAVIOUR_REFERENCES (canonical routing): PASS
+[B5-0004] [Delenn] Deluxe id resolves through DELUXE_CHARACTER_EFFECTS: PASS
+[B5-0004] [Delenn] Premiere id does NOT resolve through DELUXE_CHARACTER_EFFECTS (D5 separation): PASS
+[B5-0004] [Delenn] Premiere id in behaviourReferences() scan: PASS
+[B5-0004] [Delenn] Deluxe id in behaviourReferences() scan: PASS
+[B5-0004] [G'Kar] Premiere id resolves through CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [G'Kar] Deluxe id resolves through CHARACTER_BEHAVIOUR_REFERENCES (canonical routing): PASS
+[B5-0004] [G'Kar] Deluxe id resolves through DELUXE_CHARACTER_EFFECTS: PASS
+[B5-0004] [G'Kar] Premiere id does NOT resolve through DELUXE_CHARACTER_EFFECTS (D5 separation): PASS
+[B5-0004] [G'Kar] Premiere id in behaviourReferences() scan: PASS
+[B5-0004] [G'Kar] Deluxe id in behaviourReferences() scan: PASS
+[B5-0004] [Jeffrey Sinclair] Premiere id resolves through CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Jeffrey Sinclair] Deluxe id resolves through CHARACTER_BEHAVIOUR_REFERENCES (canonical routing): PASS
+[B5-0004] [Jeffrey Sinclair] Deluxe id resolves through DELUXE_CHARACTER_EFFECTS: PASS
+[B5-0004] [Jeffrey Sinclair] Premiere id does NOT resolve through DELUXE_CHARACTER_EFFECTS (D5 separation): PASS
+[B5-0004] [Jeffrey Sinclair] Premiere id in behaviourReferences() scan: PASS
+[B5-0004] [Jeffrey Sinclair] Deluxe id in behaviourReferences() scan: PASS
+[B5-0004] [Londo Mollari] Premiere id resolves through CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Londo Mollari] Deluxe id resolves through CHARACTER_BEHAVIOUR_REFERENCES (canonical routing): PASS
+[B5-0004] [Londo Mollari] Deluxe id resolves through DELUXE_CHARACTER_EFFECTS: PASS
+[B5-0004] [Londo Mollari] Premiere id does NOT resolve through DELUXE_CHARACTER_EFFECTS (D5 separation): PASS
+[B5-0004] [Londo Mollari] Premiere id in behaviourReferences() scan: PASS
+[B5-0004] [Londo Mollari] Deluxe id in behaviourReferences() scan: PASS
+[B5-0004] [Intrigues Mature] Premiere id resolves through EVENT_DRAW: PASS
+[B5-0004] [Intrigues Mature] Deluxe id resolves through EVENT_DRAW (canonical routing): PASS
+[B5-0004] [Intrigues Mature] both ids resolve to the SAME value in EVENT_DRAW: PASS
+[B5-0004] [Intrigues Mature] Deluxe id is NOT a direct EVENT_DRAW key (resolved only via canonical routing): PASS
+[B5-0004] [Centauri Agent] Premiere id absent from behaviourReferences(): PASS
+[B5-0004] [Centauri Agent] Deluxe id absent from behaviourReferences(): PASS
+[B5-0004] [Centauri Agent] Premiere id absent from CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Centauri Agent] Deluxe id absent from CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Centauri Aide] Premiere id absent from behaviourReferences(): PASS
+[B5-0004] [Centauri Aide] Deluxe id absent from behaviourReferences(): PASS
+[B5-0004] [Centauri Aide] Premiere id absent from CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Centauri Aide] Deluxe id absent from CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Centauri Captain] Premiere id absent from behaviourReferences(): PASS
+[B5-0004] [Centauri Captain] Deluxe id absent from behaviourReferences(): PASS
+[B5-0004] [Centauri Captain] Premiere id absent from CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] [Centauri Captain] Deluxe id absent from CHARACTER_BEHAVIOUR_REFERENCES: PASS
+[B5-0004] aftermath slug divergence: canonical keys differ: PASS
+[B5-0004] aftermath slug divergence: canon(aftermath_*) is unchanged: PASS
+[B5-0004] aftermath slug divergence: canon(de_am_*) strips to am_* not aftermath_*: PASS
+[B5-0004] mutation 1: direct Map.get misses Deluxe id (no routing): PASS
+[B5-0004] mutation 1: lookupMap resolves Deluxe id via canonical routing: PASS
+[B5-0004] mutation 1: lookupMap resolves to the same value as Premiere: PASS
+HeadlessPrintingDiffTriageProbe: 52/52 checks passed
+HeadlessPrintingDiffTriageProbe: PASSED
+EXIT=0
+===== b5ccg.model.EffectCensusChecker =====
+EFFECT CENSUS CHECKER (B5-0005)
+  premiere records: 446
+  deluxe records:   383
+[B5-0005] premiere holds 446 records: PASS
+[B5-0005] deluxe holds 383 records: PASS
+[B5-0005] pool holds 446 unique titles: PASS
+[B5-0005] every deluxe title is also a premiere title: PASS
+[B5-0005] census schema_version is 1: PASS
+[B5-0005] census carries a taxonomy array: PASS
+[B5-0005] taxonomy is exactly the 14 closed A2 classes: PASS
+[B5-0005] census carries a records array: PASS
+[B5-0005] census holds 446 records: PASS
+[B5-0005] every census title appears exactly once: PASS
+[B5-0005] no pool title is unclassified: PASS
+[B5-0005] no census title is outside the pool: PASS
+[B5-0005] every primary class is in the closed taxonomy: PASS
+[B5-0005] printing/type fields agree with the pool: PASS
+[B5-0005] every starter-deck id maps to a pool title: PASS
+[B5-0005] starter flags equal the deck-list title set: PASS
+  starter titles:   146
+[B5-0005] fixture exemption still referenced: mer_metric_fixture: PASS
+[B5-0005] fixture exemption still referenced: probe_multi_side_conflict: PASS
+[B5-0005] fixture exemption still referenced: enh_mines_rt: PASS
+[B5-0005] every live behaviour literal names a pool title: FAIL -- 2: [en_h_energy_mines, en_h_mines]
+[B5-0005] covered flags equal the live behaviour-reference title set: PASS
+  covered titles:   58
+  ── class table ──
+  AGENDA_WIN      26
+  BESPOKE         6
+  CONFLICT_VARIANT59
+  COST_MODIFIER   7
+  DECK_HAND       33
+  ONE_SHOT        93
+  RESTRICTION     30
+  STAT_MODIFIER   63
+  TRAIT_ONLY      19
+  TRIGGERED       67
+  VANILLA         43
+[B5-0005] class counts sum to 446: PASS
+[B5-0005] mutation 1: a dropped title is detected as unclassified: PASS
+[B5-0005] mutation 2: an unknown class is outside the taxonomy: PASS
+[B5-0005] mutation 3: a wrong starter flag is detected: PASS
+EffectCensusChecker: 24/25 checks passed
+EffectCensusChecker: FAILED (1)
+EXIT=1
+===== b5ccg.engine.HeadlessRulebookPinProbe =====
+=== B5-0002 rulebook pin probe ===
+  [PIN] rulebook file found: PASS
+Rulebook: ..\BABYLON5_CCG_RULEBOOK.md
+  [PIN] rulebook readable: PASS
+  [PIN] rulebook is 134586 bytes: PASS
+  [PIN] rulebook SHA-256 equals the pin: PASS
+  [PIN] rulebook holds 1236 LF lines: PASS
+  [PIN] rulebook carries the UTF-8 BOM (part of the pinned bytes): PASS
+  [PIN] rulebook is strict-UTF-8 decodable: PASS
+  [PIN] rulebook line total reconciles (1236 total, 689 non-blank): PASS
+  [PIN] mojibake set is exactly the three known email-protection lines: PASS
+  [PIN] premiere.json found: PASS
+  [PIN] premiere.json is strict-UTF-8 decodable: PASS
+  [PIN] premiere.json carries no U+00C2 mojibake marker: PASS
+  [PIN] premiere.json carries no U+FFFD replacement character: PASS
+  [PIN] deluxe.json found: PASS
+  [PIN] deluxe.json is strict-UTF-8 decodable: PASS
+  [PIN] deluxe.json carries no U+00C2 mojibake marker: PASS
+  [PIN] deluxe.json carries no U+FFFD replacement character: PASS
+  [PIN] index.json found: PASS
+  [PIN] index.json is strict-UTF-8 decodable: PASS
+  [PIN] index.json carries no U+00C2 mojibake marker: PASS
+  [PIN] index.json carries no U+FFFD replacement character: PASS
+
+RULEBOOK PIN: PASS (21/21 checks passed)
+EXIT=0
+===== b5ccg.model.HeadlessAftermathDetachProbe =====
+=== DETACH1: attach / detach frees the D4 name slot ===
+  [PASS] DETACH1.1 attach succeeds on an empty target
+  [PASS] DETACH1.2 one card is registered on the target
+  [PASS] DETACH1.3 D4 blocks a second same-named copy while attached
+  [PASS] DETACH1.4 detach of the attached instance returns true
+  [PASS] DETACH1.5 registry is empty after detach
+  [PASS] DETACH1.6 the D4 name slot is free again in the same round
+  [PASS] DETACH1.7 the freed name is actually re-attachable
+=== DETACH2: removal matches by instance, not by title ===
+  [PASS] DETACH2.1 detach of a different same-titled instance returns false
+  [PASS] DETACH2.2 that failed detach left the registry untouched
+  [PASS] DETACH2.3 D4 still blocks the other copy after the refused detach
+  [PASS] DETACH2.4 two different titles both attach
+  [PASS] DETACH2.5 removing one leaves the other instance intact
+  [PASS] DETACH2.6 the removed title is free and the retained one is not
+=== DETACH3: a refused detach changes nothing ===
+  [PASS] DETACH3.1 detaching an unattached card returns false
+  [PASS] DETACH3.2 detaching an already-removed card returns false
+  [PASS] DETACH3.3 detaching from the wrong target returns false
+  [PASS] DETACH3.4 the wrong target's registry stays empty
+  [PASS] DETACH3.5 a null card is refused, not thrown
+  [PASS] DETACH3.6 a null target is refused, not thrown
+  [PASS] DETACH3.7 every refusal left the count unchanged
+=== DETACH4: pre-existing behaviour is unchanged ===
+  [PASS] DETACH4.1 targets keep independent registries
+  [PASS] DETACH4.2 detaching from one target leaves the other's attached
+  [PASS] DETACH4.3 B5-0637 round-boundary clear still frees every target
+  [PASS] DETACH4.4 the registry accepts a fresh attach after the clear
+
+AFTERMATH-DETACH PROBE: 24/24 checks passed
+AFTERMATH-DETACH PROBE: PASSED
+EXIT=0
+===== b5ccg.ui.GameBoardAgendaBandTest =====
+B5-2753: agenda band and fleets header must not collide (ui)
+  ok   colour roles are distinct: line 1150 vs line 1226
+  ok   colour roles are distinct: line 1150 vs line 1160
+  ok   colour roles are distinct: line 1226 vs line 1160
+  ok   control: the fleets header is actually painted
+  ok   control: no agenda line is painted without an agenda
+  ok   the agenda line is painted when the player holds an agenda
+  ok   the fleets header is still painted with an agenda
+  ok   the fleets header moves DOWN when an agenda is added
+  ok   the fleets header clears the agenda line entirely
+  ok   the fleets header never moves UP onto the agenda line
+  ok   precondition: the aftermaths line is painted when one is attached
+  ok   precondition: that line is painted exactly once
+  ok   the fleets header moves DOWN again for a second readout line
+  ok   the fleets header still clears the agenda line with both readouts
+  ok   exactly one agenda line band is painted (found 1)
+  ok   nothing agenda-coloured is painted in the deck/hand footer band
+  ok   no row carries both the agenda line and the fleets header
+  ok   no row carries both the agenda line and the aftermaths line
+
+checks run: 18, failures: 0
+PASS: GameBoardAgendaBandTest
+EXIT=0
+===== b5ccg.ui.TrackerColumnFitTest =====
+B5-2754: tracker columns must fit their own text (ui)
+  ok   influence bar is at most 12 chars wide
+  ok   influence bar at full Power stays within that
+  ok   influence bar is not the old 30-hash wall
+  ok   influence bar marks the Standard-Victory floor
+  ok   influence tracker: every label fits its measured text
+  ok   tension tracker: every label fits its measured text
+  ok   influence tracker max width exceeds its preferred width
+  ok   tension tracker max width exceeds its preferred width
+  ok   influence heading is not a clipped fragment
+  ok   tension heading is not a clipped fragment
+  ok   the longest seat name fits the tension name column
+  ok   the (open) value fits the tension value column
+
+checks run: 12, failures: 0
+PASS: TrackerColumnFitTest
+EXIT=0
+===== b5ccg.ui.MainWindowToolbarLayoutTest =====
+=== MainWindow action-window smoke check (B5-2410) ===
+  [TUI] --- construction, off screen, never shown ---
+  [TUI] MainWindow constructs with no exception: PASS
+  [TUI] the smoke-check window is never shown: PASS
+  [TUI] the window has a populated content pane: PASS
+  [TUI] construction shows no owned window: PASS
+  [TUI] dispose releases the owned Action window: PASS
+  [TUI] --- B5-2410 main frame keeps three rows, no action scroller ---
+  [TUI] the toolbar panel is in the frame (filter row + primary row): PASS
+  [TUI] the phase banner is still reachable from the main frame: PASS
+  [TUI] the initiative readout is still reachable from the main frame: PASS
+  [TUI] the status line is still reachable from the main frame: PASS
+  [TUI] the main frame holds no scroll pane of action buttons: PASS
+  [TUI] --- B5-2410 Action dialog holds the secondary controls ---
+  [TUI] the Action dialog is owned by the frame: PASS
+  [TUI] the Action dialog shows exactly with the frame: PASS
+  [TUI] the Action dialog is non-modal (never blocks the game): PASS
+  [TUI] the Action dialog is not resizable (the row cannot wrap and clip): PASS
+  [TUI] the dialog refuses a close click (always-visible promise): PASS
+  [TUI] the action row lives in a scroll pane in the dialog: PASS
+  [TUI] the dialog's action row carries a permanent horizontal scrollbar: PASS
+  [TUI] the dialog's action row has no vertical scrollbar (one row tall by design): PASS
+  [TUI] the dialog holds the secondary action buttons (38): PASS
+  [TUI] every secondary action control lives in the dialog: PASS
+  [TUI] the primary Pass button stays in the main frame: PASS
+  [TUI] the action row is fully visible vertically (103 >= 33): PASS
+  [TUI] the dialog parks with an off-screen frame: PASS
+  [TUI] hiding the frame hides the Action dialog: PASS
+  [TUI] --- B5-2410 arrangement fits 1366x768 ---
+  [TUI] the frame minimum fits 1366x768 (1100x760): PASS
+  [TUI] every always-visible main-frame row fits 1366 (1352 <= 1366): PASS
+  [TUI] the Action dialog fits 768 vertically (144 <= 768): PASS
+  [TUI] --- phase banner is reachable and readable ---
+  [TUI] the phase banner exists: PASS
+  [TUI] the phase banner is still reachable from the window hierarchy: PASS
+  [TUI] the phase banner text is not blank (Phase: ACTION  (TuiHuman's turn)): PASS
+  [TUI] the phase banner lives in the main frame, not the Action dialog: PASS
+  [TUI] --- B5-2424 collapsible reference panels ---
+  [TUI] the frame has a JMenuBar: PASS
+  [TUI] the menu bar has at least one menu (View): PASS
+  [TUI] a View menu exists: PASS
+  [TUI] Filter / Sort menu item exists: PASS
+  [TUI] Conflict Participants menu item exists: PASS
+  [TUI] Game Log menu item exists: PASS
+  [TUI] Filter / Sort starts unselected: PASS
+  [TUI] Conflict Participants starts unselected: PASS
+  [TUI] Game Log starts unselected: PASS
+  [TUI] logScroll is reachable from the content pane: PASS
+  [TUI] joinPanel is reachable from the content pane: PASS
+  [TUI] filterPanel is reachable from the content pane: PASS
+  [TUI] logScroll is hidden by default: PASS
+  [TUI] joinPanel is hidden by default: PASS
+  [TUI] filterPanel is hidden by default: PASS
+  [TUI] selecting Filter / Sort shows the panel: PASS
+  [TUI] deselecting Filter / Sort hides the panel: PASS
+  [TUI] selecting Conflict Participants shows the panel: PASS
+  [TUI] deselecting Conflict Participants hides the panel: PASS
+  [TUI] selecting Game Log shows the panel: PASS
+  [TUI] deselecting Game Log hides the panel: PASS
+MAIN WINDOW TOOLBAR LAYOUT TEST PASSED (52 checks)
+EXIT=0
+===== b5ccg.ui.MainWindowLeadFleetControlTest =====
+=== MainWindow lead fleet control regression ===
+  [LFCUI] --- the lead-fleet control exists and is wired ---
+  [LFCUI] leadFleetButton is constructed: PASS
+  [LFCUI] leadFleetButton is labelled Lead Fleet: PASS
+  [LFCUI] leadFleetButton carries a click handler: PASS
+  [LFCUI] leadFleetButton starts disabled before the first refresh: PASS
+  [LFCUI] leadFleetSelector is constructed: PASS
+  [LFCUI] --- enablement is the engine's verdict ---
+  [LFCUI] no fleet selected yet -> button disabled: PASS
+  [LFCUI] selector disabled before character selection: PASS
+  [LFCUI] character selected -> fleet selector populated with 1 fleet: PASS
+  [LFCUI] ACTION phase + valid leader + eligible fleet -> button ENABLES: PASS
+  [LFCUI] DRAW phase -> button DISABLED (not the human's action turn): PASS
+  [LFCUI] no eligible (unrotated, unled) fleet -> selector shows '(no eligible fleet)': PASS
+  [LFCUI] no eligible fleet -> button DISABLED: PASS
+  [LFCUI] --- the submitted LEAD_FLEET action really leads ---
+  [LFCUI] leader is unrotated and fleet has no leader before submit: PASS
+  [LFCUI] canLeadFleet is true before dispatch: PASS
+  [LFCUI] dispatch rotates the leader: PASS
+  [LFCUI] dispatch links the fleet to the leader: PASS
+  [LFCUI] fleet effective military now includes leader's Leadership: PASS
+MAIN WINDOW LEAD FLEET CONTROL TEST PASSED (17 checks)
+EXIT=0
+===== b5ccg.ui.MainWindowAgendaLifecycleControlTest =====
+=== MainWindow agenda lifecycle control regression ===
+  [AGUI] --- the agenda controls exist and are wired ---
+  [AGUI] discardAgendaButton is constructed: PASS
+  [AGUI] replaceAgendaButton is constructed: PASS
+  [AGUI] revealAgendaButton is constructed: PASS
+  [AGUI] discardAgendaButton is labelled Discard Agenda: PASS
+  [AGUI] replaceAgendaButton is labelled Replace Agenda: PASS
+  [AGUI] revealAgendaButton is labelled Reveal Agenda: PASS
+  [AGUI] discardAgendaButton carries a click handler: PASS
+  [AGUI] replaceAgendaButton carries a click handler: PASS
+  [AGUI] revealAgendaButton carries a click handler: PASS
+  [AGUI] all three agenda controls start disabled before the first refresh: PASS
+  [AGUI] --- enablement is the engine's verdict ---
+  [AGUI] canDiscardAgenda is true for the installed minor agenda: PASS
+  [AGUI] canRevealAgenda is false for a face-up agenda: PASS
+  [AGUI] discardAgendaButton ENABLES for a minor agenda on the ACTION turn: PASS
+  [AGUI] revealAgendaButton stays DISABLED for a face-up agenda: PASS
+  [AGUI] replaceAgendaButton stays DISABLED with no agenda selected: PASS
+  [AGUI] canReplaceAgenda is true for the selected in-hand agenda: PASS
+  [AGUI] replaceAgendaButton ENABLES once a legal replacement is selected: PASS
+  [AGUI] revealAgendaButton ENABLES for a face-down agenda: PASS
+  [AGUI] discardAgendaButton is still lit for a hidden MINOR agenda: PASS
+  [AGUI] canDiscardAgenda is false for a Major agenda: PASS
+  [AGUI] discardAgendaButton DISABLES for a Major agenda: PASS
+  [AGUI] discardAgendaButton RELABELS itself for a Major agenda: PASS
+  [AGUI] the disabled Major discard control names the replacement path: PASS
+  [AGUI] --- outside the human ACTION turn everything is dark ---
+  [AGUI] the engine WOULD allow the discard outside ACTION phase: PASS
+  [AGUI] discardAgendaButton stays DISABLED in DRAW phase: PASS
+  [AGUI] replaceAgendaButton stays DISABLED in DRAW phase: PASS
+  [AGUI] revealAgendaButton stays DISABLED in DRAW phase: PASS
+  [AGUI] discardAgendaButton stays DISABLED when the seat is not asked: PASS
+  [AGUI] discardAgendaButton stays DISABLED with no agenda installed: PASS
+  [AGUI] replaceAgendaButton stays DISABLED with no agenda installed: PASS
+  [AGUI] revealAgendaButton stays DISABLED with no agenda installed: PASS
+  [AGUI] --- the submitted DISCARD_AGENDA really discards ---
+  [AGUI] clicking Discard submits a DISCARD_AGENDA: PASS
+  [AGUI] the submitted action carries the INSTALLED agenda: PASS
+  [AGUI] the agenda is still installed before dispatch: PASS
+  [AGUI] dispatch clears the agenda slot: PASS
+  [AGUI] dispatch puts the discarded agenda in the discard pile: PASS
+  [AGUI] discardAgendaButton goes dark once the slot is empty: PASS
+  [AGUI] --- the submitted REVEAL_AGENDA really reveals ---
+  [AGUI] clicking Reveal submits a REVEAL_AGENDA: PASS
+  [AGUI] the submitted action carries the face-down agenda: PASS
+  [AGUI] the agenda is still face-down before dispatch: PASS
+  [AGUI] dispatch turns the agenda face up: PASS
+  [AGUI] the revealed agenda stays installed: PASS
+  [AGUI] revealAgendaButton goes dark once the agenda is face up: PASS
+  [AGUI] --- the submitted REPLACE_AGENDA really replaces ---
+  [AGUI] clicking Replace submits a REPLACE_AGENDA: PASS
+  [AGUI] the submitted action carries the SELECTED agenda: PASS
+  [AGUI] the submitted action carries the unrotated Inner Circle leader: PASS
+  [AGUI] the leader has not rotated before dispatch: PASS
+  [AGUI] the selected agenda is still in hand before dispatch: PASS
+  [AGUI] dispatch rotates the Inner Circle leader: PASS
+  [AGUI] dispatch installs the new agenda: PASS
+  [AGUI] dispatch removes the new agenda from hand: PASS
+  [AGUI] the replaced agenda is no longer installed: PASS
+  [AGUI] replaceAgendaButton goes dark again once the selection is consumed: PASS
+MAIN WINDOW AGENDA LIFECYCLE CONTROL TEST PASSED (53 checks)
+EXIT=0
+===== DONE =====

@@ -1,0 +1,89 @@
+=== B5 CCG Build ===
+Source: /c/temp/projects/b5ccg/b5ccg/src
+Output: /c/temp/projects/b5ccg/b5ccg/out
+Compiling 189 source files…
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resources…
+
+✓ Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 31 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 189  |  Compiled class count: 577
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      11586ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5522ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5064ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      1247ms   PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      185485ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      180ms    PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      168ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      182ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      196ms    PASS       b5ccg.engine.HeadlessDrawRoundProbe
+1      217ms    FAIL       b5ccg.engine.HeadlessJoinTimingProbe
+0      282ms    PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      183ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      383ms    PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      142ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      370ms    PASS       b5ccg.engine.HeadlessWarConflictProbe
+0      10623ms  PASS       b5ccg.engine.HeadlessRaceStateProbe
+0      168ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      186ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      245ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+0      249ms    PASS       b5ccg.engine.CardSetManifestChecker
+0      230ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+0      275ms    PASS       b5ccg.engine.HeadlessCanonicalParityProbe
+0      132ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+0      274ms    PASS       b5ccg.model.EffectCensusChecker
+0      238ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      165ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      1683ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      1564ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      2824ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      1458ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      2116ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 30 passed, 1 failed (of 31 gate classes run)
+Total gate time: 233637ms
+Per-class logs: out_gate/
+
+FAILING-NAME SET (compare by name, never by count):
+  - b5ccg.engine.HeadlessJoinTimingProbe
+
+----- tail of b5ccg.engine.HeadlessJoinTimingProbe (out_gate/HeadlessJoinTimingProbe.log) -----
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+B5-4160: join-timing — queued declaration, deferred resolution
+  [PASS] S1: conflict queued (activeConflict set after initiate)
+  [PASS] S1: conflict is in the queue
+  [PASS] S1: initiator's hand no longer has the conflict card
+  [PASS] S2: initiator ambassador NOT auto-committed at declaration
+  [PASS] S2: initiator is on support side but with no committed cards
+  [PASS] S3: joiner NOT auto-collected during resolution setup (not yet resolved)
+  [FAIL] S3: after resolution, joiner still NOT a participant (AI auto-join removed)
+  [PASS] S4: first conflict queued as activeConflict
+  [PASS] S4: second conflict queued, becomes activeConflict
+  [PASS] S4: two conflicts queued in declaration order
+  [PASS] S4: queue drained after resolveQueuedConflicts
+  [PASS] S4: active conflict is null after resolution
+  [PASS] S5: conflict queued, joiner not yet a participant
+  [PASS] S5: joiner joined as support during ACTION phase
+  [PASS] S6: phase stays ACTION during the action round (joins are offered)
+  [PASS] S6: active conflict is live during ACTION phase
+  [PASS] S7: two conflicts queued before resolution
+  [PASS] S7: queue empty after resolution
+  [PASS] S7: active conflict null after resolution
+  [PASS] S7: game not over (both sides had equal commitment)
+B5-4160 join-timing probe: 20 checks, 1 failures.
+----- end b5ccg.engine.HeadlessJoinTimingProbe -----
+
+ERROR: 1 gate class(es) failed. Exit non-zero.

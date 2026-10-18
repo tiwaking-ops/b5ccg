@@ -109,6 +109,89 @@ function Get-LedgerState {
     }
 }
 
+function Insert-LedgerRow {
+    <#
+      B5-0040. Write one row into the ledger's TABLE, preserving ascending id
+      order, instead of appending at end-of-file.
+
+      Why: TASK_LEDGER.md's row table closes mid-file (at the "Future (not yet
+      OPEN...)" prose block). Add-Content therefore placed every row BELOW the
+      table, where lint-ledger.ps1 rejects it as "row outside table". Rows were
+      landing legally-by-the-writer and illegally-by-the-lint at the same time.
+
+      Behaviour:
+        - finds the table by its "| ID |" header
+        - walks the contiguous run of "| B5-nnnn |" rows
+        - inserts before the first row whose id sorts higher than the new id, so
+          ordering stays ascending; after the last table row if the id is highest
+        - falls back to an end-of-file append if no table is found, so the tool
+          still works on a ledger shape it does not recognise rather than
+          silently dropping the row
+
+      This does NOT weaken any B5-2400 guarantee: the caller still re-reads and
+      verifies after every attempt and still treats a clobber as a retry.
+    #>
+    param([string]$Path, [string]$Row)
+
+    $text = [System.IO.File]::ReadAllText($Path)
+    $nl = if ($text.Contains("`r`n")) { "`r`n" } else { "`n" }
+    $lines = [System.Collections.Generic.List[string]]::new()
+    foreach ($l in ($text -split "`r?`n")) { $lines.Add($l) }
+
+    $m = [regex]::Match($Row, '^\|\s*(B5-\d+)')
+    if (-not $m.Success) { throw 'row does not begin with a B5-nnnn id' }
+    $newNum = [int]($m.Groups[1].Value -replace '^B5-', '')
+
+    $headerIdx = -1
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        if ($lines[$i] -match '^\|\s*ID\s*\|') { $headerIdx = $i; break }
+    }
+
+    $insertAt = -1
+    if ($headerIdx -ge 0) {
+        # The table region ends ONLY at the "Future" block, because that is
+        # exactly where lint-ledger.ps1 ends it. An earlier version of this
+        # function stopped at the first prose line instead -- and TASK_LEDGER.md
+        # has prose paragraphs interleaved between rows (reaping notes, session
+        # notes), so it inserted after B5-0024 and left B5-9998 ahead of
+        # B5-0025. Two shipped tools must agree on where the table is; this now
+        # uses the lint's terminator, not a stricter one of its own.
+        $lastRow = -1
+        for ($i = $headerIdx + 1; $i -lt $lines.Count; $i++) {
+            $l = $lines[$i]
+            if ($l -match '^Future') { break }
+            if ($l -match '^\|[\s\-\|:]+\|\s*$') { continue }
+            if ([regex]::Match($l, '^\|\s*(B5-\d+)\s*\|').Success) { $lastRow = $i }
+        }
+        if ($lastRow -ge 0) {
+            $insertAt = $lastRow + 1
+            for ($i = $headerIdx + 1; $i -le $lastRow; $i++) {
+                if ($lines[$i] -match '^Future') { break }
+                $rm = [regex]::Match($lines[$i], '^\|\s*(B5-\d+)\s*\|')
+                if ($rm.Success) {
+                    $n = [int]($rm.Groups[1].Value -replace '^B5-', '')
+                    if ($n -gt $newNum) { $insertAt = $i; break }
+                }
+            }
+        }
+    }
+
+    if ($insertAt -lt 0) {
+        # No recognisable table: fall back to the old behaviour rather than
+        # dropping the row. lint-ledger.ps1 will still flag it if the ledger
+        # does have a table this function failed to find.
+        [System.IO.File]::AppendAllText($Path, $Row)
+        Write-Output '[B5-0040] no row table found; appended at end of file (lint will flag it)'
+        return
+    }
+
+    $lines.Insert($insertAt, ($Row.TrimEnd("`r", "`n")))
+    $out = ($lines -join $nl)
+    if (-not $out.EndsWith($nl)) { $out += $nl }
+    [System.IO.File]::WriteAllText($Path, $out, (New-Object System.Text.UTF8Encoding($false)))
+    Write-Output ("[B5-0040] inserted into table at line {0}" -f ($insertAt + 1))
+}
+
 function Test-RowShape {
     <# B5-0568/B5-0611/B5-0435. Returns $null when the row is acceptable, else the reason. #>
     param([string]$R)
@@ -139,7 +222,7 @@ if ($SelfTest) {
     function New-FixtureLedger([string]$name) {
         $p = Join-Path $tmp $name
         $seed = "| B5-0001 | DONE | seed row one | scope | owner-x | notes |`r`n| B5-0002 | DONE | seed row two | scope | owner-y | notes |`r`n"
-        [System.IO.File]::WriteAllText($p, $seed, (New-Object System.Text.UTF8Encoding($true)))
+        [System.IO.File]::WriteAllText($p, $seed, (New-Object System.Text.UTF8Encoding($false)))
         return $p
     }
     function Run-Append([string]$ledger, [string]$row, [int]$clobber = 0, [int]$attempts = 5) {
@@ -180,7 +263,7 @@ if ($SelfTest) {
     $L3 = New-FixtureLedger 'oldway.json.md'
     $pre3 = [System.IO.File]::ReadAllText($L3)
     Add-Content -LiteralPath $L3 -Value $good -Encoding UTF8
-    [System.IO.File]::WriteAllText($L3, $pre3, (New-Object System.Text.UTF8Encoding($true)))   # the clobber
+    [System.IO.File]::WriteAllText($L3, $pre3, (New-Object System.Text.UTF8Encoding($false)))   # the clobber
     $t3 = [System.IO.File]::ReadAllText($L3)
     Check 'T3 NEGATIVE CONTROL: unverified Add-Content loses the row and reports success' `
         ((Get-IdCount $t3 'B5-9001') -eq 0) `
@@ -284,13 +367,21 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
         Write-Output ("[B5-2400] LANDED (found already present on the re-read before attempt {0}): {1}" -f ($attempt + 1), $id)
         exit 0
     }
-    Add-Content -LiteralPath $LedgerPath -Value $payload -Encoding UTF8 -ErrorAction SilentlyContinue
+    # B5-0040: write into the TABLE, not at EOF. This tool used Add-Content,
+    # which always appends at end-of-file -- but TASK_LEDGER.md's row table
+    # closes mid-file (at the "Future (not yet OPEN...)" block), so every
+    # sanctioned row landed BELOW the table and .agent/tools/lint-ledger.ps1
+    # then rejected it as "row outside table". The sanctioned writer and the
+    # shipped lint disagreed about what a legal row is, and every row needed a
+    # hand-move afterwards. Insertion keeps ID order, which the lint also
+    # requires. All B5-2400 verification below is unchanged.
+    Insert-LedgerRow -Path $LedgerPath -Row $payload
 
     if ($attempt -le $SimulateClobberCount) {
         # Deterministic reproduction of the fleet's read-modify-write clobber, for the first
         # N attempts only. A racing writer loses the race eventually; injecting it forever
         # would make retry futile by construction and would test nothing but the timeout.
-        [System.IO.File]::WriteAllText($LedgerPath, $pre.Text, (New-Object System.Text.UTF8Encoding($true)))
+        [System.IO.File]::WriteAllText($LedgerPath, $pre.Text, (New-Object System.Text.UTF8Encoding($false)))
     }
 
     if ($SettleMs -gt 0) { Start-Sleep -Milliseconds $SettleMs }

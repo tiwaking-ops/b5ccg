@@ -256,7 +256,7 @@ $claim = [ordered]@{
     javac       = $Javac
 }
 $json = ($claim | ConvertTo-Json -Depth 4)
-[IO.File]::WriteAllText($path, $json, [System.Text.Encoding]::UTF8)   # B5-1002 encoding convention
+[IO.File]::WriteAllText($path, $json, (New-Object System.Text.UTF8Encoding($false)))   # B5-1002 encoding convention
 Write-Output ("[B5-1462] CREATED {0} (started_utc tool-stamped {1})" -f $path, $stamp)
 
 $rc = Test-PayloadMtimeAgreement -Path $path -ToleranceMinutes $ToleranceMinutes

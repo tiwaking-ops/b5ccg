@@ -10,7 +10,8 @@ import java.util.*;
  * Loads premiere.json and deluxe.json and asserts:
  *   - Every card has non-null id, title, type, faction, and set
  *   - Every id is unique across both sets
- *   - Every title appears in exactly one set (no cross-set title duplicates)
+ *   - A title appearing in both sets is legal ONLY as a Premiere/Deluxe
+ *     printing pair (B5-0038). Two different cards sharing a title is not.
  * Prints a diff report of any violations.
  *
  * Compiles under Java 6 (javac -source 6 -target 6).
@@ -51,19 +52,37 @@ public class CardSetManifestChecker {
         // Track IDs and titles across both sets
         Map<String, String> idToSet = new HashMap<String, String>(); // id -> set name
         Map<String, String> titleToSet = new HashMap<String, String>(); // title -> set name
-        Map<String, Integer> titleCounts = new HashMap<String, Integer>(); // title -> count across both sets
+        Map<String, List<String>> titleToIds = new HashMap<String, List<String>>(); // title -> every id carrying it
 
         // Check premiere cards
-        checkSetCards(premiereCards, "PREMIERE", idToSet, titleToSet, titleCounts, violations);
+        checkSetCards(premiereCards, "PREMIERE", idToSet, titleToSet, titleToIds, violations);
         // Check deluxe cards
-        checkSetCards(deluxeCards, "DELUXE", idToSet, titleToSet, titleCounts, violations);
+        checkSetCards(deluxeCards, "DELUXE", idToSet, titleToSet, titleToIds, violations);
 
-        // Cross-set title uniqueness: every title appears in exactly one set
-        for (Map.Entry<String, Integer> entry : titleCounts.entrySet()) {
+        // B5-0038 cross-set title check.
+        //
+        // This used to assert that every title appears in exactly ONE set. That
+        // is a pre-two-printing invariant and it is false by design: a title
+        // legitimately exists in both Premiere and Deluxe as two printings of
+        // one card, which is the whole basis of the `de_` id namespace and of
+        // D5 (Deluxe governs where printings differ). B5-0004 already recorded
+        // that this rule "contradicts the two-printing data model", and it
+        // flagged 24 correct printing pairs as violations.
+        //
+        // What is worth protecting is the OTHER failure: two genuinely
+        // DIFFERENT cards sharing a title. So a repeated title is now legal
+        // only as a printing pair - exactly two entries, one per set, whose
+        // ids canonicalise to the same key, with the Deluxe one namespaced.
+        // Anything else is still a violation.
+        for (Map.Entry<String, List<String>> entry : titleToIds.entrySet()) {
             String title = entry.getKey();
-            int count = entry.getValue().intValue();
-            if (count > 1) {
-                violations.add("Title appears in multiple sets: '" + title + "' (count=" + count + ")");
+            List<String> ids = entry.getValue();
+            if (ids.size() < 2) continue;
+
+            String reason = printingPairDefect(ids);
+            if (reason != null) {
+                violations.add("Title '" + title + "' appears " + ids.size()
+                    + " times but is not a clean Premiere/Deluxe printing pair: " + reason);
             }
         }
 
@@ -71,11 +90,53 @@ public class CardSetManifestChecker {
     }
 
     /**
+     * B5-0038. Returns null when {@code ids} is an acceptable printing pair, or
+     * a short reason string when it is not. Acceptable means: exactly two
+     * entries; exactly one bare id and one `de_`-prefixed id; and the two
+     * canonicalise to the same key, i.e. they really are two printings of one
+     * card rather than two different cards that happen to share a title.
+     */
+    static String printingPairDefect(List<String> ids) {
+        if (ids.size() != 2) return "expected exactly 2 entries, found " + ids.size();
+
+        String bare = null;
+        String deluxe = null;
+        for (int i = 0; i < ids.size(); i++) {
+            String id = ids.get(i);
+            if (id.startsWith("de_")) {
+                if (deluxe != null) return "two Deluxe ids: " + deluxe + " and " + id;
+                deluxe = id;
+            } else {
+                if (bare != null) return "two Premiere ids: " + bare + " and " + id;
+                bare = id;
+            }
+        }
+        if (bare == null) return "no Premiere id";
+        if (deluxe == null) return "no de_-prefixed Deluxe id";
+
+        String kb = CardIdNamespaceGuard.canonicalKey(bare);
+        String kd = CardIdNamespaceGuard.canonicalKey(deluxe);
+        if (!kb.equals(kd)) {
+            // Aftermath slug divergence, by design. A reprint of an aftermath
+            // is `de_am_X` against Premiere's `aftermath_X`; the slugs differ
+            // in the am_/aftermath_ portion, so canonicalKey does NOT collapse
+            // them and both printings keep exact pool-id literals. This is the
+            // same exception HeadlessCanonicalParityProbe applies, and it is
+            // documented in CardEffects.behaviourReferences().
+            if (deluxe.startsWith("de_am_") && kb.equals("aftermath_" + deluxe.substring(6))) {
+                return null;
+            }
+            return "canonical keys differ (" + kb + " vs " + kd + ") - different cards sharing a title";
+        }
+        return null;
+    }
+
+    /**
      * Validates cards within a single set.
      */
     private void checkSetCards(List<Map<String, String>> cards, String setName,
                                Map<String, String> idToSet, Map<String, String> titleToSet,
-                               Map<String, Integer> titleCounts, List<String> violations) {
+                               Map<String, List<String>> titleToIds, List<String> violations) {
         for (int i = 0; i < cards.size(); i++) {
             Map<String, String> card = cards.get(i);
 
@@ -101,9 +162,15 @@ public class CardSetManifestChecker {
             if (title == null || title.trim().length() == 0) {
                 violations.add(setName + " card " + (id != null ? id : "at index " + i) + ": missing or empty 'title'");
             } else {
-                // Track title counts for cross-set check
-                Integer prevCount = titleCounts.get(title);
-                titleCounts.put(title, new Integer(prevCount != null ? prevCount.intValue() + 1 : 1));
+                // B5-0038: collect every id carrying this title, so a repeated title can be
+                // validated as a printing pair rather than banned outright.
+                List<String> idsForTitle = titleToIds.get(title);
+                if (idsForTitle == null) {
+                    idsForTitle = new ArrayList<String>();
+                    titleToIds.put(title, idsForTitle);
+                }
+                if (id != null) idsForTitle.add(id);
+                if (!titleToSet.containsKey(title)) titleToSet.put(title, setName);
             }
 
             if (type == null || type.trim().length() == 0) {

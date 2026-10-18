@@ -1,0 +1,4 @@
+=== B5 CCG Build ===
+Source: /c/temp/projects/b5ccg/b5ccg/src
+Output: /c/temp/projects/b5ccg/b5ccg/out
+ERROR: Could not acquire build lock b5ccg_build.lock.dir (another build in progress?)

@@ -10,13 +10,53 @@ set -e
 # translation and work under sh, bash, and MSYS/Git Bash alike.
 cd "$(dirname "$0")" || exit 1
 
+# B5-XXXX build isolation: per-session output directory. B5CCG_OUT_DIR env var
+# overrides the default "out"; unset (default) keeps the shared single-agent
+# flow unchanged.
 SRC="src"
-OUT="out"
+OUT="${B5CCG_OUT_DIR:-out}"
 RES="resources"
+
+# Build isolation lock. Acquired before anything touches $OUT (including rm -rf)
+# and released on success AND failure via the trap below. Uses mkdir atomicity
+# rather than flock because flock is not guaranteed on this host (Windows/Git
+# Bash). A waiting build retries for up to 60s then fails rather than clobbering
+# a concurrent build's output.
+LOCK_DIR="b5ccg_build.lock.dir"
+acquire_lock() {
+  local i=0
+  while true; do
+    if mkdir "$LOCK_DIR" 2>/dev/null; then
+      return 0
+    fi
+    i=$((i+1))
+    if [ "$i" -ge 60 ]; then
+      echo "ERROR: Could not acquire build lock $LOCK_DIR (another build in progress?)"
+      return 1
+    fi
+    sleep 1
+  done
+}
+
+release_lock() {
+  rm -rf "$LOCK_DIR" 2>/dev/null || true
+}
+
+LIST=""
+trap 'release_lock; [ -n "${LIST:-}" ] && rm -f "$LIST"' EXIT INT TERM
 
 echo "=== B5 CCG Build ==="
 echo "Source: $(pwd)/$SRC"
 echo "Output: $(pwd)/$OUT"
+if [ -n "${B5CCG_OUT_DIR:-}" ]; then
+  echo "Output override: B5CCG_OUT_DIR=$B5CCG_OUT_DIR (session-private output dir)"
+fi
+
+# Build isolation: lock before cleaning out/. Serialises concurrent builds so one
+# cannot rm -rf out/ under another. Default B5CCG_OUT_DIR=out serialises default
+# builds on this lock; a session setting B5CCG_OUT_DIR to its own dir still
+# serialises on the single lock (acceptable) and builds into its own directory.
+acquire_lock || exit 1
 
 # B5-3487: clean out/ BEFORE compiling, for the same reason compile.bat does.
 # javac emits a .class for every source that compiled before the first error
@@ -28,17 +68,7 @@ mkdir -p "$OUT"
 
 # B5-0016 (b): the file list is scratch, written INSIDE b5ccg/ as a RELATIVE
 # path and removed on both the success and the failure path by the trap below.
-#
-# Why relative, and not ${TMPDIR}: TMPDIR on this host expands to a MSYS
-# short-name path (/c/Users/TIWAPE~1/AppData/Local/Temp). Handed to the NATIVE
-# Windows javac, that path is not reliably resolvable, and the failure is
-# SILENT — measured on this tree, javac compiled only a subset of the list,
-# exited 0, and compiled-sources later died at runtime with
-# NoClassDefFoundError: b5ccg/engine/RulesEngine over a partially-populated
-# out/ that still carried the build marker. This script already refuses absolute
-# POSIX paths for the same reason (B5-0306), so the temp list follows that rule.
 LIST="b5ccg_compile_list.tmp"
-trap 'rm -f "$LIST"' EXIT INT TERM
 
 # Collect all .java files (relative; one per line in the response file)
 JAVA_FILES=$(find "$SRC" -name "*.java")
@@ -100,23 +130,62 @@ echo "✓ Build successful. Run with: ./run.sh"
 if [ "${RUN_TESTS:-0}" = "1" ]; then
   echo ""
   echo "=== Verification (RUN_TESTS=1) ==="
-  java -cp "$OUT" b5ccg.engine.HeadlessConformanceTest
-  java -cp "$OUT" b5ccg.engine.HeadlessSmokeTest
 
-  # ── Headless gate tier (B5-0956; timing wording corrected B5-0993) ────────
-  # These seven are GATES: each has a pure 0/1 exit contract (a non-zero exit
-  # means a real engine-or-data defect, never an exploratory outcome), and this
-  # gate enforces EXIT CODES ONLY. Timing is deliberately not asserted: the
-  # B5-0982 battery (8 runs per class, 56 total) measured medians 247-580ms
-  # but 3 of 7 classes exceeded 1s on at least one run under host load (max
-  # 2014ms), so the earlier "under 1s" wording was retired to keep it from
-  # hardening into a timing assertion that would flake every compile. The
-  # 8/8-green exit contract held 56/56 against the unseeded deck shuffle
-  # (b5ccg/model/Deck.java uses Collections.shuffle with no seed, so this is
-  # the real variance source, not a pinned one). `set -e` above aborts the
-  # script on the first non-zero exit, so each exit code is honoured without
-  # extra plumbing.
+  # ── Why run-all-and-collect, not `set -e` ──────────────────────────────────
+  # This list used to be invoked as plain sequential `java` lines under `set -e`,
+  # so the FIRST non-zero exit aborted the script and every class after it never
+  # ran. That made the gate structurally incapable of reporting a complete
+  # verdict: a failure at class 5 hid 26 classes, and once class 5 was repaired
+  # the HeadlessJoinTimingProbe S3 failure at class 10 hid the remaining 21,
+  # including the canonical-parity, printing-diff, effect-census, rulebook-pin,
+  # aftermath-detach probes and all five UI suites. Any claim that "the failing
+  # set is empty" from such a run describes only the classes that got to run.
   #
+  # The list below is therefore executed in a loop that records every class's
+  # exit code and elapsed time, prints one summary table, and exits non-zero if
+  # ANY class failed. Comparison is by failing-name set (AGENTS.md §4), never by
+  # count, so the table's stable "CODE CLASS TIME RESULT" shape is the contract.
+  #
+  # The class list is a literal here-doc on purpose. An earlier revision grepped
+  # this file's own source for class names, which made the gate depend on the
+  # text of its own comments — editing a comment could silently change or drop a
+  # gate class. Keep the list here and nowhere else.
+
+  GATE_CLASSES=$(cat <<'GATE_EOF'
+b5ccg.engine.HeadlessConformanceTest
+b5ccg.engine.HeadlessSmokeTest
+b5ccg.engine.B52481HumanPassRoundProbe
+b5ccg.engine.HeadlessDoubleRunProbe
+b5ccg.engine.HeadlessHumanSeatProbe
+b5ccg.engine.HeadlessAIDifficultyContractTest
+b5ccg.ai.HeadlessAIScoreFloorTest
+b5ccg.engine.HeadlessConflictResolutionProbe
+b5ccg.engine.HeadlessDrawRoundProbe
+b5ccg.engine.HeadlessJoinTimingProbe
+b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+b5ccg.engine.HeadlessLeadFleetScenarioProbe
+b5ccg.engine.HeadlessParticipationGatesProbe
+b5ccg.engine.HeadlessStationVictoryTest
+b5ccg.engine.HeadlessWarConflictProbe
+b5ccg.engine.HeadlessRaceStateProbe
+b5ccg.engine.HeadlessBonusFloorProbe
+b5ccg.engine.HeadlessTieBreakProbe
+b5ccg.engine.HeadlessCardIdNamespaceProbe
+b5ccg.engine.CardSetManifestChecker
+b5ccg.engine.CardSetManifestCrossCheck
+b5ccg.engine.HeadlessCanonicalParityProbe
+b5ccg.engine.HeadlessPrintingDiffTriageProbe
+b5ccg.model.EffectCensusChecker
+b5ccg.engine.HeadlessRulebookPinProbe
+b5ccg.model.HeadlessAftermathDetachProbe
+b5ccg.ui.GameBoardAgendaBandTest
+b5ccg.ui.TrackerColumnFitTest
+b5ccg.ui.MainWindowToolbarLayoutTest
+b5ccg.ui.MainWindowLeadFleetControlTest
+b5ccg.ui.MainWindowAgendaLifecycleControlTest
+GATE_EOF
+)
+
   # Deliberately NOT wired here, measured the same pass:
   #   HeadlessReportingTiebreakTest  15.4s - its live round-cap leg reads
   #     NOT_APPLICABLE (0/4 players at 20+) on an ordinary run, so the live
@@ -128,78 +197,131 @@ if [ "${RUN_TESTS:-0}" = "1" ]; then
   #     and harness errors, not verdicts.
   # The last three are soak runners whose runtime alone disqualifies them, and
   # their exit codes carry no pass/fail semantics. Run them on demand.
-  java -cp "$OUT" b5ccg.engine.B52481HumanPassRoundProbe
-  # B5-0008 (WP-07/A5): determinism gates — seeded double-run probe plus the
-  # now-deterministic human-seat probe (Deck seeded, controller derives AI
-  # streams from GameState.getSeed(), seed recorded in replay header).
-  java -cp "$OUT" b5ccg.engine.HeadlessDoubleRunProbe
-  java -cp "$OUT" b5ccg.engine.HeadlessHumanSeatProbe
-  # B5-3487: B52494AgendaMightyCostProbe and B52495AgendaPowerVictoryProbe were
-  # removed from this gate list, not from the repo. Both called agenda-effect
-  # members of RulesEngine/Player/VictoryPathResult that were never authored, so
-  # they were 8 of the 248 compile errors and could not compile at all. They are
-  # preserved verbatim in quarantine/b5ccg_compile_broken_2026-10-08/ and return
-  # here only if the agenda-effect feature is actually built. Leaving the lines in
-  # would make RUN_TESTS=1 fail on a class that does not exist.
-  java -cp "$OUT" b5ccg.engine.HeadlessAIDifficultyContractTest
-  # B5-4146: AIPlayer scoring-floor sentinel test (B5-4136 creation), pure 0/1
-  # exit contract, never wired into the gate until now. Ships alongside its
-  # sibling AI contract test above.
-  java -cp "$OUT" b5ccg.ai.HeadlessAIScoreFloorTest
-  java -cp "$OUT" b5ccg.engine.HeadlessConflictResolutionProbe
-  # B5-4171: Draw round D1-D5 conformance probe (45 checks, 0/1 exit).
-  java -cp "$OUT" b5ccg.engine.HeadlessDrawRoundProbe
-  # B5-4160: join-timing conformance probe (queued declaration, deferred resolution)
-  java -cp "$OUT" b5ccg.engine.HeadlessJoinTimingProbe
-  java -cp "$OUT" b5ccg.engine.HeadlessHumanConflictAttackWindowTest
-  java -cp "$OUT" b5ccg.engine.HeadlessLeadFleetScenarioProbe
-  java -cp "$OUT" b5ccg.engine.HeadlessParticipationGatesProbe
-  java -cp "$OUT" b5ccg.engine.HeadlessStationVictoryTest
-  java -cp "$OUT" b5ccg.engine.HeadlessWarConflictProbe
-  java -cp "$OUT" b5ccg.engine.HeadlessFactionStateProbe
-  # B5-2518: minimum-1-bonus-floor conformance probe (rulebook :673 reading).
-  java -cp "$OUT" b5ccg.engine.HeadlessBonusFloorProbe
-  # 13th Headless class triaged under B5-2718 / B5-0956: pure 0/1 gate contract, wired in.
-  java -cp "$OUT" b5ccg.engine.HeadlessTieBreakProbe
-  # B5-3667: the card-id namespace guards shipped as untracked sources and load
-  # /cards/index.json at runtime; they are pure Java 6 gates with a 0/1 exit
-  # contract, so observe them in the RUN_TESTS=1 pass before anything else.
-  java -cp "$OUT" b5ccg.engine.HeadlessCardIdNamespaceProbe
-  java -cp "$OUT" b5ccg.engine.CardSetManifestChecker
-  java -cp "$OUT" b5ccg.engine.CardSetManifestCrossCheck
-  # B5-0003: canonical-key parity probe (WP-02/A1a, 0/1/2 exit contract).
-  java -cp "$OUT" b5ccg.engine.HeadlessCanonicalParityProbe
-  # B5-0004: printing-diff triage scenario probe (WP-03, 0/1 exit contract).
-  # Verifies both ids resolve for all 9 single-literal printing-diff titles
-  # under canonical-key routing (5 changed-text ambassadors, 1 unchanged event,
-  # 3 VANILLA-no-table characters) plus aftermath slug-divergence negative control.
-  java -cp "$OUT" b5ccg.engine.HeadlessPrintingDiffTriageProbe
-  # B5-0005: effect-census checker (WP-04/A2, 0/1/2 exit contract).
-  java -cp "$OUT" b5ccg.model.EffectCensusChecker
-  # B5-0002: rulebook pin + encoding probe (0/1 exit contract).
-  java -cp "$OUT" b5ccg.engine.HeadlessRulebookPinProbe
-  # B5-4114: GameState.detachAftermath primitive pinned by this probe (24 checks,
-  # DETACH1-D4) but was deliberately not wired when shipped; now observed in the
-  # gate so the D4 name-slot release invariant is continuously verified.
-  java -cp "$OUT" b5ccg.model.HeadlessAftermathDetachProbe
-  # ── UI gate tier (B5-2757) ─────────────────────────────────────────────────
-  # Six UI regression suites, each probed individually to confirm deterministic
-  # green before wiring: GameBoardAgendaBandTest, GameBoardCollapseTest,
-  # TrackerColumnFitTest, MainWindowToolbarLayoutTest,
-  # B5-3487: GameBoardCollapseTest is quarantined (88 of the 248 errors, calling
-  # members of types that were never authored) so it is no longer run here; that
+  #
+  # GameBoardCollapseTest is quarantined (B5-3487: 88 of the 248 errors, calling
+  # members of types that were never authored) so it is not run here; that
   # leaves five UI suites. GameBoardAgendaBandTest survives because its only
   # references to the quarantined class are javadoc {@link} references, which
-  # GameBoardAgendaBandTest's own Javadoc text carries rather than importing it.
-  # MainWindowLeadFleetControlTest, MainWindowAgendaLifecycleControlTest. Every
-  # one has a pure 0/1 exit contract, so set -e honours real exit codes with no
-  # extra plumbing. They all pass deterministically here with no display: each
-  # uses SwingUtilities.invokeAndWait to paint/dispatch off-screen on the EDT
-  # (see b5ccg/ui/MainWindowLeadFleetControlTest for the headless pattern).
-  java -cp "$OUT" b5ccg.ui.GameBoardAgendaBandTest
-  java -cp "$OUT" b5ccg.ui.TrackerColumnFitTest
-  java -cp "$OUT" b5ccg.ui.MainWindowToolbarLayoutTest
-  java -cp "$OUT" b5ccg.ui.MainWindowLeadFleetControlTest
-  java -cp "$OUT" b5ccg.ui.MainWindowAgendaLifecycleControlTest
-  echo "✓ Verification passed."
+  # its own Javadoc text carries rather than importing it.
+
+  COUNT=$(printf '%s\n' "$GATE_CLASSES" | grep -c .)
+  echo "Running $COUNT gate classes (run-all-and-collect; a failure no longer hides later classes)."
+  echo "Source count: $SRC_COUNT  |  Compiled class count: $CLASS_COUNT"
+  echo ""
+
+  # Per-class logs, so a FAIL is diagnosable without re-running by hand.
+  # "${OUT}_gate" keeps the out_*/ gitignore rule that out/ itself uses.
+  GATE_LOG_DIR="${OUT}_gate"
+  rm -rf "$GATE_LOG_DIR"
+  mkdir -p "$GATE_LOG_DIR"
+
+  printf '%-6s %-8s %-10s %s\n' "CODE" "TIME" "RESULT" "CLASS"
+  echo "----------------------------------------------------------------------------"
+
+  TOTAL_TIME=0
+  PASS=0
+  FAIL=0
+  FAILED_NAMES=""
+
+  printf '%s\n' "$GATE_CLASSES" | grep . | while IFS= read -r cls; do
+    [ -n "$cls" ] || continue
+    LOG="$GATE_LOG_DIR/${cls##*.}.log"
+    START=$(date +%s%N 2>/dev/null || echo 0)
+
+    # `set -e` is still in force for the whole script, so the failing command
+    # must be part of an OR-list or the shell exits before CODE is assigned.
+    # `java ... || CODE=$?` makes the assignment happen on failure AND keeps
+    # `set -e` from aborting, which is the entire point of this loop.
+    # `< /dev/null` is REQUIRED, not hygiene. This loop's body runs with stdin
+    # still connected to the `printf | grep` pipe, so `java` inherits that pipe
+    # as its own stdin. Any class that reads a single byte from stdin consumes
+    # the remaining class names, and `read -r cls` then hits EOF and the loop
+    # stops early.
+    #
+    # Measured 2026-10-19 (B5-0026): with stdin inherited the gate recorded only
+    # 4 of 31 classes and exited via the "loop did not complete" guard, leaving
+    # HeadlessHumanSeatProbe.log empty. The same tree with `< /dev/null` ran all
+    # 31 and reported the real failing-name set of 4. Without this the gate
+    # cannot report its own verdict, which is the precondition AGENTS.md section 4
+    # makes every promotion depend on.
+    CODE=0
+    java -cp "$OUT" "$cls" < /dev/null > "$LOG" 2>&1 || CODE=$?
+
+    END=$(date +%s%N 2>/dev/null || echo 0)
+    DURATION=$(( (END - START) / 1000000 ))
+    if [ "$DURATION" -lt 0 ]; then DURATION=0; fi
+    if [ "$CODE" -eq 0 ]; then
+      RES="PASS"
+    else
+      RES="FAIL"
+    fi
+    printf '%-6s %-8s %-10s %s\n' "$CODE" "${DURATION}ms" "$RES" "$cls" > "$GATE_LOG_DIR/.row"
+    cat "$GATE_LOG_DIR/.row"
+    cat "$GATE_LOG_DIR/.row" >> "$GATE_LOG_DIR/table.txt"
+  done
+  rm -f "$GATE_LOG_DIR/.row"
+
+  # The loop above runs in a pipeline subshell, so its counters do not survive.
+  # Derive them from the recorded table instead of trusting subshell state.
+  #
+  # `tee` is NOT used to write the table. A previous revision piped the loop into
+  # `tee table.txt` and then immediately counted the file, which under MSYS can
+  # read it before the final line has been flushed: one real run reported
+  # 26 passed + 4 failed against a 31-row table - a sum that does not add up -
+  # and nothing noticed, because the FAIL branch exited before the count guard
+  # below could fire. Writing each row from the shell itself (`>` then `>>`)
+  # makes the file write synchronous with the loop, so the count always sees
+  # every row. The table still streams live: this gate takes minutes
+  # (HeadlessHumanSeatProbe alone is ~186s), and a gate that prints nothing for
+  # four minutes is indistinguishable from a hung one.
+  #
+  # Counting matches field 3 EXACTLY ("$3==\"PASS\"") rather than grepping for a
+  # ' PASS ' substring. Field comparison is deterministic, and the sum invariant
+  # below makes any future miscount loud instead of quiet.
+  TABLE="$GATE_LOG_DIR/table.txt"
+  PASS=$(awk '$3=="PASS"{n++} END{print n+0}' "$TABLE")
+  FAIL=$(awk '$3=="FAIL"{n++} END{print n+0}' "$TABLE")
+  ROWS=$(awk 'END{print NR+0}' "$TABLE")
+  FAILED_NAMES=$(awk '$3=="FAIL"{print $NF}' "$TABLE")
+  TOTAL_TIME=$(awk '{t+=substr($2,1,length($2)-2)} END{print t+0}' "$TABLE")
+
+  echo "----------------------------------------------------------------------------"
+  echo "Summary: $PASS passed, $FAIL failed (of $COUNT gate classes run)"
+  echo "Total gate time: ${TOTAL_TIME}ms"
+  echo "Per-class logs: $GATE_LOG_DIR/"
+
+  # Invariant first: a table that does not account for every class is a broken
+  # measurement, and must be reported as such BEFORE any verdict is printed.
+  if [ "$ROWS" -ne "$COUNT" ] || [ "$((PASS + FAIL))" -ne "$COUNT" ]; then
+    echo ""
+    echo "ERROR: gate table does not account for every class: $ROWS rows,"
+    echo "       $PASS pass + $FAIL fail, expected $COUNT classes."
+    echo "       Any verdict from this table would be untrustworthy."
+    exit 1
+  fi
+
+  if [ "$FAIL" -gt 0 ]; then
+    echo ""
+    echo "FAILING-NAME SET (compare by name, never by count):"
+    printf '%s\n' "$FAILED_NAMES" | sed 's/^/  - /'
+    echo ""
+    for f in $FAILED_NAMES; do
+      short="${f##*.}"
+      if [ -f "$GATE_LOG_DIR/$short.log" ]; then
+        echo "----- tail of $f ($GATE_LOG_DIR/$short.log) -----"
+        tail -n 25 "$GATE_LOG_DIR/$short.log"
+        echo "----- end $f -----"
+      fi
+    done
+    echo ""
+    echo "ERROR: $FAIL gate class(es) failed. Exit non-zero."
+    exit 1
+  fi
+
+  if [ "$PASS" -ne "$COUNT" ]; then
+    echo "ERROR: table recorded $PASS passes against $COUNT classes; loop did not complete."
+    exit 1
+  fi
+  echo "✓ Verification passed (all $COUNT gate classes)."
 fi
+

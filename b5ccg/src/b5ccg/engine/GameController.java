@@ -513,9 +513,16 @@ public class GameController {
             if (current.isHuman()) {
                 action = waitForHumanAction();
             } else {
+                // B5-0037: getAI returns null when this seat has no registered
+                // AIPlayer. Passing is the only safe move - there is no other
+                // seat's AI we may borrow to decide this seat's action.
                 AIPlayer ai = getAI(current);
-                action = ai.chooseAction(state, current);
-                pause(600);
+                if (ai == null) {
+                    action = GameAction.pass();
+                } else {
+                    action = ai.chooseAction(state, current);
+                    pause(600);
+                }
             }
 
             processAction(current, action);
@@ -613,7 +620,11 @@ public class GameController {
             }
 
             if (aiPlayers.isEmpty()) continue;
-            GameAction decl = getAI(p).chooseDeclaration(state, p);
+            // B5-0037: non-empty list does not guarantee a match for THIS
+            // seat. Skip rather than act with another seat's AI.
+            AIPlayer declaringAi = getAI(p);
+            if (declaringAi == null) continue;
+            GameAction decl = declaringAi.chooseDeclaration(state, p);
             if (decl != null && (decl.getType() == GameAction.Type.INITIATE_CONFLICT
                     || decl.getType() == GameAction.Type.DECLARE_WAR_CONFLICT)) {
                 declarers.add(p);
@@ -1255,26 +1266,40 @@ public class GameController {
         Conflict conflict = state.getActiveConflict();
         if (conflict == null) return;
 
-        for (Player p : state.getPlayers()) {
-            if (p == conflict.getInitiator()) continue;
-            if (p.isHuman()) continue;
-            AIPlayer ai = getAI(p);
-            // B5-0343: the AI picks its side (+1 support, -1 oppose, 0 abstain)
-            // by conflict outcome — the controller no longer hardcodes the
-            // always-oppose default the B5-0310 audit flagged.
-            int side = ai.decideJoinSide(state, p, conflict);
-            if (side != 0) {
-                boolean support = side > 0;
-                // B5-0336: addParticipant is the participation gate — a
-                // refusal means the conflict's restriction rejects this
-                // joiner (logged loudly at the refusal site).
-                if (conflict.addParticipant(p, support)) {                // B5-0309: joiners pick a side
-                    if (p.getAmbassador() != null) {
-                        conflict.commitCard(p, p.getAmbassador(), support);   // B5-0309
-                    }
-                }
-            }
-        }
+        // B5-0039 (owner ruling, 2026-10-19). The AI auto-commit that used to
+        // live here has been REMOVED.
+        //
+        // It ran at conflict *initiation* and called decideJoinSide directly,
+        // committing a character with no action taken by that seat:
+        //
+        //     int side = ai.decideJoinSide(state, p, conflict);
+        //     if (side != 0) { conflict.addParticipant(p, side > 0); ... }
+        //
+        // That was B5-0343, and it contradicted the rules. Participation is a
+        // player action - rotating a card to support or oppose - taken during
+        // the Action round, and it carries stated consequences because a
+        // rotated card can be attacked (RB:V L691) and discarded:
+        //   RB:IV/conflict-cards  L574  characters may rotate to support or
+        //                             oppose during the ACTION round
+        //   RB:V                  L685  characters and fleets may rotate to
+        //                             support or oppose a conflict
+        //   RB:VI/sample-conflict L755  participation is a deliberate,
+        //                             cost-bearing choice; L757 a player may
+        //                             simply pass instead
+        // Nothing there authorises the controller to rotate a card on a seat's
+        // behalf. HeadlessJoinTimingProbe S3 had been pinning the correct
+        // behaviour ("AI auto-join removed") since B5-4160, against this.
+        //
+        // The AI still participates - through the ordinary action pipeline.
+        // AIPlayer offers JOIN_CONFLICT_SUPPORT / JOIN_CONFLICT_OPPOSE from
+        // decideJoinSide when a conflict is live (AIPlayer.java:631-635) and
+        // executes them in chooseAction (AIPlayer.java:1165-1169). That path is
+        // untouched; the auto-commit was a duplicate of it, not its source.
+        // Declining to join is also legal: RB:VI/sample-conflict L757 has a
+        // player pass "claiming no interest in the conflict".
+        //
+        // The human join window below is likewise unchanged and still submits
+        // JOIN_CONFLICT_* through the same action types.
 
         // B5-0363: the human receives a real decision window after the AI
         // seats have chosen and before mandatory participation/resolution.
@@ -1905,11 +1930,27 @@ public class GameController {
         }
     }
 
+    /** B5-0037: returns the AIPlayer wrapper for `p`, or **null** when none is
+     *  registered for that seat.
+     *
+     *  Previously this method ended in `return aiPlayers.get(0);`. That was
+     *  wrong twice over. With an EMPTY list it threw
+     *  IndexOutOfBoundsException (HeadlessJoinTimingProbe, at the old line
+     *  1912). With a NON-EMPTY list in which `p` had no entry it returned
+     *  `aiPlayers.get(0)` - the wrapper belonging to a **different seat** -
+     *  which is worse than a crash because it silently makes one player's
+     *  decisions on another's behalf.
+     *
+     *  "No match" is now null. Every caller must handle it:
+     *   - runTurn  (this class, ~line 516)
+     *   - declaration pass (~line 616)
+     *   - openConflictParticipation (~line 1261)
+     *  Each is guarded; do not add a fourth call site without a guard. */
     private AIPlayer getAI(Player p) {
         for (AIPlayer ai : aiPlayers) {
             if (ai.getPlayer() == p) return ai;
         }
-        return aiPlayers.get(0);
+        return null;
     }
 
     private void notifyUI() {

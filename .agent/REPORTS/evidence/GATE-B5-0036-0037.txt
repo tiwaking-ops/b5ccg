@@ -1,0 +1,117 @@
+=== B5 CCG Build ===
+Source: /c/temp/projects/b5ccg/b5ccg/src
+Output: /c/temp/projects/b5ccg/b5ccg/out
+Compiling 189 source files…
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resources…
+
+✓ Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 31 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 189  |  Compiled class count: 577
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      11487ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5290ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5047ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      931ms    PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      185465ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      180ms    PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      152ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      177ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      153ms    PASS       b5ccg.engine.HeadlessDrawRoundProbe
+1      198ms    FAIL       b5ccg.engine.HeadlessJoinTimingProbe
+0      263ms    PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      179ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      340ms    PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      168ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      495ms    PASS       b5ccg.engine.HeadlessWarConflictProbe
+0      14610ms  PASS       b5ccg.engine.HeadlessRaceStateProbe
+0      143ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      157ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      243ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+1      269ms    FAIL       b5ccg.engine.CardSetManifestChecker
+0      266ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+0      272ms    PASS       b5ccg.engine.HeadlessCanonicalParityProbe
+0      133ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+0      281ms    PASS       b5ccg.model.EffectCensusChecker
+0      235ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      154ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      1845ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      1588ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      2867ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      1505ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      2162ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 29 passed, 2 failed (of 31 gate classes run)
+Total gate time: 237255ms
+Per-class logs: out_gate/
+
+FAILING-NAME SET (compare by name, never by count):
+  - b5ccg.engine.HeadlessJoinTimingProbe
+  - b5ccg.engine.CardSetManifestChecker
+
+----- tail of b5ccg.engine.HeadlessJoinTimingProbe (out_gate/HeadlessJoinTimingProbe.log) -----
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+B5-4160: join-timing — queued declaration, deferred resolution
+  [PASS] S1: conflict queued (activeConflict set after initiate)
+  [PASS] S1: conflict is in the queue
+  [PASS] S1: initiator's hand no longer has the conflict card
+  [PASS] S2: initiator ambassador NOT auto-committed at declaration
+  [PASS] S2: initiator is on support side but with no committed cards
+  [PASS] S3: joiner NOT auto-collected during resolution setup (not yet resolved)
+  [FAIL] S3: after resolution, joiner still NOT a participant (AI auto-join removed)
+  [PASS] S4: first conflict queued as activeConflict
+  [PASS] S4: second conflict queued, becomes activeConflict
+  [PASS] S4: two conflicts queued in declaration order
+  [PASS] S4: queue drained after resolveQueuedConflicts
+  [PASS] S4: active conflict is null after resolution
+  [PASS] S5: conflict queued, joiner not yet a participant
+  [PASS] S5: joiner joined as support during ACTION phase
+  [PASS] S6: phase stays ACTION during the action round (joins are offered)
+  [PASS] S6: active conflict is live during ACTION phase
+  [PASS] S7: two conflicts queued before resolution
+  [PASS] S7: queue empty after resolution
+  [PASS] S7: active conflict null after resolution
+  [PASS] S7: game not over (both sides had equal commitment)
+B5-4160 join-timing probe: 20 checks, 1 failures.
+----- end b5ccg.engine.HeadlessJoinTimingProbe -----
+----- tail of b5ccg.engine.CardSetManifestChecker (out_gate/CardSetManifestChecker.log) -----
+  Title appears in multiple sets: 'Exploitation' (count=2)
+  Title appears in multiple sets: 'Tu'Pari' (count=2)
+  Title appears in multiple sets: 'Bester' (count=2)
+  Title appears in multiple sets: 'Centauri Telepath' (count=2)
+  Title appears in multiple sets: 'Extreme Sanction' (count=2)
+  Title appears in multiple sets: 'Secret Police' (count=2)
+  Title appears in multiple sets: 'Spin Doctors' (count=2)
+  Title appears in multiple sets: 'Alliance' (count=2)
+  Title appears in multiple sets: 'Diplomatic Advantage' (count=2)
+  Title appears in multiple sets: 'Avert Incident' (count=2)
+  Title appears in multiple sets: 'Secret Strike' (count=2)
+  Title appears in multiple sets: 'War College' (count=2)
+  Title appears in multiple sets: 'Minbari Aide' (count=2)
+  Title appears in multiple sets: 'News of Galactic Import' (count=2)
+  Title appears in multiple sets: 'Develop Relationship' (count=2)
+  Title appears in multiple sets: 'Commerce Raiding' (count=2)
+  Title appears in multiple sets: 'Approval of the Grey' (count=2)
+  Title appears in multiple sets: 'Disaffected Human' (count=2)
+  Title appears in multiple sets: 'Competing Interests' (count=2)
+  Title appears in multiple sets: 'What Do You Want?' (count=2)
+  Title appears in multiple sets: 'Diplomatic Corps' (count=2)
+  Title appears in multiple sets: 'Declaration of War' (count=2)
+  Title appears in multiple sets: 'Concentrated Effort' (count=2)
+  Title appears in multiple sets: 'Guilt' (count=2)
+  Title appears in multiple sets: 'Medical Assistance' (count=2)
+----- end b5ccg.engine.CardSetManifestChecker -----
+
+ERROR: 2 gate class(es) failed. Exit non-zero.

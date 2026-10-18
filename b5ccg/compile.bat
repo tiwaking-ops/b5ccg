@@ -6,18 +6,42 @@ REM Resolve the script directory so it runs from any CWD and always targets
 REM the b5ccg/ tree below (see compile.sh, B5-0306). %~dp0 = b5ccg/.
 cd /d "%~dp0" || goto :eof
 
-REM Relative roots so the accumulated file list stays well under the
-REM cmd.exe 8,191-char command-line ceiling. The previous version built a
-REM single variable of QUOTED ABSOLUTE paths (~12,966 chars on this tree).
-REM The command line silently truncated the list and javac received a
-REM mangled/empty list, so compile.bat printed "Build successful" while
-REM producing ZERO class files. 146 files x ~30 chars (relative) =~4,400
-REM chars fits with margin.
+REM B5-XXXX build isolation: per-session output directory. B5CCG_OUT_DIR env
+REM var overrides the default "out"; unset (default) keeps the shared
+REM single-agent flow unchanged.
 set SRC=src
-set OUT=out
+if "%B5CCG_OUT_DIR%"=="set" set B5CCG_OUT_DIR=
+if defined B5CCG_OUT_DIR (set OUT=%B5CCG_OUT_DIR%) else (set OUT=out)
 set RES=resources
 
+REM Build isolation lock. Uses a lock-directory and the atomicity of mkdir;
+REM flock is not available on this host (Windows cmd). Acquired before anything
+REM touches %OUT% (including rd /s /q) and released on the success AND failure
+REM path. A concurrent build waits/retries for up to 60s, then fails rather than
+REM clobbering another build's output.
+set LOCK_DIR=b5ccg_build.lock.dir
+:ACQUIRE_LOCK
+if not exist "%LOCK_DIR%" (
+  mkdir "%LOCK_DIR%" 2>nul && goto :LOCK_ACQUIRED
+)
+set LOCK_WAIT=0
+:LOCK_WAIT_LOOP
+set /a LOCK_WAIT+=1
+if %LOCK_WAIT% geq 60 (
+  echo ERROR: Could not acquire build lock %LOCK_DIR% (another build in progress?)
+  exit /b 1
+)
+timeout /t 1 /nobreak >nul 2>&1
+goto :ACQUIRE_LOCK
+:LOCK_ACQUIRED
+
+REM Release the lock on exit. Uses EXIT /B from a subroutine; the trap at the
+REM end of the script calls RELEASE_LOCK on every path (success and failure).
+set LIST=%TEMP%\b5ccg_compile_list.tmp
+set LOCK_HELD=1
+
 echo === B5 CCG Build ===
+if defined B5CCG_OUT_DIR echo Output override: B5CCG_OUT_DIR=%B5CCG_OUT_DIR% (session-private output dir)
 
 REM B5-3487: clean out/ BEFORE compiling. javac writes a .class for everything
 REM that compiled before it hits the first error batch, so a red build leaves a
@@ -30,6 +54,7 @@ REM alone; it is only distinguishable by never having been allowed to persist.
 if exist "%OUT%" rd /s /q "%OUT%"
 if exist "%OUT%" (
   echo ERROR: could not remove %OUT% - it is probably locked by a running game.
+  call :RELEASE_LOCK
   exit /b 1
 )
 mkdir "%OUT%"
@@ -79,6 +104,7 @@ if errorlevel 1 (
   REM Leave no half-written output behind for run.bat to mistake for a build.
   rd /s /q "%OUT%" 2>nul
   echo Compilation failed. out\ removed so no partial build can be run.
+  call :RELEASE_LOCK
   exit /b 1
 )
 
@@ -101,32 +127,38 @@ REM partial out/ can survive for run.bat to mistake for a good build.
 if not exist "%RES%\\" (
   echo ERROR: resources directory "%RES%" not found - refusing to write the build marker.
   rd /s /q "%OUT%" 2>nul
+  call :RELEASE_LOCK
   exit /b 1
 )
 xcopy /E /Y /Q "%RES%\*" "%OUT%\"
 if errorlevel 1 (
   echo ERROR: resource copy failed - xcopy exit code 1 or higher. out\ removed so no partial build can be run.
   rd /s /q "%OUT%" 2>nul
+  call :RELEASE_LOCK
   exit /b 1
 )
 if not exist "%OUT%\cards\deluxe.json" (
   echo ERROR: cards\deluxe.json did not land in out\ - xcopy reported success but copied nothing. out\ removed so no partial build can be run.
   rd /s /q "%OUT%" 2>nul
+  call :RELEASE_LOCK
   exit /b 1
 )
 if not exist "%OUT%\cards\premiere.json" (
   echo ERROR: cards\premiere.json did not land in out\ - xcopy reported success but copied nothing. out\ removed so no partial build can be run.
   rd /s /q "%OUT%" 2>nul
+  call :RELEASE_LOCK
   exit /b 1
 )
 if not exist "%OUT%\cards\index.json" (
   echo ERROR: cards\index.json did not land in out\ - xcopy reported success but copied nothing. out\ removed so no partial build can be run.
   rd /s /q "%OUT%" 2>nul
+  call :RELEASE_LOCK
   exit /b 1
 )
 if not exist "%OUT%\decks\premiere-starter-decks.json" (
   echo ERROR: decks\premiere-starter-decks.json did not land in out\ - xcopy reported success but copied nothing. out\ removed so no partial build can be run.
   rd /s /q "%OUT%" 2>nul
+  call :RELEASE_LOCK
   exit /b 1
 )
 
@@ -139,6 +171,18 @@ REM trailing separator, so `%OUT%marker` would concatenate into a sibling FILE
 REM named `outmarker` rather than a file inside out/. Measured: every marker
 REM probe wrote beside the directory, never into it, and out/ stayed unmarked.
 echo ok> "%OUT%\b5ccg-build-ok.txt"
+
+REM Release the lock AFTER the build marker is written, so the lock persists
+REM for the duration of the build (good measure) and is released after the build
+REM is known to be complete.
+REM
+REM :RELEASE_LOCK is a real subroutine and lives at the END of this file. It
+REM used to sit inline here with no `goto :eof`, so every `call :RELEASE_LOCK`
+REM on an ERROR path fell straight through into the success tail below, ran
+REM `del LIST`, printed "Build successful", and exited 0 -- the `exit /b 1`
+REM that followed the call was unreachable. A failed build reported success and
+REM left a build marker behind. Do not move the label back inline.
+call :RELEASE_LOCK
 
 REM B5-0016 (b): the response file is scratch. Delete it on the success path
 REM too (the javac-failure branch above already deletes it), so no stale file
@@ -160,3 +204,21 @@ REM  via Git Bash; a plain `compile.bat` remains the fast compile-only gate.)
 REM Measured 2026-09-28: RUN_TESTS=1 sh compile.sh exits 0 end-to-end here.
 
 endlocal
+
+REM ── :RELEASE_LOCK ───────────────────────────────────────────────────────────
+REM Must be the LAST thing in this file and must end in `goto :eof`. Without
+REM that terminator cmd.exe falls through past the label into whatever follows,
+REM which is how a failing build used to reach the success tail: every error
+REM path called :RELEASE_LOCK, jumped to the inline label, released the lock,
+REM then fell through into `del LIST` / "Build successful" / exit 0, so the
+REM `exit /b 1` on the next line was unreachable. A failed build reported
+REM success and left a build marker behind. Do not move this label inline.
+:RELEASE_LOCK
+if defined LOCK_HELD (
+  if exist "%LOCK_DIR%" rd /s /q "%LOCK_DIR%" 2>nul
+)
+REM `set LOCK_HELD=` inside a parenthesised block defines a variable literally
+REM named "LOCK_HELD " (trailing space before the bracket), so the clear is
+REM written unparenthesised.
+if defined LOCK_HELD set "LOCK_HELD="
+goto :eof

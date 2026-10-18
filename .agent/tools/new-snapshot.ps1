@@ -63,7 +63,10 @@ function Write-Log {
     param([string]$Message)
     $line = ('[{0}] {1}' -f [DateTimeOffset]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'), $Message)
     Write-Output $line
-    try { Add-Content -LiteralPath $LogPath -Value $line -Encoding UTF8 } catch { }
+    try {
+        $existing = if (Test-Path -LiteralPath $LogPath) { [IO.File]::ReadAllText($LogPath, (New-Object System.Text.UTF8Encoding($false))) } else { '' }
+        [IO.File]::WriteAllText($LogPath, ($existing + $line + [Environment]::NewLine), (New-Object System.Text.UTF8Encoding($false)))
+    } catch { }
 }
 
 function Invoke-Git {
@@ -140,7 +143,7 @@ if (Test-Path -LiteralPath $lockPath) {
     Write-Log 'stale lock found; taking over.'
 }
 try {
-    [IO.File]::WriteAllText($lockPath, ('pid={0};utc={1}' -f $PID, [DateTimeOffset]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')))
+    [IO.File]::WriteAllText($lockPath, ('pid={0};utc={1}' -f $PID, [DateTimeOffset]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')), (New-Object System.Text.UTF8Encoding($false)))
     $lockOurs = $true
 } catch {
     Write-Log 'EXIT 1: refused: cannot write lock; nothing committed.'

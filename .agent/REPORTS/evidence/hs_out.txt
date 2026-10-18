@@ -1,0 +1,11 @@
+=== B5 CCG human-seat end-to-end probe (B5-0443) ===
+Seed: 42, Per-game timeout: 180s
+
+=== Human-seat probe summary ===
+  elapsed: 185100ms, round 1, winner: none
+  human submits: 4
+  play=2 initiate=0 support=1 oppose=0 recruit=0 promote=0 build=0
+  leadFleet=0 rotate=0 attack=0 heal=1 repair=1
+  agendaD=0 agendaR=0 agendaRep=0 agendaInstall=1 bid=1 war=1 pass=2
+
+HUMAN-SEAT PROBE PASSED (36 checks)
