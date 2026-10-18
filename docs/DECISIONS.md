@@ -610,3 +610,139 @@ the entry above it. It is a measurement record, not a rule interpretation.
   they cannot be repaired by inference); the 20 mojibake hits reported by
   `.agent/tools/lint-encoding.ps1`; and the STUB/PARTIAL/FULL vocabulary, which
   is not defined anywhere in AGENTS.md yet is used to grade rows in this file.
+
+## 2026-10-19 - Gate made trustworthy, then greened (B5-0036..B5-0039)
+
+* **The gate was reporting artefacts of its own construction before any of
+  these four rows.** Fixed first, because a gate that cannot detect anything
+  makes every later number meaningless. `b5ccg/compile.sh`'s gate loop built its
+  class list by grepping its own here-doc comments, so the list could not drift
+  from the text it read; `java ... || CODE=$?` now survives `set -e`; per-class
+  logs moved to `${OUT}_gate/`; the `tee` flush race on `.row` writes is gone;
+  and a pre-verdict invariant was added (`ROWS != COUNT || PASS+FAIL != COUNT`
+  exits 1) so a truncated table cannot read as a pass. `compile.bat`'s
+  `:RELEASE_LOCK` lacked `goto :eof`, so every error path fell through into the
+  success tail and exited 0 - printing "Build successful" on a failed build.
+  The dead class name `HeadlessFactionStateProbe` was corrected to
+  `HeadlessRaceStateProbe` (renamed by B5-0010; `ClassNotFoundException` since).
+  `lint-encoding.ps1` did not parse (literal mojibake in its own source) and
+  `lint-ledger.ps1` resolved to `.agent/.agent/` and exited 0; both rebuilt.
+
+* **B5-0036** - `CardEffects.DAMAGE_ON_ATTACK` carried four registry entries
+  naming no pool title: `en_h_mines` / `en_h_energy_mines` (dead) and
+  `de_enh_mines` / `de_enh_energy_mines` (redundant `de_` twins). Removed, and
+  the javadoc that asserted they were the shipped data was rewritten.
+  `HeadlessCanonicalParityProbe` 15/17 -> 17/17; `EffectCensusChecker` 24/25 ->
+  25/25. The conformance MINES check still passes, reaching the effect through
+  `lookupSet`'s canonical fallback.
+  No `RB:` citation applies: this is data hygiene, not a rule reading.
+
+* **B5-0037** - `GameController.getAI` fell through to `return aiPlayers.get(0)`
+  on no match. On an empty list that threw; on a non-empty list it returned
+  **another seat's** `AIPlayer`, silently making one player's decisions on
+  another's behalf. It now returns `null` and all three call sites guard,
+  abstaining rather than borrowing. `IndexOutOfBoundsException` count 0;
+  conformance unchanged at 904 checks.
+  No `RB:` citation applies: this is a null-safety defect.
+
+* **B5-0038** - `CardSetManifestChecker` asserted "every title appears in exactly
+  one set". That is a **pre-two-printing invariant**, false by design under D5
+  (Deluxe-governs), and B5-0004 had already recorded that the rule contradicts
+  the two-printing data model without resolving it. 24 legitimate printing pairs
+  were flagged. Replaced with a rule that accepts a repeated title only as a
+  genuine printing pair - exactly two entries, one bare id and one `de_`-prefixed
+  id, canonicalising to the same key, **or** the documented aftermath slug
+  divergence (`aftermath_X` against `de_am_X`) that `HeadlessCanonicalParityProbe`
+  already excepts - and still rejects four distinct collision shapes.
+  Owner-approved as a change to what a gate class asserts. Basis: D5 and B5-0004,
+  not a new reading.
+
+* **B5-0039** - **Owner ruling: S3 wins.** Two repo artefacts asserted opposite
+  things: `HeadlessJoinTimingProbe` S3 (B5-4160) held that a joiner must not
+  become a participant because "AI auto-join removed", while
+  `GameController.openConflictParticipation` (B5-0343) called `decideJoinSide` at
+  conflict initiation and committed a character. Both could not hold.
+  **Ruling: S3 is correct and B5-0343 was unauthorised.** Participation is a
+  player action - rotating a card to support or oppose, during the Action round:
+
+  | Rule-ID | Line | Text relied on |
+  |---|---|---|
+  | `RB:IV/conflict-cards` | 574 | characters may rotate to support or oppose during the **Action round** |
+  | `RB:V` | 685 | characters and fleets may rotate to support or oppose a conflict |
+  | `RB:V` | 691 | a rotated card can be attacked |
+  | `RB:VI/sample-conflict` | 755 | participation is a deliberate, cost-bearing choice |
+  | `RB:VI/sample-conflict` | 757 | a player may simply pass instead |
+  | `RB:III/conflict-round` | 366-375 | declaration and reveal only; no auto-join |
+
+  The cost argument carries this, not the incidental absence of the word "join"
+  from the rulebook. The auto-commit at initiation ran with no action taken by
+  that seat, which is not a reading of any of the above. The auto-commit was
+  removed; `openConflictParticipation`'s human join window, mandatory
+  participation and attack window are untouched. **`AIPlayer` was already able
+  to participate by acting** - it offers `JOIN_CONFLICT_SUPPORT`/`joinOppose()`
+  from `decideJoinSide` (AIPlayer 631-635) and executes them in `chooseAction`
+  (1165-1169) - so the removed loop was a **duplicate mechanism, not the source**
+  of AI participation. Probe **S5** is the load-bearing check: it asserts the
+  joiner *does* join during the ACTION phase and still passes.
+
+* **Measured result**, sole session, staged JDK 25.0.4.1, `--release 8`, build
+  lock released clean:
+
+  | After | Result |
+  |---|---|
+  | triage baseline | 27 pass / 4 fail |
+  | B5-0036 + B5-0037 | 29 pass / 2 fail |
+  | B5-0038 | 30 pass / 1 fail |
+  | B5-0039 | **31 pass / 0 fail** (`EXIT=0`, 239969ms) |
+
+* **This entry records a green GATE, not a promotion.** AGENTS.md section 4 needs
+  four legs: claimed scope, gate passes, this entry, claim released - all four
+  now hold for B5-0036..B5-0039. It does **not** retroactively validate the nine
+  promotions flagged in triage, which were made while the gate could not detect
+  anything; those remain unexamined.
+
+* **Not done here:** `b5ccg/compile.sh` still carries a comment asserting a
+  stdin mechanism that is impossible (adjudicated independently: zero
+  `System.in` across 189 sources). The verdict is in; the comment is not yet
+  corrected. `B5-0025`'s freeze window over `docs,tooling` remains unresolved.
+
+  Reports: `.agent/REPORTS/2026-10-19-opencode-space-bunny-free-01-B5-0036.md`,
+  `-B5-0037.md`, `-B5-0038.md`, `-B5-0039.md`, and
+  `.agent/REPORTS/evidence/GATE-B5-0039.txt` for the green run.
+
+## 2026-10-19 - B5-0040 ledger tooling (row opened retroactively)
+
+* **Protocol deviation, recorded rather than hidden.** `append-ledger.ps1` and
+  `flip-ledger.ps1` were edited with **no ledger row and no claim held**, and
+  the code comments referred to "B5-0040" as though it were a live task. This
+  row was opened after the fact. It is the same phantom-provenance defect this
+  session exists to remove, and it happened inside the process fixing it.
+
+* `append-ledger.ps1` wrote rows with `Add-Content`, which appends at EOF - but
+  `TASK_LEDGER.md` closes its row table **mid-file** at the "Future (not yet
+  OPEN...)" block. Every sanctioned row therefore landed below the table, where
+  `lint-ledger.ps1` rejected it as "row outside table". Both tools were correct
+  by their own contract; the contracts were incompatible. Now inserts into the
+  table in ascending-id order, falling back to an EOF append (and saying so) if
+  no table is recognised. **No B5-2400 guarantee was weakened** - the caller
+  still re-reads and verifies after every attempt.
+  The first implementation ended the table at the first prose line, while the
+  lint ends it only at the "Future" block; because prose is interleaved between
+  rows it inserted after B5-0024 and left `B5-9998` ahead of `B5-0025`. It now
+  uses the lint's own terminator. Two shipped tools must agree on where the
+  table is.
+
+* `flip-ledger.ps1` resolved its default paths to `.agent/.agent/TASK_LEDGER.md`
+  (`$PSScriptRoot` is already `.agent/tools`) and threw `DirectoryNotFound` -
+  the same doubling defect `lint-ledger.ps1` had.
+
+* Verification: `append-ledger` self-test **6/6 green** (every B5-2400 guarantee
+  intact); probe ids inserted in correct order and lint passed at 39 rows; the
+  row for B5-0040 itself landed in-table on first use, with the EOF tail hash
+  unchanged - the correct signature of a mid-file insert. A UTF-8 BOM
+  introduced into `TASK_LEDGER.md` by `Set-Content -Encoding utf8` while
+  stripping probe rows was detected by byte inspection and removed.
+
+* No `RB:` citation applies: this is tooling text, not a rule reading.
+
+  Report: `.agent/REPORTS/2026-10-19-opencode-space-bunny-free-01-B5-0040.md`.
