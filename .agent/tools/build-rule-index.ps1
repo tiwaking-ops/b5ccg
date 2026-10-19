@@ -71,7 +71,7 @@ if (-not $Rulebook) { $Rulebook = Join-Path $repoRoot 'BABYLON5_CCG_RULEBOOK.md'
 if (-not $OutFile)  { $OutFile  = Join-Path $repoRoot 'docs/RULE_INDEX.md' }
 
 # ---------------------------------------------------------------- pins ----
-$pinSha        = '1c99c44b7b64c8927f1e952a22a49d5886788da2d08e211092b5558e154716d0'
+$pinSha        = 'cc765af40e66c629ebb7caaf768cf1fbd64474be33b8d1bb044ac863a7f3eab7'
 $pinLines      = 1236
 $indexVersion  = '1.0'
 $en            = [string][char]0x2013   # en dash in the Lines column; see the ASCII note above

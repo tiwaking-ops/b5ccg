@@ -1,0 +1,11 @@
+# B5-0043. The rulebook is pinned by SHA-256 over its exact bytes
+# (RuleSetProfile.RULEBOOK_SHA256, docs/RULEBOOK_PIN.md). core.autocrlf is
+# true on this machine, so without an override git rewrites LF to CRLF on
+# checkout. That changes the hash, and both HeadlessRulebookPinProbe and
+# build-rule-index.ps1 -Check then fail on every machine except the one whose
+# working tree happened to match the pin. Observed: working tree 134,586 B
+# (CRLF on lines 1-14 and 1236), fresh clone 135,807 B, canonical LF 134,571 B.
+#
+# Scope is deliberately one file. A repo-wide `* text=auto eol=lf` would also
+# rewrite the card decks and ledger, which are CRLF today and out of scope here.
+BABYLON5_CCG_RULEBOOK.md text eol=lf

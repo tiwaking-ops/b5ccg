@@ -38,14 +38,14 @@ public final class RuleSetProfile {
     /** Rulebook revision this profile is defined against. */
     public static final String RULEBOOK_VERSION = "1.3";
 
-    /** SHA-256 of the pinned working-tree bytes of
+    /** SHA-256 of the pinned canonical LF bytes of
      *  {@code BABYLON5_CCG_RULEBOOK.md} (see {@code docs/RULEBOOK_PIN.md}).
      *  Lowercase hex. */
     public static final String RULEBOOK_SHA256 =
-        "1c99c44b7b64c8927f1e952a22a49d5886788da2d08e211092b5558e154716d0";
+        "cc765af40e66c629ebb7caaf768cf1fbd64474be33b8d1bb044ac863a7f3eab7";
 
-    /** Pinned working-tree size in bytes. */
-    public static final long RULEBOOK_BYTES = 134586L;
+    /** Pinned canonical LF size in bytes. */
+    public static final long RULEBOOK_BYTES = 134571L;
 
     /** Pinned line count: every LF-terminated line (Claude's 1,236). */
     public static final int RULEBOOK_LINES_TOTAL = 1236;
