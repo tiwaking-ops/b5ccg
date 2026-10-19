@@ -5,10 +5,12 @@ document:
 provenance:
   author_llm: {name: "Muse Spark", version: "muse-spark-1.3-contributor-free"}
   created_date: "2026-10-16"
-  last_modified_date: "2026-10-16"
-  last_modified_by_llm: {name: "opencode (tencent/hy4-preview)", version: "opencode-hy4-preview-01-2026-10-16"}
+  last_modified_date: "2026-10-19"
+  last_modified_by_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-19-01"}
   assessor_llm:
     - {name: "opencode (verifier)", version: "independent-verify-2026-10-16", passes: 1, date: "2026-10-16", note: "updated §2 build rule to reflect Hop-1 (--release 8 / JDK 25), owner-approved"}
+  unassessed_revision:
+    - {author_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-19-01"}, date: "2026-10-19", change: "section 2 rulebook pin re-pinned to the canonical LF bytes under B5-0043 and B5-0047", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass"}
 ---
 
 # AGENTS.md — b5ccg (lean reset, Claude v1 §7 B1/B2)
@@ -54,9 +56,12 @@ both author and assessor in the same pass.
 * No external libraries in the shipped game without explicit human approval.
   Test/tooling-scope dependencies are approved in principle only (D4), not now.
 * `BABYLON5_CCG_RULEBOOK.md` is canonical — never edit the body. Pin: SHA-256
-  `1c99c44b7b64c8927f1e952a22a49d5886788da2d08e211092b5558e154716d0`,
-  1,236 LF lines on disk (689 non-blank); full pin record and the
-  689-vs-1236 reconciliation live in `docs/RULEBOOK_PIN.md` (B5-0002).
+  `cc765af40e66c629ebb7caaf768cf1fbd64474be33b8d1bb044ac863a7f3eab7`,
+  134,571 bytes of pure LF, 1,236 lines on disk (689 non-blank); full pin record
+  and the 689-vs-1236 reconciliation live in `docs/RULEBOOK_PIN.md` (B5-0002,
+  re-pinned B5-0043/B5-0047). The canonical form is the committed blob, and
+  `.gitattributes` enforces it: pin the file's bytes, never a checkout
+  artefact of one machine's `core.autocrlf` setting.
   Interpretations go in `docs/DECISIONS.md` with a rule-ID.
 * No new `.md` files at the repo root. Proposals → `docs/proposals/`,
   observations → `.agent/REPORTS/`. One pattern file per lesson *family*

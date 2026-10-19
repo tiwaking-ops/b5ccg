@@ -14,13 +14,18 @@ Enforced by `b5ccg.engine.HeadlessRulebookPinProbe` (exit code is the
 contract). Re-measure, never hand-edit: the numbers below are outputs of
 `Get-FileHash` and byte counts, reproduced independently by the probe.
 
-## Pin (working-tree bytes)
+## Pin (canonical LF bytes)
 
-* SHA-256 `1c99c44b7b64c8927f1e952a22a49d5886788da2d08e211092b5558e154716d0`
-* 134,586 bytes; UTF-8 with BOM (`EF BB BF` — the BOM is part of the
+* SHA-256 `cc765af40e66c629ebb7caaf768cf1fbd64474be33b8d1bb044ac863a7f3eab7`
+* 134,571 bytes; pure LF, UTF-8 with BOM (`EF BB BF` - the BOM is part of the
   pinned bytes, the probe asserts its presence).
 * Rulebook version 1.3 (consolidated: base + Great War + Psi Corps +
   Severed Dreams + Wheel of Fire).
+
+Re-pinned 2026-10-19 under B5-0043 (engine and tooling) and B5-0047 (this
+document and the index). The superseded pin was `1c99c44b...` over 134,586
+bytes, and it is recorded here rather than deleted so the history stays
+readable: that pin described **one machine's working tree**, not the file.
 
 ## 689 vs 1,236 — reconciled
 
@@ -33,18 +38,35 @@ Both numbers describe the **same bytes**. Measured 2026-10-16:
 
 Correction to the fork-time note (AGENTS.md §2, DECISIONS.md genesis
 entry): 689 was labelled a "CRLF count". It is not — the file holds only
-15 CRLF line endings (front-matter lines 1–13 and the last line 1236).
+no CRLF line endings at all as of the 2026-10-19 re-pin. It briefly held 15 -
+front-matter lines 1-14 plus the last line 1236, measured on this machine
+before the re-pin - as a checkout artefact of `core.autocrlf=true`; the count
+above originally read "lines 1-13", which listed only 14 lines for a stated 15.
 689 is the non-blank count. Same bytes, different denominators; the probe
 asserts both (1,236 total, 689 non-blank).
 
-## Git-blob note (do not "fix")
+## Git-blob note (corrected 2026-10-19; the original text is preserved below)
 
-The committed blob is 134,571 bytes of pure LF; the working tree is
-134,586 bytes with 15 CRLF lines (`core.autocrlf=true` normalises on
-commit). `git status` reads clean either way. **The pin is on the
-working-tree bytes** — the exact bytes Claude hashed. A commit that
-"normalises" the working tree to the blob would break the pin; update the
-pin deliberately (new hash + probe constants + this note) or not at all.
+The canonical form is the committed blob: 134,571 bytes of pure LF. The working
+tree now matches it byte for byte, and `.gitattributes` pins
+`BABYLON5_CCG_RULEBOOK.md text eol=lf` so `core.autocrlf=true` cannot rewrite it
+again. A fresh clone with `core.autocrlf=true` yields exactly 134,571 bytes.
+
+The superseded text read:
+
+> The committed blob is 134,571 bytes of pure LF; the working tree is
+> 134,586 bytes with 15 CRLF lines (`core.autocrlf=true` normalises on
+> commit). `git status` reads clean either way. **The pin is on the
+> working-tree bytes** - the exact bytes Claude hashed. A commit that
+> "normalises" the working tree to the blob would break the pin; update the
+> pin deliberately (new hash + probe constants + this note) or not at all.
+
+That was accurate for the old pin and is now inverted. Pinning the working-tree
+bytes was the defect: it made `HeadlessRulebookPinProbe` and
+`build-rule-index.ps1 -Check` pass on this machine only, so the 31/31 gate
+result of record was not reproducible from a clone. The instruction "update the
+pin deliberately or not at all" is kept; what changed is that the deliberate
+update is now done, and the canonical form is the blob.
 
 ## Known encoding damage (canonical file stays untouched)
 

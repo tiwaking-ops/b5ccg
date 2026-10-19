@@ -3,7 +3,7 @@ document:
   title: "Rule-ID index for BABYLON5_CCG_RULEBOOK.md"
   status: "Generated truth table. Regenerate with .agent/tools/build-rule-index.ps1 (WP-18a); do not hand-edit the generated columns."
   index_version: "1.0"
-  rulebook_sha256: "1c99c44b7b64c8927f1e952a22a49d5886788da2d08e211092b5558e154716d0"
+  rulebook_sha256: "cc765af40e66c629ebb7caaf768cf1fbd64474be33b8d1bb044ac863a7f3eab7"
   rulebook_lines: 1236
   rows: 87
 provenance:

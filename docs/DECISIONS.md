@@ -848,3 +848,252 @@ this session, meets its own acceptance criteria. Those remain unexamined.
   (freeze), `-B5-0041.md` (stdin comment), `-B5-0040.md` (unclaimed tooling
   work), `-B5-0039.md` (owner ruling, S3), and
   `.agent/REPORTS/evidence/GATE-B5-0041.txt`.
+
+## 2026-10-19 - Owner rulings: model tiers, interested-party advice, repository visibility, and the line-ending pin (B5-0042)
+
+Four owner rulings taken in session on 2026-10-19 and recorded together because
+each one changes what a later agent may assume. Rulings 1 and 2 are governance;
+rulings 3 and 4 concern repository state. None of them interprets the rulebook,
+so none cites a rule ID.
+
+**1. D-3 is confirmed: free models only, with no Claude Code exception.**
+
+The standing ruling was free tiers only, excluding claude-code and any paid
+per-token tier "until a new ruling". The owner was asked whether to make an
+exception for two or three judgement-heavy rows, and declined. Every agent
+invocation must name a model priced at $0 in the catalog. Recorded facts behind
+the ruling: the `claude-code` provider carries five models, all with cost unset,
+because that tier draws on a subscription rather than billing per token, so no
+spending ceiling is measurable from the catalog at all.
+
+**2. An agent recommendation that benefits the agent's maker is an unverified
+claim, in the same category as a self-assessment.**
+
+This extends the rule already written into `AGENTS.md` section 1 (never record an
+agent as both author and assessor of one document) from authorship to interest.
+Where every other recommendation in this thread was a testable claim about the
+repo and could be checked against the bytes, the recommendation to adopt a paid
+tier was a value judgement about the owner's spending, which is the one category
+where the recommending model has no independent standing and its maker's
+commercial interest is directly engaged. Such a recommendation carries no
+evidentiary weight. Treat it as `[?]`, verify it independently or not at all, and
+do not relay it as advice.
+
+A reviewer should know the history: claude-code agents have already run in this
+project. Three heartbeats and fifteen reports exist under `.agent/REPORTS/`, dated
+2026-10-17 and 2026-10-18. `claude-code-b5ccg-02` is the agent named on the seven
+stale claim files reaped on 2026-10-18, and it is the agent behind the eight rows
+promoted to FULL that the 2026-10-19 correction entry above withdraws. Free-only
+is therefore a tightening of recent practice, not a new rule. The connection
+between the agent and the withdrawn promotions is a matter of record, not a
+finding about why they happened.
+
+**3. The repository is public intentionally, and the rulebook raises no
+copyright concern.**
+
+An earlier exposure assessment raised the possibility that the copy of the
+Babylon 5 CCG rulebook and card data in the tree might be someone else's
+copyrighted material, and put the question of public visibility to the owner. The
+owner has answered both parts: the repository is meant to be public, and the
+rulebook is freely published and available for anyone to download. That closes the
+copyright question and supersedes the hedge in the exposure plan.
+
+What is not thereby answered is the separate question of commit metadata, which
+has nothing to do with the rulebook: 19 of the 20 commits on `origin/main` carry
+the owner's real name and email address inside the git objects. That remains the
+owner's privacy preference and no ruling is recorded on it. The cheap remedy,
+which does not rewrite history, is GitHub's "keep my email addresses private"
+setting plus a local `noreply` git identity. The expensive remedy is a
+`git filter-repo` rewrite, and it should not be attempted without first answering
+whether `refs/pull/1` keeps the pre-rewrite commits reachable by hash: commit
+`88a5d46` is reachable only through the second parent of merge `5059179`, and it
+is a hash that reports in this repository cite by name.
+
+**4. LF is canonical for the rulebook, and the order of operations is re-pin
+first, `.gitattributes` second.**
+
+Measured on 2026-10-19, and this is the reason the question had to be asked at
+all. The rulebook exists in three distinct byte forms:
+
+| Form | Bytes | SHA-256 | Matches the pin? |
+|---|---|---|---|
+| Working tree on this machine | 134,586 | `1c99c44b...716d0` | **yes** |
+| Committed git blob | 134,571 | `cc765af4...3eab7` | no |
+| Fresh clone checkout | 135,807 | `165d11dd...483250` | no |
+
+`RuleSetProfile.RULEBOOK_SHA256` pins `1c99c44b...`, which is the hash of this
+machine's working-tree file, and `RULEBOOK_BYTES` hardcodes 134586 to match it.
+The source comment says so plainly: "SHA-256 of the pinned working-tree bytes".
+The committed content is pure LF across all 1,236 lines; this working tree
+carries CRLF on lines 1 to 14 and 1236 only, which is a checkout artifact rather
+than a property of the file.
+
+Consequences, verified by execution rather than inferred:
+
+* A fresh clone fails the pin guard. `build-rule-index.ps1 -Check` reports
+  `GUARD FAILURE - rulebook SHA-256 165d11dd... differs from the pin`, and
+  documents every line range in `docs/RULE_INDEX.md` as void until the file is
+  consciously re-pinned.
+* `HeadlessRulebookPinProbe` is a gate class, listed in `compile.sh`. The gate
+  result of record therefore holds on this machine only and is not reproducible
+  from a clone. Every `RB:<chapter>/<slug>` citation resolves against a line
+  table that cannot be regenerated elsewhere, and `.agent/tools/rule-coverage.ps1`
+  cannot be run off this machine.
+* Simulated: forcing the rulebook to all-LF gives a different hash, and forcing
+  it to all-CRLF gives a different hash. There is no `.gitattributes` value that
+  both normalises line endings and preserves the existing pin.
+
+Ordered instructions:
+
+1. Re-pin `RULEBOOK_SHA256` and `RULEBOOK_BYTES` to the LF form
+   (`cc765af4...`, 134,571 bytes).
+2. Verify by cloning fresh and running both `HeadlessRulebookPinProbe` and
+   `build-rule-index.ps1 -Check`. Both must pass off this machine.
+3. Only then add a `.gitattributes` that enforces LF, so that checkouts stop
+   drifting.
+4. Bring `docs/RULE_COVERAGE_MAP.md` (already LF) and `.agent/TASK_LEDGER.md`
+   (currently pure CRLF, 148 lines) into the same canonical form, or record in
+   that entry why not.
+
+`.gitattributes` is currently absent from the repository and `core.autocrlf` is
+set to `true`, so nothing pins line endings anywhere today. Adding the attribute
+before the re-pin would fix nothing and would make it ambiguous which checkout
+shape the pin described.
+
+**Escalated, not ruled: the pin repair needs its own row.** It is tooling scope,
+it blocks reproducibility of the verification gate that `AGENTS.md` section 4
+makes the promotion rule, and no row covers it. It is recorded here so that the
+next agent inherits the measurement rather than re-deriving it. No row was opened
+under B5-0042, whose acceptance was the four rulings above.
+
+**Reports.** `.agent/REPORTS/2026-10-19-opencode-space-bunny-free-01-B5-0042.md`.
+Measurements behind rulings 3 and 4 are in
+`docs/proposals/reply-claude-b5ccg-post-b5-0034-recommendations-v3.md` section 7
+and `v4` section 6, both of which are observations and carry no authority.
+
+## 2026-10-19 - CORRECTION to the B5-0042 entry above: seven rows, not eight
+
+The entry above states that `claude-code-b5ccg-02` is "the agent behind the eight
+rows promoted to FULL that the 2026-10-19 correction entry above withdraws."
+**That count is wrong.** The figure of eight refers to eight stub source files, not
+to eight ledger rows.
+
+Measured from the RELEASED claim files, which record the agent that actually held
+each task rather than any later assertion about it:
+
+| Row | Claim `agent_id` |
+|---|---|
+| B5-0028 | claude-code-b5ccg-02 |
+| B5-0029 | claude-code-b5ccg-02 |
+| B5-0030 | claude-code-b5ccg-02 |
+| B5-0032 | claude-code-b5ccg-02 |
+| B5-0033 | claude-code-b5ccg-02 |
+| B5-0034 | claude-code-b5ccg-02 |
+| B5-0035 | claude-code-b5ccg-02 |
+
+Seven rows. There is no B5-0031 in the ledger at all: the identifier was skipped,
+so the withdrawn promotions span B5-0028..B5-0035 with one gap, and the eight
+deliverables were eight stub files promoted across those seven rows (the DECISIONS
+entry of 2026-10-18 records "184 source files (original + 8 additive stubs)").
+
+Two further facts that the entry above should have distinguished, established while
+checking the count:
+
+* The ledger's own claim and report columns for those seven rows now read `-`,
+  because the rows were reopened when their FULL status was withdrawn. Attribution
+  survives only in the RELEASED claim files. An agent checking the ledger alone
+  would find no agent recorded and might infer the promotions were unattributed.
+* `agent_id` appears as `claude-code-b5ccg-02` in 8 of the 20 claim files; the
+  eighth is not one of the seven rows above.
+
+**What the correction does not change.** Every substantive claim in the B5-0042
+entry stands. The agent behind all seven withdrawn promotions is still a Claude-family
+model, which remains the point: the strongest model available in this fleet is the
+one that signed off on eight bare interfaces. That is a statement about process,
+not about model tier, and it is unaffected by an off-by-one in the row count.
+
+Correction appended under the B5-0042 docs claim, which was still live. No original
+text was rewritten, per the convention used throughout this file.
+
+## 2026-10-19 - Rulebook re-pinned to its canonical LF bytes (B5-0043, B5-0047)
+
+The rulebook pin is now reproducible off this machine. It was not before, and the
+verification gate that `AGENTS.md` section 4 makes the promotion rule depended on
+it, so this entry records the change, the measurement that motivated it, and the
+one acceptance line that could not be met under the original scope split.
+
+**The defect.** `RuleSetProfile.RULEBOOK_SHA256` pinned `1c99c44b...` over 134,586
+bytes. That is one machine's working tree, not the file. Three byte states existed:
+
+| Form | Bytes | SHA-256 | Matched the pin? |
+|---|---|---|---|
+| Working tree, this machine | 134,586 | `1c99c44b...716d0` | yes |
+| Committed git blob | 134,571 | `cc765af4...3eab7` | no |
+| Fresh clone checkout | 135,807 | `165d11dd...483250` | no |
+
+The working tree carried CRLF on front-matter lines 1-14 and on the last line
+1236, an artefact of `core.autocrlf=true` with no `.gitattributes` anywhere in the
+repository. `git status` read clean either way, so nothing surfaced it.
+`HeadlessRulebookPinProbe` is a gate class in `compile.sh`, so a 31/31 result of
+record could be produced only on the machine whose checkout matched the pin.
+`build-rule-index.ps1 -Check` exited -1 on a clone with
+`GUARD FAILURE - rulebook SHA-256 ... differs from the pin`, and the failure text
+correctly said every line range below was void. `rule-coverage.ps1` could not be
+run off this machine at all.
+
+**The fix, in the order the earlier B5-0042 entry prescribed.** Canonicalise the
+working tree to LF, re-pin both holders of the constant to `cc765af4...` /
+134,571 bytes, then add `.gitattributes` so the form cannot drift again:
+
+1. `RuleSetProfile.RULEBOOK_SHA256` and `RULEBOOK_BYTES` (134586L to 134571L),
+   with the source comments corrected: they said "pinned working-tree bytes",
+   which named the defect.
+2. `build-rule-index.ps1` `$pinSha`, which holds its own copy of the pin.
+3. `.gitattributes`, scoped to the single file
+   (`BABYLON5_CCG_RULEBOOK.md text eol=lf`). A repo-wide `* text=auto eol=lf`
+   would also rewrite the card decks and the ledger, which are CRLF today and out
+   of scope.
+4. `docs/RULE_INDEX.md` regenerated by the tool, not by hand.
+5. `docs/RULEBOOK_PIN.md` and `AGENTS.md` section 2, following the new pin.
+
+**Verified by execution, not by reading.** A fresh clone with `core.autocrlf=true`,
+the owner's global setting and therefore the original failure mode, now yields
+134,571 bytes of pure LF with zero CRLF, SHA-256 `cc765af4...`, and
+`HeadlessRulebookPinProbe` reports `PASS (21/21)` there. `build-rule-index.ps1
+-Check` exits 0 in that clone. Before the change the same clone produced 135,807
+bytes and a guard failure. The full gate on this machine exits 0, 31 of 31.
+
+**No rule citation was invalidated.** Regenerating the index produced a diff of
+exactly one line, the recorded `rulebook_sha256`: 87 rows, 84 rule entries, 6
+chapters byte-identical. Every `RB:<chapter>/<slug>` line range resolves to the
+same lines as before, because canonicalising line endings changed no line number.
+
+**What did not change in git.** After canonicalisation the working tree file was
+byte-identical to the HEAD blob and git's clean filter produced `5798ef4d...`,
+exactly the committed blob. The rulebook therefore does not appear in the commit
+at all. The pin was describing a checkout artefact, not content.
+
+**Scope and one unmet acceptance line.** The engine and tooling half is B5-0043
+and the documentation half is B5-0047, because a row may claim only the scopes it
+names. `build-rule-index.ps1 -Check` could not exit 0 under B5-0043 alone,
+because its last comparison is against `docs/RULE_INDEX.md`, a `docs` write. That
+is why the row was split rather than the claim widened. Both rows are now DONE
+and every acceptance line passes.
+
+**A deliberate deviation from B5-0047's own wording.** That row said the old pin
+string should appear nowhere in `docs/` except historical records. It now also
+appears in `docs/RULEBOOK_PIN.md`, in a paragraph explicitly marked as the
+superseded pin. A pin record that does not say what it superseded is not a record.
+`docs/DECISIONS.md` and `.agent/TASK_LEDGER.md` still cite it too, as records, and
+were not rewritten.
+
+**Standing lesson, and it is a process failure.** The strongest model available in
+this fleet authored the eight withdrawn stubs across seven rows. This defect had a
+different author and the same shape: something asserted itself correct - a 31/31
+gate, a clean `git status` - while the property being claimed was true on one
+machine only. A green gate proved the tree was self-consistent, not that it was
+right elsewhere. Green output is not evidence until something has tried to make it
+red, which is why B5-0044 exists.
+
+**Reports.** `.agent/REPORTS/2026-10-19-opencode-space-bunny-free-01-B5-0043.md`
+and `-B5-0047.md`. Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0043.txt`.
