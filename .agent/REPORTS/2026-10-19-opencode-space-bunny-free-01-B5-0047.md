@@ -74,6 +74,19 @@ edits cannot have affected the 31/31 gate result. My first test for this grepped
 raw text and wrongly appeared to contradict that; the comment-stripped test is the
 correct one.
 
+## A pre-existing gap found while verifying the clone
+
+`build-rule-index.ps1 -Check`, `check-citations.ps1` and `lint-ledger.ps1` all
+exit 0 in a fresh clone. `rule-coverage.ps1` does not: it exits 2 with
+`gate log not found: <unset>`. It needs `_b5-0024_gate.log`, which exists only as a
+local file and was never committed. The sidecar `docs/RULE_COVERAGE_MAP.md` *is*
+tracked, so this is a missing input rather than a pin problem, and it predates this
+work.
+
+It is recorded here because "runnable off this machine" should not be read as
+"runnable from a clone" for that tool until someone commits or regenerates the log.
+Not in scope for B5-0047 and not fixed by it.
+
 ## Deliberate deviation from this row's own acceptance wording
 
 The row said the old pin string should appear nowhere in `docs/` except historical
