@@ -1097,3 +1097,100 @@ red, which is why B5-0044 exists.
 
 **Reports.** `.agent/REPORTS/2026-10-19-opencode-space-bunny-free-01-B5-0043.md`
 and `-B5-0047.md`. Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0043.txt`.
+
+## 2026-10-21 - The tooling guards were absent, not merely weak (B5-0044)
+
+The B5-0042 entry recorded the standing lesson that a green gate is not evidence
+until something has tried to make it red. This entry applies that lesson to the
+tooling, where it had not been applied at all, and it records a finding that is
+larger than the row that produced it.
+
+**The measurement.** Five of the fifteen tools under `.agent/tools/` did not
+declare `[CmdletBinding()]`. Each was invoked with a parameter that does not
+exist:
+
+| Tool | Exit before | Unknown parameter rejected? |
+|---|---|---|
+| `flip-ledger.ps1` | 1 | no |
+| `ledger-query.ps1` | **0** | no |
+| `lint-encoding.ps1` | 1 | no |
+| `lint-ledger.ps1` | 0 | no |
+| `snapshot-age-check.ps1` | 1 | no |
+
+`ledger-query.ps1 -Statuss OPEN` exited **0** and printed a normal table. The
+typo was absorbed and the intended filter never applied. The other four
+exited non-zero for an unrelated reason - a missing required value - so a
+reader could mistake a crash for a rejection.
+
+**A trap found while fixing it.** `[CmdletBinding()]` turns a script into an
+advanced function, and in an advanced function `$PSScriptRoot` is **empty while
+param defaults are evaluated**. Both `flip-ledger.ps1` and `lint-ledger.ps1`
+had a default of the form
+`(Join-Path (Split-Path -Parent $PSScriptRoot) 'TASK_LEDGER.md')`, which then
+threw `Cannot bind argument to parameter 'Path' because it is an empty string`
+before the body ran. The fix is to keep `[CmdletBinding()]` and resolve path
+defaults in the body. The ten tools that already declared it do not use
+`$PSScriptRoot` in a param block, so none of them carries this latent defect;
+all fifteen parse clean after the change.
+
+**The larger finding: four guards in `flip-ledger.ps1` were dead or wrong.**
+
+1. *The live-claim guard never fired.* It read
+   `Join-Path (Split-Path -Parent $PSScriptRoot) '.agent/CLAIMS'`, which
+   resolves to `.agent/.agent/CLAIMS` - a directory that does not exist.
+   `Get-ChildItem` on a missing path with `-ErrorAction SilentlyContinue`
+   returns nothing, so the guard could never fire. Proven in a sandbox: with a
+   live claim planted by another agent on `B5-0300`, the tool flipped that row
+   to DONE, wrote a backup, and exited 0, while its own synopsis promised to
+   refuse exactly that.
+2. *A refused flip still left a backup*, because the backup was taken before
+   the refusal checks.
+3. *The report check was CWD-relative*, so a DONE flip was refused spuriously
+   whenever the caller was not sitting in the repo root.
+4. *There was no `-DryRun` at all*, and it was silently absorbed.
+
+All three of the first are the same defect class as the withdrawn stubs of
+2026-10-19: a guard that asserts a property it does not actually enforce. The
+difference is that those stubs were new code, whereas these were shipped
+tooling that the process had been using - and had been reporting as working -
+for the life of the repository.
+
+**A fifth defect, found by using the tool to close this very row.** The
+repaired claim guard refused every live claim, including the caller's own, so
+the agent holding a claim could not use the tool to close the row it had
+claimed. The tool's own contract - "refuses ... live claim by *another*
+agent" - was not what the code did. It now takes `-AgentId` and exempts a
+claim whose `agent_id` matches, while any other agent's claim still blocks.
+This is a deliberate widening of a guard that, per defect 1, could never fire
+at all, so it is not a loosening of something that was working. An unreadable
+claim file is treated as foreign rather than absent, because a claim that
+cannot be read is a claim that cannot be reasoned about, and guessing "mine"
+would be the unsafe direction.
+
+**Standing rule, now written into the tooling rather than into a report.** A
+guard is only evidence if it has been seen refusing. Every guard shipped from
+this point carries a negative-case probe, and every probe must have a
+demonstrated red state. The probes are wired into the verification gate:
+`compile.sh`'s `RUN_TESTS=1` branch runs them after the Java table, so the
+31-class invariant and the summary line still describe exactly the Java
+classes. They are skipped, not failed, when no `powershell` is on PATH, because
+the gate must still run on a machine that has only a JDK; when PowerShell is
+present and a probe fails, the gate exits non-zero. That was verified by
+reverting `flip-ledger.ps1` to its previous revision and re-running the whole
+gate: `Tooling probes: 0 passed, 2 failed`, exit 1.
+
+**`-DryRun` is now real.** The acceptance line required a demonstration that
+`-DryRun` writes nothing. The tool had no such switch; a caller passing it got
+it silently absorbed and the flip happened anyway. `flip-ledger.ps1` now
+takes a `-DryRun` that prints the diff and writes nothing at all - no ledger
+change, no backup, no report - and the probe asserts all three.
+
+**A note for the next author of a PowerShell probe.** `Out-String` wraps
+console output to the host width, and it wrapped *in the middle of* the phrase
+`A parameter cannot be found`. The message was present and the substring match
+still failed. Both probes now collapse whitespace before matching, so their
+assertions do not depend on console width.
+
+**Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0044.md`.
+Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0044.txt` (green, exit 0) and
+`GATE-B5-0044-RED.txt` (red, exit 1).

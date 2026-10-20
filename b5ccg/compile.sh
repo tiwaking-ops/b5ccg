@@ -334,5 +334,66 @@ GATE_EOF
     exit 1
   fi
   echo "✓ Verification passed (all $COUNT gate classes)."
+
+  # ── Tooling probes (B5-0044) ────────────────────────────────────────────
+  # These are PowerShell, not Java, so they are NOT gate classes and are NOT
+  # in GATE_CLASSES. They run here, after the Java table, so the 31-class
+  # invariant above is untouched and the summary line still describes exactly
+  # the Java classes.
+  #
+  # They are wired in rather than left as documentation because a probe that
+  # nothing runs is a comment. Each one has a proven RED state: the
+  # unfixed tools fail them.
+  #
+  # The probes are skipped when no PowerShell is on PATH, because the gate
+  # must still run on a machine that has only a JDK. When it IS present and a
+  # probe fails, the gate exits non-zero - a tooling guard that cannot fail
+  # the gate is not a guard.
+  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1"
+  if command -v powershell > /dev/null 2>&1 && [ -f "../.agent/tools/test-param-guard.ps1" ]; then
+    echo ""
+    echo "=== Tooling probes (B5-0044) ==="
+    TOOL_PASS=0
+    TOOL_FAIL=0
+    TOOL_FAILED=""
+    for probe in $TOOL_PROBES; do
+      [ -f "$probe" ] || continue
+      pname=$(basename "$probe" .ps1)
+      plog="$GATE_LOG_DIR/$pname.log"
+      pstart=$(date +%s%N 2>/dev/null || echo 0)
+      pcode=0
+      powershell -NoProfile -ExecutionPolicy Bypass -File "$probe" > "$plog" 2>&1 || pcode=$?
+      pend=$(date +%s%N 2>/dev/null || echo 0)
+      pdur=$(( (pend - pstart) / 1000000 ))
+      [ "$pdur" -lt 0 ] && pdur=0
+      if [ "$pcode" -eq 0 ]; then
+        printf '%-6s %-8s %-10s %s\n' "0" "${pdur}ms" "PASS" "$pname"
+        TOOL_PASS=$(( TOOL_PASS + 1 ))
+      else
+        printf '%-6s %-8s %-10s %s\n' "$pcode" "${pdur}ms" "FAIL" "$pname"
+        TOOL_FAIL=$(( TOOL_FAIL + 1 ))
+        TOOL_FAILED="$TOOL_FAILED $pname"
+      fi
+    done
+    echo "Tooling probes: $TOOL_PASS passed, $TOOL_FAIL failed"
+    if [ "$TOOL_FAIL" -gt 0 ]; then
+      echo ""
+      echo "FAILING TOOLING PROBES:"
+      for p in $TOOL_FAILED; do
+        echo "  - $p"
+        if [ -f "$GATE_LOG_DIR/$p.log" ]; then
+          echo "----- tail of $p ($GATE_LOG_DIR/$p.log) -----"
+          tail -n 25 "$GATE_LOG_DIR/$p.log"
+          echo "----- end $p -----"
+        fi
+      done
+      echo ""
+      echo "ERROR: $TOOL_FAIL tooling probe(s) failed. Exit non-zero."
+      exit 1
+    fi
+  else
+    echo ""
+    echo "=== Tooling probes (B5-0044): SKIPPED (no powershell on PATH) ==="
+  fi
 fi
 

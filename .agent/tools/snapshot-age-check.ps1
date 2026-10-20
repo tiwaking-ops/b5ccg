@@ -3,6 +3,7 @@
 # Exit 2: git unreadable (includes naming a ref that does not exist yet).
 # Read the exit code, not stdout. Default Ref HEAD preserves the B5-0001
 # contract; pass -Ref auto-snapshot to watch the timer job once it lands.
+[CmdletBinding()]
 param([int]$MaxAgeHours = 24, [string]$Ref = 'HEAD')
 $ErrorActionPreference = 'Stop'
 try {

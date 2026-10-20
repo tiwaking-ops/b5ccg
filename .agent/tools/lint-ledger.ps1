@@ -12,9 +12,20 @@
    2. $ErrorActionPreference was 'Continue', so the tool exited 0 after throwing.
       The exit code is the contract (AGENTS.md section 5); a crash must be red.
 #>
-param([string]$LedgerPath = (Join-Path (Split-Path -Parent $PSScriptRoot) 'TASK_LEDGER.md'))
+[CmdletBinding()]
+param([string]$LedgerPath)
 
 $ErrorActionPreference = 'Stop'
+
+# $PSScriptRoot is EMPTY while param defaults are evaluated in an advanced
+# function, which is what [CmdletBinding()] makes this script. A default of
+# (Join-Path (Split-Path -Parent $PSScriptRoot) 'TASK_LEDGER.md') therefore
+# throws "Cannot bind argument to parameter 'Path' because it is an empty
+# string" before the body runs. The default is resolved here instead, in the
+# body, where $PSScriptRoot is populated. See B5-0044.
+if (-not $LedgerPath) {
+    $LedgerPath = Join-Path (Split-Path -Parent $PSScriptRoot) 'TASK_LEDGER.md'
+}
 
 if (-not (Test-Path -LiteralPath $LedgerPath)) {
     Write-Error ("ledger not found: {0}" -f $LedgerPath)

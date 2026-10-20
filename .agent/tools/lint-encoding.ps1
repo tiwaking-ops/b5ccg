@@ -14,6 +14,7 @@
   all. Every pattern below is therefore built from character codes, exactly as
   the U+FFFD check already was. Do not paste literal mojibake into this file.
 #>
+[CmdletBinding()]
 param([string[]]$Paths = @('.agent/', 'docs/', 'b5ccg/src/'))
 
 $ErrorActionPreference = 'Stop'

@@ -85,6 +85,7 @@ carrying an explicit in-row prior adjudication marker (the literal phrase
     never on `exempt`. No exit code, threshold, TTL, verdict, or the 7-pipe
     contract is changed by this classification.
 #>
+[CmdletBinding()]
 param(
     [string]$Status = "OPEN",
     [int]$TtlMinutes = 30

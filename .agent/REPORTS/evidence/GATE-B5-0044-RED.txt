@@ -1,0 +1,99 @@
+﻿=== B5 CCG Build ===
+Source: /c/temp/projects/b5ccg/b5ccg/src
+Output: /c/temp/projects/b5ccg/b5ccg/out
+Compiling 189 source filesÔÇª
+sh.exe : Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+At line:19 char:9
++ $out2 = & 'C:\Program Files\Git\usr\bin\sh.exe' compile.sh 2>&1
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Picked up JAVA_....encoding=UTF-8:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resourcesÔÇª
+
+Ô£ô Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 31 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 189  |  Compiled class count: 577
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      11624ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5371ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5079ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      915ms    PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      185566ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      219ms    PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      164ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      184ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      171ms    PASS       b5ccg.engine.HeadlessDrawRoundProbe
+0      222ms    PASS       b5ccg.engine.HeadlessJoinTimingProbe
+0      278ms    PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      224ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      491ms    PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      171ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      384ms    PASS       b5ccg.engine.HeadlessWarConflictProbe
+0      11260ms  PASS       b5ccg.engine.HeadlessRaceStateProbe
+0      156ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      193ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      270ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+0      240ms    PASS       b5ccg.engine.CardSetManifestChecker
+0      257ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+0      322ms    PASS       b5ccg.engine.HeadlessCanonicalParityProbe
+0      195ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+0      389ms    PASS       b5ccg.model.EffectCensusChecker
+0      338ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      157ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      1716ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      1607ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      3144ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      1843ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      2415ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 31 passed, 0 failed (of 31 gate classes run)
+Total gate time: 235565ms
+Per-class logs: out_gate/
+Ô£ô Verification passed (all 31 gate classes).
+
+=== Tooling probes (B5-0044) ===
+1      4483ms   FAIL       test-param-guard
+1      5080ms   FAIL       test-flip-ledger
+Tooling probes: 0 passed, 2 failed
+
+FAILING TOOLING PROBES:
+  - test-param-guard
+----- tail of test-param-guard (out_gate/test-param-guard.log) -----
+FAIL: 1 problem(s)
+  - flip-ledger: unknown parameter 'ThisParameterDoesNotExist' gave exit 1 but the error does not name the parameter. Text: C:\temp\projects\b5ccg\.agent\tools\flip-ledger.ps1 : bad status At C:\temp\projects\b5ccg\.agent\tools\flip-ledger.ps1:18 char:83 + ... ','SUPERSEDED','VOID')) { Write-Error "bad status $NewStatus"; exit 1 ... + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ + CategoryInfo : NotSpecified: (:) [Write-Error], WriteErrorException + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException,flip-ledger.ps1
+----- end test-param-guard -----
+  - test-flip-ledger
+----- tail of test-flip-ledger (out_gate/test-flip-ledger.log) -----
+=== flip-ledger acceptance (sandboxed) ===
+  [FAIL] case 1
+  [FAIL] case 2
+  [PASS] case 3
+  [PASS] case 4
+  [PASS] case 5
+  [FAIL] case 6
+  [FAIL] case 7
+  [PASS] case 8
+  [FAIL] case 9
+
+FAIL: 5 of 9 case(s) failed
+  - case 1: live claim by another agent did NOT block the flip (exit=1, changed=False, backups=1)
+  - case 2: a .RELEASED marker blocked the flip (exit=1, status=OPEN)
+  - case 6: refused flip left a change or a backup (changed=False, backups=1)
+  - case 7: -DryRun wrote something (exit=1, changed=False, backups=1, status=OPEN)
+  - case 9: unknown parameter was not rejected (exit=0); output was: flipped B5-0202 -> BLOCKED (backup C:\Users\Tiwa Pene\AppData\Local\Temp\b5-flip-ledger-53390fee\.agent\RESCUE)
+----- end test-flip-ledger -----
+
+ERROR: 2 tooling probe(s) failed. Exit non-zero.
