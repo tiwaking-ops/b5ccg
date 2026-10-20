@@ -85,6 +85,10 @@ foreach ($t in $tools) {
     }
 
     # --- POSITIVE CASE: the documented parameters must still work ---------
+    # The assertion is NOT merely "the tool did not complain about a
+    # parameter". A tool that fails on every input passes that. Each tool
+    # therefore declares what "still works" means for it, and the probe
+    # checks that specific thing.
     $v = Invoke-Tool -Path $path -Arguments $t.Valid
     $crashed = ($v.Text -match 'A parameter cannot be found')
     if ($crashed) {
@@ -92,6 +96,46 @@ foreach ($t in $tools) {
     }
     if ($v.Text -match 'Cannot bind argument to parameter .Path. because it is an empty string') {
         $failures += ("{0}: valid invocation hit the empty-`$PSScriptRoot trap. A [CmdletBinding()] script has an EMPTY `$PSScriptRoot while param defaults are evaluated, so any default of the form (Join-Path (Split-Path -Parent `$PSScriptRoot) ...) must be resolved in the body instead." -f $t.Name)
+    }
+    switch ($t.Name) {
+        'ledger-query' {
+            # Must exit 0 and print a row of the ledger.
+            if ($v.Code -ne 0) { $failures += ("ledger-query: valid invocation exited {0}, expected 0. Text: {1}" -f $v.Code, $v.Text.Trim()) }
+            elseif ($v.Text -notmatch 'B5-\d{4}') { $failures += "ledger-query: valid invocation printed no ledger row. It is supposed to list OPEN rows." }
+        }
+        'lint-ledger' {
+            # Must exit 0 and print its verdict line.
+            if ($v.Code -ne 0) { $failures += ("lint-ledger: valid invocation exited {0}, expected 0. Text: {1}" -f $v.Code, $v.Text.Trim()) }
+            elseif ($v.Text -notmatch 'LEDGER LINT') { $failures += "lint-ledger: valid invocation printed no verdict line." }
+        }
+        'lint-encoding' {
+            # The repo's baseline is 20 known encoding hits, so this tool exits 1
+            # BY DESIGN. What must not happen is a crash, or a verdict line
+            # that is missing.
+            if ($v.Text -notmatch 'ENCODING LINT') { $failures += "lint-encoding: valid invocation printed no verdict line." }
+            if ($v.Text -match 'Cannot bind|is not recognized|Exception') { $failures += ("lint-encoding: valid invocation crashed. Text: {0}" -f $v.Text.Trim()) }
+        }
+        'snapshot-age-check' {
+            # Must exit 0 and print an age/verdict line. The snapshot job is
+            # not enabled, so there may be no branch; the tool must still
+            # report a verdict rather than crash.
+            if ($v.Text -notmatch 'snapshot|SNAPSHOT|UNREADABLE|age') { $failures += "snapshot-age-check: valid invocation printed no verdict line." }
+            if ($v.Text -match 'Cannot bind|is not recognized') { $failures += ("snapshot-age-check: valid invocation crashed. Text: {0}" -f $v.Text.Trim()) }
+        }
+        'flip-ledger' {
+            # -DryRun on a non-existent id must not write anything. The tool
+            # exits 1 ("id not in ledger"), which is CORRECT here, so the
+            # assertion is on the absence of writes, not on the exit code.
+            # The write-freedom is asserted properly in test-flip-ledger.ps1
+            # case 7; what this probe adds is that the tool reached its own
+            # logic rather than dying on parameter binding.
+            if ($v.Text -match 'not in ledger') {
+                # expected: the tool ran and reached the ledger lookup
+            }
+            elseif ($v.Code -ne 0) {
+                $failures += ("flip-ledger: valid -DryRun invocation exited {0} without reaching the ledger lookup. Text: {1}" -f $v.Code, $v.Text.Trim())
+            }
+        }
     }
 }
 

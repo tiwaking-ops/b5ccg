@@ -26,6 +26,8 @@
     10 a live claim held by the CALLER does not block the flip
     11 another agent's live claim still blocks, even when the caller names
        a different agent id
+    12 a live claim on the SIBLING id does not block the parent id
+    13 a claim file with no readable agent_id blocks the flip
 
   Exits 0 when every case holds, 1 otherwise, listing the failures.
 #>
@@ -200,6 +202,28 @@ $after = [System.IO.File]::ReadAllText($sbLedger)
 $ok = ($r.Code -ne 0) -and ($before -eq $after) -and ((Get-Status 'B5-0300') -eq 'OPEN')
 if (-not $ok) { $failures += ("case 11: another agent's live claim did not block the flip (exit={0}, status={1})" -f $r.Code, (Get-Status 'B5-0300')) }
 $results += [pscustomobject]@{ N=11; Verdict=$(if($ok){'PASS'}else{'FAIL'}) }
+
+# --- case 12: a claim on the SIBLING id must not block the parent -------
+# The claim filename is matched exactly. A prefix match would let B5-0202c's
+# claim block a flip of B5-0202.
+Reset-Sandbox $true
+[System.IO.File]::WriteAllText((Join-Path $sb '.agent/CLAIMS/B5-0202c.json'), '{"task":"B5-0202c","agent_id":"other-agent-99","started_utc":"2026-10-19T18:00:00Z","ttl_min":30}', (New-Object System.Text.UTF8Encoding($false)))
+$r = Invoke-Flip @('-Id','B5-0202','-NewStatus','BLOCKED')
+$ok = ($r.Code -eq 0) -and ((Get-Status 'B5-0202') -eq 'BLOCKED')
+if (-not $ok) { $failures += ("case 12: a sibling id's claim blocked the parent id (exit={0}, status={1})" -f $r.Code, (Get-Status 'B5-0202')) }
+$results += [pscustomobject]@{ N=12; Verdict=$(if($ok){'PASS'}else{'FAIL'}) }
+
+# --- case 13: a claim with NO readable agent_id blocks the flip ----------
+# An unknown owner must block. Treating a malformed claim as "mine" would
+# guess in the unsafe direction.
+Reset-Sandbox $true
+[System.IO.File]::WriteAllText((Join-Path $sb '.agent/CLAIMS/B5-0300.json'), '{"task":"B5-0300","started_utc":"2026-10-19T18:00:00Z","ttl_min":30}', (New-Object System.Text.UTF8Encoding($false)))
+$before = [System.IO.File]::ReadAllText($sbLedger)
+$r = Invoke-Flip @('-Id','B5-0300','-NewStatus','DONE')
+$after = [System.IO.File]::ReadAllText($sbLedger)
+$ok = ($r.Code -ne 0) -and ($before -eq $after) -and ((Get-Status 'B5-0300') -eq 'OPEN')
+if (-not $ok) { $failures += ("case 13: a claim with no agent_id did not block the flip (exit={0}, status={1})" -f $r.Code, (Get-Status 'B5-0300')) }
+$results += [pscustomobject]@{ N=13; Verdict=$(if($ok){'PASS'}else{'FAIL'}) }
 
 Write-Output '=== flip-ledger acceptance (sandboxed) ==='
 foreach ($x in $results) { Write-Output ("  [{0}] case {1}" -f $x.Verdict, $x.N) }

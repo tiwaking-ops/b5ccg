@@ -9,6 +9,13 @@ provenance:
   last_modified_by_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-21-01"}
   assessor_llm: none
   no_self_assessment: true
+  advisory_review:
+    - reviewer_llm: {name: "minimax-m3.1-flash (subagent 'Reviewer')", version: "minimax-m3.1-flash"}
+      family: "minimax"
+      author_family: "minimax"
+      independence: "NONE - same family as the author"
+      date: "2026-10-21"
+      note: "Under the B5-0045 rule (reviewer independence is by model family, not agent id) this review is NOT an independent assessment and is not recorded as an assessor_llm entry. It is advisory. It was measured by execution and it found three real defects in the guard and one wrong measurement in the first draft of this report, all of which were fixed. A different-family assessment of this row is still outstanding."
 ---
 
 # B5-0044 - red-then-green evidence for the tooling guards
@@ -26,26 +33,44 @@ Ledger row: `B5-0044` (OPEN -> DONE).
 |---|---|---|
 | five tools reject unknown parameters | `[CmdletBinding()]` added to all five | `test-param-guard.ps1` |
 | one negative-case probe per tool | `test-param-guard.ps1` covers all five; `test-flip-ledger.ps1` covers flip-ledger's guards in depth | both probes |
-| a negative-case probe that **fails without the change** | red run below: 5/5 fail against HEAD's tools, 11-case probe fails 6/11 | red evidence |
+| a negative-case probe that **fails without the change** | red run below: 5/5 fail against HEAD's tools, 13-case probe fails 7/13 | red evidence |
 | `-DryRun` writes nothing | `flip-ledger.ps1` gained a real `-DryRun`; probe case 7 asserts no ledger change, no backup, no report | `test-flip-ledger.ps1` case 7 |
 | gate exits 0 | `RUN_TESTS=1 sh compile.sh` -> **31/31 Java classes + 2 tooling probes, exit 0** | `.agent/REPORTS/evidence/GATE-B5-0044.txt` |
 
+One clause is met in substance but with a caveat, logged rather than papered
+over: the row's defect class names `acceptance.ps1 -DryRun`, and no file of
+that name has ever existed in this repository. The demonstration was made
+against the tools that have a `-DryRun` and could write - `flip-ledger.ps1`
+and `new-snapshot.ps1`. See "One ambiguity in the row itself" below.
+
 ## What the five tools did before
 
-Measured, not assumed. Each was invoked with `-ThisParameterDoesNotExist x`:
+Measured, not assumed. Each was invoked with `-ThisParameterDoesNotExist x`,
+run from its real location in a copy of the repository layout so that
+CWD-relative defaults resolved as they do in production.
 
 | Tool | Exit before | Rejected the unknown parameter? |
 |---|---|---|
 | `flip-ledger.ps1` | 1 | no |
 | `ledger-query.ps1` | **0** | no |
 | `lint-encoding.ps1` | 1 | no |
-| `lint-ledger.ps1` | 0 | no |
-| `snapshot-age-check.ps1` | 1 | no |
+| `lint-ledger.ps1` | **0** | no |
+| `snapshot-age-check.ps1` | **0** | no |
 
-`ledger-query` was the worst: `powershell -File ledger-query.ps1 -Statuss OPEN`
-exited **0** and printed a normal table. The typo was absorbed and the intended
-filter never applied. A tool that exits 0 on a misspelled parameter is worse
-than one that crashes, because the reader believes it.
+Three of the five exited **0** and printed a normal result. `ledger-query` was
+the worst case: `powershell -File ledger-query.ps1 -Statuss OPEN` exited **0**
+and printed a normal table. The typo was absorbed and the intended filter
+never applied. A tool that exits 0 on a misspelled parameter is worse than one
+that crashes, because the reader believes it.
+
+> **Correction, 2026-10-21.** The first version of this table recorded exit 1
+> for `snapshot-age-check` and did not record the exit code for
+> `lint-ledger`. Both were artefacts of running the old tool from a
+> temporary directory, where its CWD-relative defaults resolved to nothing and
+> it failed for an unrelated reason. Measured at its real path, it exits 0 and
+> absorbs the parameter silently - the worst failure mode of the five, not a
+> mid-table one. The table above is the corrected measurement; the original
+> numbers were wrong and understated the defect.
 
 Ten of the fifteen tools already declared `[CmdletBinding()]`. The five that
 did not were the gap.
@@ -148,10 +173,79 @@ Two new files, both under `.agent/tools/`:
 | Probe | Against the fixed tools | Against HEAD's (unfixed) tools |
 |---|---|---|
 | `test-param-guard.ps1` | **exit 0** - 5/5 | **exit 1** - 5/5 fail |
-| `test-flip-ledger.ps1` | **exit 0** - 11/11 | **exit 1** - 6/11 fail (cases 1, 2, 6, 7, 9, 10) |
+| `test-flip-ledger.ps1` | **exit 0** - 13/13 | **exit 1** - 7/13 fail (cases 1, 2, 6, 7, 9, 10, 12) |
 
 The red run is the point. A probe that has never been seen failing is not
 evidence that it can fail.
+
+## Independent review, and what it changed
+
+This work was reviewed by a subagent instructed to verify by execution. The
+reviewer turned out to be **the same model family as the author** (minimax),
+so under the rule written in B5-0045 it is **not** a valid independent
+assessor, and nothing in this repository records it as one. Its findings are
+advisory. It was right about several things, and this report was wrong about
+several things.
+
+**Accepted and fixed (three real defects in the guard):**
+
+1. *The claim filter was a prefix match.* `Get-ChildItem -Filter "$Id*"`
+   matches `B5-0202c` when looking for `B5-0202`, so a sibling's live claim
+   blocked the wrong row. The filter is now an exact filename match, and
+   probe case 12 covers the blocking direction (the old probe only tested the
+   direction that passed).
+2. *A claim file with no readable `agent_id` was treated as absent rather
+   than foreign.* The code set `$owner = ''` when the field was missing, and
+   `'' -ne $AgentId` is false when the caller omits `-AgentId`, so a malformed
+   claim was treated as the caller's own. This contradicted the tool's own
+   documented rule. An unknown owner now blocks. Probe case 13 covers it.
+3. *The "still works" half of `test-param-guard.ps1` was vacuous.* It only
+   asserted that the output did not contain "A parameter cannot be found", so
+   a tool that failed on every input passed it. The reviewer demonstrated this
+   by making `lint-ledger` always `Write-Error` and `exit 1` - the probe
+   still passed. Each tool now declares what "still works" means for it
+   (`ledger-query` must exit 0 and print a row; `lint-ledger` must exit 0 and
+   print its verdict; `lint-encoding` and `snapshot-age-check` must print a
+   verdict and not crash; `flip-ledger` must reach its own logic).
+
+**Measured, and the correction went the wrong way.** The table in the first
+version of this report recorded exit 1 for `snapshot-age-check` and did not
+record `lint-ledger`'s exit code. Both were artefacts of measuring the old
+tools from a temporary directory, where their CWD-relative defaults resolved
+to nothing. Measured at their real path, **three of the five exited 0** and
+printed a normal result, which is worse than the first measurement showed. The
+corrected table is above. The lesson is the one this project keeps
+relearning: a measurement taken in the wrong conditions is not a conservative
+measurement, it is just a wrong one.
+
+**Two limits of the claim guard, now stated in the tool itself rather than
+left for a reader to discover:**
+
+* `-AgentId` is a *claim* about identity, not a proof of it. The claim files
+  carry no signature, so an agent that names another agent's id passes the
+  guard. The claim-file format has no field that could make this stronger, so
+  the limit is inherent to the format.
+* The guard ignores TTL. `new-claim.ps1` stamps `ttl_min: 30` and
+  `ledger-query.ps1` judges liveness against it; `flip-ledger.ps1` treats any
+  non-`.RELEASED` claim as live forever. That is the safer direction, but it
+  means a crashed agent's claim blocks the row until someone releases it by
+  hand.
+
+**One ambiguity in the row itself, logged rather than silently resolved.** The
+row's defect class names `acceptance.ps1 -DryRun`. No file by that name has
+ever existed in this repository - not in the working tree, not on any branch,
+not in any object in the git history. The acceptance clause "a demonstration
+that `-DryRun` writes nothing" was met against `flip-ledger.ps1` and
+`new-snapshot.ps1`, which are the tools that have a `-DryRun` and could write.
+If the intent was that `acceptance.ps1` should exist, that clause is
+unaddressed rather than met. Logged here per AGENTS.md section 4.
+
+**One environment note.** `basename` is a new dependency of `compile.sh`
+(introduced by this change). `awk`, `grep`, `date` and `tail` were already
+required by the pre-existing gate and live in the same `usr/bin`, so this is
+not a new class of dependency - but the machine's default PATH as presented
+to `sh` does not include `C:\Program Files\Git\usr\bin`, so the gate only runs
+when the caller puts it there. That is pre-existing and was left alone.
 
 ## The probes are wired into the gate
 

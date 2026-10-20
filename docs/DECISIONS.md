@@ -1107,20 +1107,31 @@ larger than the row that produced it.
 
 **The measurement.** Five of the fifteen tools under `.agent/tools/` did not
 declare `[CmdletBinding()]`. Each was invoked with a parameter that does not
-exist:
+exist, from its real location in a copy of the repository layout so that
+CWD-relative defaults resolved as they do in production:
 
 | Tool | Exit before | Unknown parameter rejected? |
 |---|---|---|
 | `flip-ledger.ps1` | 1 | no |
 | `ledger-query.ps1` | **0** | no |
 | `lint-encoding.ps1` | 1 | no |
-| `lint-ledger.ps1` | 0 | no |
-| `snapshot-age-check.ps1` | 1 | no |
+| `lint-ledger.ps1` | **0** | no |
+| `snapshot-age-check.ps1` | **0** | no |
 
+Three of the five exited **0** and printed a normal result.
 `ledger-query.ps1 -Statuss OPEN` exited **0** and printed a normal table. The
-typo was absorbed and the intended filter never applied. The other four
-exited non-zero for an unrelated reason - a missing required value - so a
-reader could mistake a crash for a rejection.
+typo was absorbed and the intended filter never applied. The other two exited
+non-zero for an unrelated reason - a missing required value - so a reader
+could mistake a crash for a rejection.
+
+A first measurement of this table, taken by running the old tools from a
+temporary directory, recorded exit 1 for `snapshot-age-check` and `lint-ledger`.
+Both numbers were artefacts of the CWD: the old tools' path defaults resolve
+to nothing outside the repository, so they failed for an unrelated reason. The
+table above is the corrected measurement, and the correction went the wrong
+way - the defect is larger than the first measurement showed, not smaller. The
+lesson is the one this project keeps relearning: a measurement taken in the
+wrong conditions is not a conservative measurement, it is just a wrong one.
 
 **A trap found while fixing it.** `[CmdletBinding()]` turns a script into an
 advanced function, and in an advanced function `$PSScriptRoot` is **empty while
@@ -1194,3 +1205,68 @@ assertions do not depend on console width.
 **Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0044.md`.
 Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0044.txt` (green, exit 0) and
 `GATE-B5-0044-RED.txt` (red, exit 1).
+## 2026-10-21 - Reviewer independence is by model family, not by agent id (B5-0045)
+
+AGENTS.md section 1 prohibited self-assessment but was silent on how
+independent an assessment had to be. It is now explicit, and the rule is
+stated in AGENTS.md section 1 as well as here.
+
+**The rule.** The assessing agent must run a different *model family* from the
+authoring agent, and the assessor entry must name the family so a later reader
+can check the independence rather than take it on trust. Family means the model
+lineage - Claude, GPT, Gemini, Gemma, Llama, Qwen, GLM, Kimi, DeepSeek,
+Mistral, Grok, Nemotron, Step, MiniMax, Mimo, and so on - not the provider,
+not the vendor, not the agent id. A `deepseek` served by `kenari` is a
+different family from a `claude` served by the same provider. Both a different
+family and a different agent id are required; neither substitutes for the
+other. If no different-family agent is available, the work is recorded as
+`unassessed_revision` rather than given a nominal assessor, which is an honest
+label and not a failure.
+
+**Why a different agent id is not enough.** Two agent ids can be the same
+model, and the same model reviewing its own work reproduces the author's blind
+spots by construction rather than by accident. This is the same reasoning that
+the 2026-10-19 owner ruling recorded for advice that benefits the adviser's own
+maker: an interested party is an unverified claim, whoever the party is.
+
+**Independence is not bought.** Re-measured on 2026-10-21 against the live
+catalogue: of **411 catalogued models, 97 are priced at exactly $0** in and
+$0 out, and **83 of those are text LLMs across 35 families** - Claude, GPT,
+Gemini, Gemma, GLM, Kimi, DeepSeek, Mistral, Grok, Nemotron, Step, MiniMax,
+Mimo, Qwen, Llama and others, spread across the opencode, kenari, kilo, google,
+nvidia, openrouter, orcarouter, commandcode, poolside and tokenrouter
+providers. A different-family reviewer at $0 is therefore always available, and
+a paid tier is never a reason to skip the check. The 2026-10-19 figure for
+this measurement was 41 of the first 100; the catalogue has moved since, and
+the numbers here are the 2026-10-21 measurement. **Re-measure before citing
+them** - a governance document carrying a stale number is the same defect as a
+governance document carrying a wrong one.
+
+**The worked example, which is the rule proving itself.** B5-0044 was closed
+and then put to an independent review by a subagent instructed to verify by
+execution. The subagent reported its own identity first: `minimax-m3.1-flash`,
+family **minimax**. The author of B5-0044 is `minimax-m3.1-flash`, family
+**minimax**. So the reviewer declared itself **not a valid independent
+assessor** under the rule written in this entry, and its findings were recorded
+as advisory rather than as an `assessor_llm` entry.
+
+That is the rule working, not the rule failing. And the review was worth
+having: by executing against the tree it found three real defects in the
+B5-0044 guard - a prefix-matching claim filter that let a sibling id's claim
+block the wrong row, a claim file with no readable `agent_id` treated as the
+caller's own, and a "the tool still works" assertion that a completely broken
+tool could satisfy - and it found one wrong measurement in the author's own
+report, which was corrected. A same-family reviewer is still useful. It just
+is not an assessor, and now the repository says so in the provenance of the
+work rather than leaving the distinction to be inferred.
+
+**Standing rule for the record.** A reviewer from the maker's own family is an
+unverified claim, in the same category as a self-assessment and in the same
+category as advice that benefits the adviser's own maker. The honest label for
+that situation is `unassessed_revision`, and the ledger row stays open for a
+different-family assessment rather than being closed on a same-family word.
+
+**Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0044.md`
+(which carries the advisory review in its front matter under
+`advisory_review`, explicitly marked as not independent) and
+`-B5-0045.md`.

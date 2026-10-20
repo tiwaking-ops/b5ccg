@@ -1,0 +1,70 @@
+﻿=== B5 CCG Build ===
+Source: /c/temp/projects/b5ccg/b5ccg/src
+Output: /c/temp/projects/b5ccg/b5ccg/out
+Compiling 189 source filesÔÇª
+sh.exe : Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+At line:6 char:8
++ $out = & 'C:\Program Files\Git\usr\bin\sh.exe' compile.sh 2>&1
++        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Picked up JAVA_....encoding=UTF-8:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resourcesÔÇª
+
+Ô£ô Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 31 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 189  |  Compiled class count: 577
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      12694ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5646ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5295ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      1877ms   PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      185832ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      261ms    PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      213ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      221ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      207ms    PASS       b5ccg.engine.HeadlessDrawRoundProbe
+0      257ms    PASS       b5ccg.engine.HeadlessJoinTimingProbe
+0      313ms    PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      246ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      450ms    PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      194ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      486ms    PASS       b5ccg.engine.HeadlessWarConflictProbe
+0      12637ms  PASS       b5ccg.engine.HeadlessRaceStateProbe
+0      194ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      203ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      326ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+0      295ms    PASS       b5ccg.engine.CardSetManifestChecker
+0      298ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+0      303ms    PASS       b5ccg.engine.HeadlessCanonicalParityProbe
+0      152ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+0      327ms    PASS       b5ccg.model.EffectCensusChecker
+0      277ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      165ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      1790ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      1710ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      3067ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      1710ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      2633ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 31 passed, 0 failed (of 31 gate classes run)
+Total gate time: 240279ms
+Per-class logs: out_gate/
+Ô£ô Verification passed (all 31 gate classes).
+
+=== Tooling probes (B5-0044) ===
+0      5407ms   PASS       test-param-guard
+0      7991ms   PASS       test-flip-ledger
+Tooling probes: 2 passed, 0 failed

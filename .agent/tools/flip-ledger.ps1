@@ -99,24 +99,41 @@ if ($NewStatus -eq 'DONE') {
 # agent_id equals -AgentId is exempt. Before B5-0044 the guard matched nothing
 # at all (it read a path that does not exist), so this exemption is a
 # deliberate widening of a guard that could previously never fire.
+#
+# TWO limits of this guard, both measured and both recorded rather than papered
+# over:
+#   1. The claim files carry no signature, so -AgentId is a CLAIM about
+#      identity, not a proof of it. An agent that names another agent's id
+#      passes the guard. The claim-file format has no field that could make
+#      this stronger, so the limit is inherent to the format and is stated
+#      here instead of being left for a reader to discover.
+#   2. A claim file with no readable agent_id is treated as FOREIGN, not as
+#      the caller's. "Unreadable" and "malformed" both mean the owner is
+#      unknown, and an unknown owner must block, because guessing "mine" is
+#      the unsafe direction.
+#
+# The claim FILENAME is matched exactly, not as a prefix. A prefix match would
+# let a live claim on the sibling id B5-0202c block a flip of B5-0202, and let
+# a flip of B5-0202 pass while B5-0202c was claimed.
 $claims = @()
 if (Test-Path -LiteralPath $claimsDir) {
-  $claims = @(Get-ChildItem -LiteralPath $claimsDir -Filter "$Id*" -ErrorAction SilentlyContinue)
+  $claims = @(Get-ChildItem -LiteralPath $claimsDir -Filter "$Id*.json" -ErrorAction SilentlyContinue |
+              Where-Object { $_.BaseName -eq $Id -or $_.BaseName -eq ($Id + '.RELEASED') })
 }
 $live = @($claims | Where-Object { $_.Name -notmatch '\.RELEASED\.json$' })
 $foreign = @()
 foreach ($c in $live) {
-  $owner = ''
+  $owner = $null
   try {
     $j = [System.IO.File]::ReadAllText($c.FullName) | ConvertFrom-Json
-    if ($j.PSObject.Properties.Name -contains 'agent_id') { $owner = [string]$j.agent_id }
+    if ($j.PSObject.Properties.Name -contains 'agent_id' -and $j.agent_id) {
+      $owner = [string]$j.agent_id
+    }
   } catch {
-    # An unreadable claim file is treated as foreign, not as absent. A claim
-    # that cannot be read is a claim that cannot be reasoned about, and
-    # guessing "mine" would be the unsafe direction.
-    $owner = '<unreadable>'
+    $owner = $null
   }
-  if ($owner -ne $AgentId) { $foreign += $c }
+  # No readable owner -> foreign. Unknown owner blocks.
+  if ($null -eq $owner -or $owner -ne $AgentId) { $foreign += $c }
 }
 if ($foreign.Count -gt 0) {
   Write-Error "refuse: live claim by another agent for $Id ($($foreign.Name -join ', '))"; exit 1

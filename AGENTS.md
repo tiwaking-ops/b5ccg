@@ -5,12 +5,13 @@ document:
 provenance:
   author_llm: {name: "Muse Spark", version: "muse-spark-1.3-contributor-free"}
   created_date: "2026-10-16"
-  last_modified_date: "2026-10-19"
-  last_modified_by_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-19-01"}
+  last_modified_date: "2026-10-21"
+  last_modified_by_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-21-01"}
   assessor_llm:
     - {name: "opencode (verifier)", version: "independent-verify-2026-10-16", passes: 1, date: "2026-10-16", note: "updated §2 build rule to reflect Hop-1 (--release 8 / JDK 25), owner-approved"}
   unassessed_revision:
     - {author_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-19-01"}, date: "2026-10-19", change: "section 2 rulebook pin re-pinned to the canonical LF bytes under B5-0043 and B5-0047", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass"}
+    - {author_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-21-01"}, date: "2026-10-21", change: "section 1: added the reviewer-independence-by-model-family rule under B5-0045", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass. A same-family advisory review of the surrounding B5-0044 work was obtained and is recorded in the B5-0044 report's front matter under advisory_review, explicitly marked as not independent. A different-family assessment of this revision is outstanding."}
 ---
 
 # AGENTS.md — b5ccg (lean reset, Claude v1 §7 B1/B2)
@@ -28,6 +29,38 @@ Original `author_llm` is never overwritten. Later editors append one
 `last_modified_by_llm` + `last_modified_date`. Per-task scratch carries
 provenance in the ledger row instead of front matter. Never list yourself as
 both author and assessor in the same pass.
+
+**Reviewer independence is by model family, not by agent id.** A different
+agent id is not independence: two agent ids can be the same model, and the
+same model reviewing its own work reproduces the author's blind spots by
+construction. The assessing agent must run a *different model family* from the
+authoring agent, and the assessor entry must name the family so a later
+reader can check the independence rather than take it on trust.
+
+* **Family** means the model lineage (Claude, GPT, Gemini, Gemma, Llama, Qwen,
+  GLM, Kimi, DeepSeek, Mistral, Grok, Nemotron, Step, MiniMax, Mimo, ...), not
+  the provider, not the vendor, and not the agent id. A `deepseek` served by
+  `kenari` is a different family from a `claude` served by the same provider.
+* **Free is sufficient.** Independence is not bought. As measured on
+  2026-10-21, the free ($0 input and $0 output) catalogue holds **83 text
+  LLMs across 35 families** (of 411 catalogued models, 97 priced at exactly
+  $0). A different-family reviewer at $0 is always available, so a paid tier is
+  never a reason to skip the check. Re-measure before citing the numbers; the
+  catalogue moves.
+* **An assessor is a different family, or it is not an assessor.** If no
+  different-family agent is available, the work is recorded as
+  `unassessed_revision` (author-written, not independently assessed) rather
+  than given a nominal assessor. That is an honest label, not a failure.
+* **Self-assessment stays prohibited.** Different family and different agent
+  id are both required; a different family does not license the same agent to
+  assess its own work, and a different agent id does not substitute for a
+  different family.
+* **A reviewer from the maker's own family is an unverified claim.** If the
+  assessing model shares a family with the model that produced the work, the
+  assessment carries the same blind spots as the work and must not be recorded
+  as independent. The same reasoning already applies to advice that benefits
+  the adviser's own maker (see `docs/DECISIONS.md`).
+
 
 ## 2. Build rules
 
