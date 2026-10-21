@@ -397,6 +397,10 @@ row does not paper over it:
 3. **The two inert schema stubs remain inert.** `GroupEffectSchema` and
    `EnhancementEffectSchema` still have zero implementers. A standing defect,
    and a standing defect is not promoted by a verification pass.
+4. **Four pilot entries state a broader rule than their card prints, and
+   the registry's kind constraint is unenforced.** Section 3. Filed as row
+   **B5-0052**, which should land before WP-12 (B5-0035), which will need
+   the same conjunction.
 
 ---
 
