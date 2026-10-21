@@ -1026,76 +1026,39 @@ public class RulesEngine {
 
     // ── Victory check ────────────────────────────────────────────────────────
 
+    /**
+     * WP-15 / B5-0032 (A6.1): the extracted victory rules.
+     *
+     * <p>{@link VictoryRules} holds the five rulebook victory paths, each as
+     * a rule with an eligibility predicate and an achieved predicate, and
+     * returns a {@link b5ccg.model.VictoryOutcome} carrying a SET of winners
+     * - because the rulebook at :1048 says a card that reduces the power
+     * needed to win "makes it possible for more than one player to score a
+     * victory simultaneously".</p>
+     *
+     * <p>{@link #checkVictory} delegates to it and returns the sole winner,
+     * which is the current rules' degenerate case: a one-element set. The
+     * delegation is checked by {@link HeadlessVictoryRulesGoldenMaster},
+     * which asks both the engine and the module the same question over a
+     * spread of states and requires the same answer, and which separately
+     * proves the module can report a simultaneous win that this
+     * single-winner signature cannot express.</p>
+     */
+    private static final VictoryRules VICTORY_RULES = new VictoryRules();
+
+    /** The extracted victory rules, for callers that want the multi-winner form. */
+    public static VictoryRules victoryRules() {
+        return VICTORY_RULES;
+    }
+
     public Player checkVictory(GameState state) {
-        Player lastStanding = null;
-        int remaining = 0;
-        for (Player p : state.getPlayers()) {
-            if (!state.isPlayerActive(p)) continue;
-            remaining++;
-            lastStanding = p;
-        }
-        if (remaining == 1) return lastStanding;
-
-        // B5-0661 (rulebook :821): if every other player has surrendered and
-        // the last remaining active player still stands, that player scores a
-        // Major Victory — routed through majorVictory() so the win is recorded
-        // as a Major Victory path rather than a second divergent victory type.
-        // Surrendered players are NOT forfeited, so the last-standing check
-        // above does not catch this; we count active (non-forfeited AND
-        // non-surrendered) players here.
-        int activeRemaining = 0;
-        Player lastActive = null;
-        for (Player p : state.getPlayers()) {
-            if (!state.isPlayerActive(p)) continue;
-            activeRemaining++;
-            lastActive = p;
-        }
-        if (activeRemaining == 1 && lastActive != null) {
-            if (majorVictory(state, lastActive)) return lastActive;
-        }
-
-        // Standard Victory condition 2 (rulebook :176): if Babylon 5 has an
-        // Influence Rating of 20 or more at the end of a turn — and one player
-        // eligible to win a standard victory is leading in Power — then that
-        // player wins. checkVictory runs at the round boundary (the engine's
-        // "end of turn"; interpretation recorded in DECISIONS B5-0340).
-        // Eligibility (rulebook :170 "eligible to win by scoring a Standard
-        // Victory" = not BARRED): no major agenda, and no Shadow War
-        // (rulebook :178 — during the Shadow War NO Standard Victory is
-        // possible, so condition 2 is inert there; B5-0354 finding). The
-        // "leading in Power" predicate is strictly-greatest, single winner —
-        // a tie crowns nobody (D12 discipline).
-        Player stationLeader = stationVictory(state);
-        if (stationLeader != null) return stationLeader;
-
-        for (Player p : state.getPlayers()) {
-            if (p.hasForfeited()) continue;
-            AgendaCard agenda = p.getAgenda();
-            // B5-0364: a hidden (face-down) agenda has NO effect on play
-            // until revealed (rulebook :520) — neither its win condition nor
-            // its major-agenda standard bar applies while face-down.
-            // Agenda-driven win: the agenda's own condition governs
-            // (e.g. "Reach 20 Influence", Military Supremacy, Most Inner Circle).
-            if (agenda != null && !agenda.isFaceDown()
-                    && agenda.isConditionMet(state, p)) {
-                return p;
-            }
-            // B5-0629: Major Victory path 1 (rulebook :182), wired after the
-            // agenda-condition scan and before the Standard path — a Major
-            // Victory is precisely the path a major-agenda holder is entitled
-            // to at :178 ("Instead, they must score a Major Victory to win"),
-            // so it must fire where the Standard path is barred, and it
-            // carries no bar of its own. Path 2 (the agenda's own requirement)
-            // is the agenda-condition scan above.
-            if (majorVictory(state, p)) return p;
-            // Standard victory (rulebook: Victory): 20 power AND more than any
-            // other player. A major agenda in play blocks the standard path
-            // (a hidden one does not — it takes effect only on reveal).
-            if (agenda == null || agenda.isFaceDown() || !agenda.isMajorAgenda()) {
-                if (standardVictory(state, p)) return p;
-            }
-        }
-        return null;
+        b5ccg.model.VictoryOutcome outcome = VICTORY_RULES.check(state);
+        // The single-winner contract. When the rules allow two players to win
+        // at once, the FIRST winner is returned and the others are dropped -
+        // the same shape as the pre-extraction behaviour, because the engine
+        // returned on the first match. The multi-winner answer is available
+        // through victoryRules().check(state).
+        return outcome.firstWinner();
     }
 
     // ── B5-0663: victory-path query (additive, preserves checkVictory) ────────

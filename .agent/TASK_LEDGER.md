@@ -78,7 +78,7 @@ Per AGENTS.md §3 that report is an observation and carries no authority.
 | B5-0028 | OPEN | WP-10 Effect schema v0; the freeze on engine + tooling is LIFTED by owner ruling 2026-10-19 and no longer bars claims, though no tooling ever enforced it. The work itself stays withdrawn by the 2026-10-19 correction, so this row remains OPEN. Depends on B5-0005 census + B5-0027 release | engine,tooling | - | - |
 | B5-0029 | DONE | WP-13 Unimplemented-text tripwire (A4) | engine,tooling | - | .agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0029.md |
 | B5-0030 | DONE | WP-14 Invariant checker + fuzz (A4) — freeze sustained; independent of --release 8; depends on B5-0029 tripwire (FULL) | engine,tooling | - | .agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0030.md |
-| B5-0032 | OPEN | WP-15 VictoryRules extraction (A6.1) | engine,tooling | - | - |
+| B5-0032 | DONE | WP-15 VictoryRules extraction (A6.1) | engine,tooling | - | .agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0032.md |
 | B5-0033 | OPEN | WP-16/17 MarkRules + CostRules (A6.2/3) | engine,tooling | - | - |
 | B5-0034 | OPEN | WP-11 Groups pilot (A2) | engine,tooling | - | - |
 | B5-0035 | OPEN | WP-12 Enhancements pilot (A2) | engine,tooling | - | - |

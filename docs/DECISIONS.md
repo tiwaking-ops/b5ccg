@@ -1573,3 +1573,64 @@ state changes, 13,024 invariant checks, 0 violations.
 
 **Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0030.md`.
 Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0030.txt`.
+## 2026-10-21 - VictoryRules extracted, with a golden master to guard it (B5-0032)
+
+WP-15 (A6.1) asked for the victory rules to be modelled as "a rule with a
+per-player eligibility predicate and an achieved predicate", returning a
+**set** of winners, and the acceptance was "golden-master hashes identical; a
+simultaneous-victory probe passes". The previous `VictoryRulesSchema` was a
+six-line interface with two accessor declarations, no implementer and no
+caller - one of the eight withdrawn stubs.
+
+**The result type is a set, because the rulebook says so.** At :1048: a card
+that reduces the power needed to win "makes it possible for more than one
+player to score a victory simultaneously". `VictoryOutcome` therefore carries
+a set of winners, plus `soleWinner()` (null when two won),
+`isSimultaneous()`, and `firstWinner()` for the single-winner call sites. The
+reduced-power mechanic is implemented rather than described:
+`VictoryRules.reducePowerNeededToWin(player, threshold)` records it, and
+while it is in force the strict-lead requirement does not apply - which is
+exactly what lets two players qualify at once. No card in the current pool
+does this, so the map is empty in production; the rule is expressed rather
+than assumed, because a result type that cannot express "two players won"
+would be wrong the moment such a card is printed.
+
+**The golden master is a gate class (176 ms) and it asks both the same
+question.** Over 11 states - each victory path, each bar, each tie case - the
+engine's `checkVictory` and the extracted `VictoryRules.check` must give the
+same winner and the same path. Measured: 11/11 and 11/11. The
+simultaneous-victory probe then constructs the situation :1048 describes and
+requires two winners, with the control that the same state without the
+reduced-power card crowns nobody.
+
+**`RulesEngine.checkVictory` now delegates**, returning `firstWinner()`. The
+conformance suite's 904 checks are unchanged and the gate is 35/35, so the
+extraction did not change the game's behaviour - which is what the golden
+master was for.
+
+**The golden master caught a real discrepancy in the extraction.** The
+engine's original `checkVictory` had TWO last-standing checks: the first
+returned the last standing player immediately, and the second - reachable only
+when the first did not fire - routed that player through `majorVictory()` so
+the win would be recorded under the Major path (B5-0661, rulebook :821). The
+extraction implemented the second branch faithfully, and the golden master
+failed with "engine=LAST_STANDING module=MAJOR".
+
+The cause is that both checks counted with `isPlayerActive`, which already
+excludes surrendered players, so the two counts are identical and the second
+branch was **unreachable** - whenever it would have fired, the first check had
+already returned. The engine's observable behaviour is the first check's
+answer, so that is what the module reproduces, and the reason is recorded in
+the module's comment so the next reader does not re-derive it.
+
+This is the golden master doing exactly its job: it was not looking for a bug
+in the engine, it found one in the extraction, because the extraction is the
+thing being checked. Measured red: a changed power threshold, and a module
+that always reports a winner, each turn the golden master red.
+
+**Rule IDs.** Every rule carries one that `check-citations.ps1` resolves:
+the five paths cite `RB:I/victory`, and the reduced-power path cites
+`RB:VI/reducing-power-needed-to-win`.
+
+**Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0032.md`.
+Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0032.txt`.
