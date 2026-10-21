@@ -1756,3 +1756,183 @@ violations and 591 findings.
 **Report.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0033.md`.
 Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0033.txt` (green) and
 `GATE-B5-0033-RED.txt` (red).
+
+## 2026-10-22 - The effect schema v0, and what the rulebook adds to the card text (B5-0028 / WP-10)
+
+Authored by `opencode (Space Bunny Free)`, version `space-bunny-free-2026-10-22-02`, on
+2026-10-22, from the `opencode-space-bunny-free-01` session. **This entry is not
+independently assessed**; it is recorded as an `unassessed_revision` per
+AGENTS.md section 1, because no different-family reviewer has reviewed it.
+
+WP-10's acceptance is three clauses, and all three are now checkable rather
+than asserted: **the schema validates; an unknown effect kind fails the load; a
+renderer exists.**
+
+* **1. What was built.** A new package `b5ccg.engine.effect` (39 source files,
+  3 075 lines) holding the effect model, the primitive registry, the
+  fail-closed loader and the canonical renderer; the v0 data file
+  `b5ccg/resources/effects/effects-v0.json` (29 entries over 17 cards); the
+  JSON Schema `.agent/tools/schemas/effect-document.schema.json`; a
+  dependency-free Python validator `.agent/tools/validate-effect-schema.py`;
+  the gate class `HeadlessEffectSchemaProbe` (43 checks); and the tooling
+  probe `.agent/tools/test-effect-schema.ps1` (5 checks). Both probes are
+  wired into `compile.sh`, so they are gates rather than comments.
+
+* **2. The schema's shape is A3's fourteen fields, plus the entry's identity.**
+  A3's "Effect entry: shape" table gives fourteen fields, and all fourteen are
+  here. Two are added: `cardId` and `title`. A3 calls the table "a hypothesis
+  derived from the rulebook - the census may revise it", and the revision the
+  data forced is that an effect entry must say which card it describes: an
+  entry that cannot be checked against a card cannot be checked at all. The
+  fourteen fields are `kind`, `window`, `trigger`, `requirements`, `target`,
+  `conditions`, `operations`, `duration`, `stacking`, `protection`,
+  `precedenceLayer`, `sourceBinding` and `provenance`, anchored at
+  `RB:IV/enhancement-cards`, `RB:IV/group-cards` and `RB:VI/rules-of-precedence`.
+
+* **3. The `duration` vocabulary gains `END_OF_ROUND`.** A3 lists six
+  durations (rulebook :854-:858). The shipped card "Babylon 5 Unrest" reads
+  "Ongoing. All players' Influence costs for playing cards increase by 1.
+  **Discard at end of round.**" - an effect that ends when the card is
+  discarded, which is neither "until end of turn" nor "while source in play"
+  (the card is in play right up until it is discarded, so "while source in
+  play" describes the wrong moment). A seventh value is therefore added. The
+  rulebook's own rounds are the vocabulary: the Ready Round
+  (`RB:III/ready-round`), Sustained Actions (`RB:III/sustained-actions`), the
+  Conflict Round (`RB:III/conflict-round`), the Action Round
+  (`RB:III/action-round`), the Resolution Round (`RB:III/resolution-round`),
+  the aftermath phase (`RB:IV/aftermath-cards`) and the Draw Round
+  (`RB:III/draw-round`).
+
+* **4. The `window` vocabulary gains `ANY`.** Two printed idioms need it: the
+  card's own window ("Play any time." - "Affirm Alliance", "Balance",
+  "Contact with Shadows", "Chaos Reigns") and an effect that is simply in
+  force ("That character gains +2 to all stats" has no window, because it
+  applies whenever the card is in play). The two readings do not conflict:
+  both mean "not restricted to one step of the turn".
+
+* **5. The rulebook SUPPLEMENTS the card text, and the data has to say so.**
+  This is the finding that shaped the schema. "Contact with Shadows" reads
+  "Play any time. Draw 2 cards. If you have Morden in play, draw 3 cards
+  instead." - it says nothing about a mark. Yet rulebook :844 names it:
+  "Many events, such as Contact with Shadows, provide a permanent mark and do
+  not remain in play" (`RB:VI/marks`). The mark is real and it is not in the
+  card. An effect entry written from the card text alone would be **wrong**,
+  and the only thing that prevents that is the provenance field: its rule IDs
+  point at the paragraph that supplies the missing piece, and its
+  `textSha256` pins the text the entry was written against. The same applies
+  to "Servants of Order", whose Vorlon Mark is named outright at rulebook :836
+  (`RB:VI/marks`).
+
+* **6. D5 decides which text an entry is written against, and the entry
+  records it.** The Deluxe printing governs a dual title, so the v0 data is
+  written against the Deluxe text and every entry's `printingScope` says
+  `DELUXE_GOVERNS` (or `SINGLE_PRINTING` where there is no twin). This is not
+  a formality - the governing text changes the rule in six places that the
+  v0 data encodes: "Wind Swords" grants +4 Military, not +3; "Secret Police"
+  grants +3, not +2; "Servants of Order" counts 2 characters in the Inner
+  Circle, not 3; "War College" also draws 1 card after the conflict resolves;
+  "Commercial Telepaths" may choose **any** Character, including an opponent's
+  (the Premiere text's "not already affected by this Group" is a Premiere-only
+  restriction and is therefore absent); and "Babylon 5 Unrest" also raises the
+  conflict initiation cost. An entry keyed to the Premiere text of any of
+  those would be wrong on the rule, not merely on the wording.
+
+* **7. The `textSha256` is the SHA-256 of the governing printed text exactly
+  as the engine loads it** - no suffix stripping, so the hash tracks the
+  bytes the engine sees. Its purpose is drift detection: if a card's text
+  changes, every entry written against it becomes suspect, and the hash says
+  which. The gate asserts this for all 29 entries against the card pool.
+
+* **8. The escape hatch is keyed, and it is empty.** A3 principle 1 asks for
+  "a small keyed escape hatch" for the bespoke tail. The `BESPOKE` primitive
+  names a handler key, and the registry holds the table of keys it will
+  honour; a key that is not in that table is a **load error**. The v0
+  registry publishes **zero** handlers, so the escape hatch is specified and
+  empty - a card that needs bespoke behaviour cannot be written yet, and that
+  is visible at load time rather than discovered later. The v0 data uses it
+  zero times, and the gate asserts that.
+
+* **9. An unknown effect field is a load error, not a comment.** A typo in a
+  key name would otherwise silently disable the effect it was meant to name,
+  so the loader refuses a field the schema does not define. The same is true
+  of a missing required field, an unknown kind, window, duration, stacking
+  rule, protection, precedence layer, source binding, scope, controller
+  relation, card type, race, status or trait, an unknown primitive, a
+  parameter outside a primitive's closed set, an unpublished bespoke handler,
+  and a `schema_version` this build does not understand. Every refusal names
+  where it happened and what was wrong, because the whole point of failing
+  closed is that the reader is told what was refused.
+
+* **10. The registry stays modular, and the property is checkable.** A3
+  principle 5 warns that "the registry is where the next god class would
+  form" and asks for one class per primitive family. That is a property of
+  the code, so the gate asks about it: the v0 registry holds 19 primitives
+  across 12 families, and no family holds more than 3. A registry that
+  quietly became one class again fails the gate rather than a reader's
+  opinion.
+
+* **11. What did NOT change.** The engine's behaviour is unchanged. No
+  existing probe was edited, no conformance assertion was touched, and every
+  card still resolves through `CardEffects`. The v0 data is a **skeleton**,
+  not a migration: 17 of 446 titles, deliberately chosen to exercise every
+  primitive family and both pilots' subject matter (5 Groups, 4 Enhancements,
+  7 Events, 1 Agenda). The legacy strangler - the registry consulted first,
+  falling back to the existing `CardEffects` predicate, with a golden-master
+  scenario recorded per legacy title before any port - is WP-11's and WP-12's
+  work, not this row's. The two inert schema stubs (`GroupEffectSchema`,
+  `EnhancementEffectSchema`) are left in place, as B5-0032 and B5-0033 left
+  theirs; **they remain a standing defect and are not promoted by this row.**
+
+* **12. `MiniJson` was widened, additively.** A3 principle 1 needs the shipped
+  game to read declarative data records, and the tree already held three
+  hand-written JSON readers (`DeckLoader`'s flat tokeniser, `MiniJson`, and
+  `EffectCensusChecker`'s). Rather than add a fourth, `MiniJson` gained
+  `parseValue` and `parseArray` and became public. `parseObject` is
+  unchanged and still package-private, so the replay path is the same code as
+  before, and the strictness is unchanged: trailing content is still an error
+  and floating-point values are still refused. The `B5-1975` error prefix is
+  deliberately unchanged - the reader's grammar did not change, so neither
+  should its error prefix.
+
+* **13. Scope: the row was widened to name `resources`.** The v0 effect data
+  is card data and lives in `b5ccg/resources/effects/`. AGENTS.md section 5
+  requires a row to name every scope it touches, so the B5-0028 row's scope
+  cell now reads `engine,tooling,resources` (it read `engine,tooling`).
+  Nothing else moved: no card JSON, no census, no deck file was touched, and
+  the `resources` scope was free of any live claim.
+
+* **14. OPEN ITEM for the owner - the "Vorlon Enhancement" mark.** The engine
+  grants a Vorlon Mark to the attached character while "Vorlon Enhancement"
+  is in play (`CardEffects.ENHANCEMENT_MARK_GRANTS`, B5-1995). The governing
+  printed text does not say so - "Attach to a Character. That character gains
+  +2 to all stats and the ability to participate in any conflict type." - and
+  the rulebook's only named example of a card providing a mark is the agenda
+  at :836 (`RB:VI/marks`). The v0 data therefore encodes the two abilities
+  the text does state and **does not** encode the mark. This row did not
+  change the engine's behaviour, which is not its place to decide; the
+  question is whether the mark is a rule the rulebook supports, and that is a
+  question for the owner. It is recorded here rather than resolved here.
+
+* **15. Red-then-green, measured — and the hole it found in this row's own
+  probe.** Each of the two acceptance behaviours was reverted separately, with
+  `out/` deleted before every build so a stale class could not be mistaken
+  for a fresh one, and the gate run again. The measurements are in the row's
+  report; the gate is green with the probe wired in, and red without it.
+
+  The third revert is the one worth recording. "The renderer drops the source
+  binding" **did not turn the probe red**: the probe's only golden value was
+  for an entry whose source binding is `NONE`, so a renderer that dropped the
+  binding produced the *same* string for that entry. A golden value that
+  cannot distinguish a correct renderer from a broken one is not evidence.
+  A second golden value was added, for an entry whose fields are all
+  non-default, and it was written out from the entry's own fields and the
+  documented render format rather than copied from the renderer's output - so
+  that passing it confirms the format the documentation claims. The revert
+  goes red on the second attempt. The general lesson is the one B5-0044
+  already recorded, and it applies to this row's own work as much as to the
+  tools: **green output is not evidence until something has tried to make it
+  red, and the thing that tried found a real hole.**
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-space-bunny-free-01-B5-0028.md`.
+  Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0028.txt` (green) and
+  `GATE-B5-0028-RED.txt` (red).

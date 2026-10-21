@@ -1,0 +1,665 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "cardId": "enh_babylon5_unrest",
+      "title": "Babylon 5 Unrest",
+      "kind": "COST_MODIFIER",
+      "window": "ACTION",
+      "requirements": [],
+      "target": { "scope": "GLOBAL", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "COST_MODIFIER", "params": { "cost": "INFLUENCE", "amount": 1 } }
+      ],
+      "duration": "END_OF_ROUND",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:VI/cumulative-effects"],
+        "textSha256": "0e52104731575e51fc5fe4bd890604ce2d80881311b6c2033e6ba0ac4cd4c345",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "enh_babylon5_unrest",
+      "title": "Babylon 5 Unrest",
+      "kind": "COST_MODIFIER",
+      "window": "ACTION",
+      "requirements": [],
+      "target": { "scope": "GLOBAL", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "COST_MODIFIER", "params": { "cost": "CONFLICT_INITIATION", "amount": 1 } }
+      ],
+      "duration": "END_OF_ROUND",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:VI/cumulative-effects"],
+        "textSha256": "0e52104731575e51fc5fe4bd890604ce2d80881311b6c2033e6ba0ac4cd4c345",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "enh_vorlon_enhancement",
+      "title": "Vorlon Enhancement",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "ALL", "amount": 2 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/enhancement-cards"],
+        "textSha256": "8ee4c5f41a96da198a1614c9edc9a54718dd4bb9725e2786b971083a33d931ef",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "enh_vorlon_enhancement",
+      "title": "Vorlon Enhancement",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "PARTICIPATION_GRANT", "params": { "conflictType": "ANY" } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/enhancement-cards", "RB:VI/rules-of-precedence"],
+        "textSha256": "8ee4c5f41a96da198a1614c9edc9a54718dd4bb9725e2786b971083a33d931ef",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "enh_triluminary",
+      "title": "Triluminary",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"], "races": ["MINBARI"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "PSI", "amount": 2 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/enhancement-cards"],
+        "textSha256": "91ac09c91c0d2e61f92e977fc4110e6a458443975d316f729909f171fcf97228",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "enh_triluminary",
+      "title": "Triluminary",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"], "races": ["MINBARI"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "DIPLOMACY", "amount": 2 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/enhancement-cards"],
+        "textSha256": "91ac09c91c0d2e61f92e977fc4110e6a458443975d316f729909f171fcf97228",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "enh_exploitation",
+      "title": "Exploitation",
+      "kind": "TRIGGERED",
+      "window": "READY",
+      "trigger": "ROUND_START",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["LOCATION"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/enhancement-cards"],
+        "textSha256": "18f5bf396b34b5fa7d5a383dc067769d49a34540909432362cc86bf5ff004124",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_commercial_telepaths",
+      "title": "Commercial Telepaths",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "ANY", "cardTypes": ["CHARACTER"] },
+      "conditions": [
+        { "type": "SOURCE_ROTATED" }
+      ],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "DIPLOMACY", "amount": "HALF_PSI_ROUNDED_UP" } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/sustained-actions"],
+        "textSha256": "2d6defe1a005741789016a4a9ce5e78c1c67c5fa54cb2577e90279c32a874710",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_secret_police",
+      "title": "Secret Police",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
+      "requirements": [
+        { "type": "ROTATE_CARD", "amount": 1 }
+      ],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "INTRIGUE", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards"],
+        "textSha256": "78de2a70dc0e6cdb7c55abdf75a77c51c74f10612501e7ef0becc1beb05400a9",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_secret_police",
+      "title": "Secret Police",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_RESOLVED",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "OPPONENT", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "ROTATE_TARGET", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards"],
+        "textSha256": "78de2a70dc0e6cdb7c55abdf75a77c51c74f10612501e7ef0becc1beb05400a9",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_war_college",
+      "title": "War College",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [
+        { "type": "ROTATE_CARD", "amount": 1 }
+      ],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "MILITARY", "amount": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards"],
+        "textSha256": "5ae0cb59f30ec8c671493e110c717d5002a6ffee035ce508ab2625c24ccfb546",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_war_college",
+      "title": "War College",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_RESOLVED",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "DRAW", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/draw-round"],
+        "textSha256": "5ae0cb59f30ec8c671493e110c717d5002a6ffee035ce508ab2625c24ccfb546",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_warrior_caste",
+      "title": "Warrior Caste",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "RACE", "controllerRelation": "SELF", "cardTypes": ["FLEET"], "races": ["MINBARI"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "MILITARY", "amount": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards"],
+        "textSha256": "da9085bc628bf7bf7182d67025ee33daaf002fbe98fa626db874abea029b4a58",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_wind_swords",
+      "title": "Wind Swords",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [
+        { "type": "ROTATE_CARD", "amount": 1 }
+      ],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "MILITARY", "amount": 4 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards"],
+        "textSha256": "9059218b6293bb30b9a99ab976f2e0605a7182dae5890b84229ebacbc253fddf",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_affirm_alliance",
+      "title": "Affirm Alliance",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:I/influence"],
+        "textSha256": "6644815aef65e9852f7a12fcabd469ffc11f0f9e9bdc2e269806ee69062fe74d",
+        "printingScope": "SINGLE_PRINTING"
+      }
+    },
+    {
+      "cardId": "event_affirm_alliance",
+      "title": "Affirm Alliance",
+      "kind": "RESTRICTION",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "RESTRICT", "params": { "restriction": "NO_ATTACK_BETWEEN_THESE_PLAYERS" } }
+      ],
+      "duration": "END_OF_ROUND",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CANNOT_OVERRIDES",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:VI/rules-of-precedence"],
+        "textSha256": "6644815aef65e9852f7a12fcabd469ffc11f0f9e9bdc2e269806ee69062fe74d",
+        "printingScope": "SINGLE_PRINTING"
+      }
+    },
+    {
+      "cardId": "event_balance",
+      "title": "Balance",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:I/influence"],
+        "textSha256": "ed55f2be861663633559cbcb363f7465c59aa7e1d28981a70191f5f5ac74126b",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_balance",
+      "title": "Balance",
+      "kind": "RESTRICTION",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "RESTRICT", "params": { "restriction": "NO_CONFLICT_INITIATION" } }
+      ],
+      "duration": "END_OF_ROUND",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CANNOT_OVERRIDES",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:VI/rules-of-precedence"],
+        "textSha256": "ed55f2be861663633559cbcb363f7465c59aa7e1d28981a70191f5f5ac74126b",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_decisive_tactics",
+      "title": "Decisive Tactics",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_RESOLVED",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:I/influence"],
+        "textSha256": "55d8ed6601c2531a346a1ff906e23d6d25b422e4f4c7bd372cf050792cc4e45e",
+        "printingScope": "SINGLE_PRINTING"
+      }
+    },
+    {
+      "cardId": "event_decisive_tactics",
+      "title": "Decisive Tactics",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_RESOLVED",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "OPPONENT" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_LOSE", "params": { "amount": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:I/influence"],
+        "textSha256": "55d8ed6601c2531a346a1ff906e23d6d25b422e4f4c7bd372cf050792cc4e45e",
+        "printingScope": "SINGLE_PRINTING"
+      }
+    },
+    {
+      "cardId": "event_diplomatic_blunder",
+      "title": "Diplomatic Blunder",
+      "kind": "ONE_SHOT",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_RESOLVED",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "OPPONENT" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_LOSE", "params": { "amount": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:I/influence", "RB:VI/triggered-effects"],
+        "textSha256": "f2a84271e1e78e78ece8b54c635e70d9adc95e631eb75a7ab281e9cb37f989a7",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_shadow_strike",
+      "title": "Shadow Strike",
+      "kind": "ONE_SHOT",
+      "window": "CONFLICT",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "ANY", "amount": 4 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:III/conflict-round"],
+        "textSha256": "fd0bed6d355691a839456e1c37df88fe9fac746a19e353e81b83f44fa6b06815",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_shadow_strike",
+      "title": "Shadow Strike",
+      "kind": "RESTRICTION",
+      "window": "RESOLUTION",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "RESTRICT", "params": { "restriction": "NO_HEALING_AFTER_CONFLICT" } }
+      ],
+      "duration": "END_OF_RESOLUTION_ROUND",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CANNOT_OVERRIDES",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:VI/rules-of-precedence"],
+        "textSha256": "fd0bed6d355691a839456e1c37df88fe9fac746a19e353e81b83f44fa6b06815",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_contact_with_shadows",
+      "title": "Contact with Shadows",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "DRAW", "params": { "count": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "REPLACING",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:III/draw-round", "RB:VI/cumulative-effects"],
+        "textSha256": "c99327dbe6b5ae517d57a63c3be3a507b82f8dc882e1da03e7b38593ce17e964",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_contact_with_shadows",
+      "title": "Contact with Shadows",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [
+        { "type": "CARD_IN_PLAY", "subject": "char_morden" }
+      ],
+      "operations": [
+        { "primitive": "DRAW", "params": { "count": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:III/draw-round", "RB:VI/cumulative-effects"],
+        "textSha256": "c99327dbe6b5ae517d57a63c3be3a507b82f8dc882e1da03e7b38593ce17e964",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_contact_with_shadows",
+      "title": "Contact with Shadows",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "MARK_GRANT", "params": { "mark": "SHADOW", "count": 1 } }
+      ],
+      "duration": "PERMANENT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "PERMANENT_MARK",
+      "provenance": {
+        "ruleIds": ["RB:VI/marks"],
+        "textSha256": "c99327dbe6b5ae517d57a63c3be3a507b82f8dc882e1da03e7b38593ce17e964",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "event_chaos_reigns",
+      "title": "Chaos Reigns",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "DISCARD", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:VI/discards"],
+        "textSha256": "033dcc5b1cdbd5b7058feb8669d7cccd64a35fd2da741c25ebf3a334bb793603",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "agenda_servants_of_order",
+      "title": "Servants of Order",
+      "kind": "TRIGGERED",
+      "window": "READY",
+      "trigger": "ROUND_START",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"], "innerCircleOnly": true },
+      "conditions": [
+        { "type": "CONTROL_CHARACTERS", "amount": 2 }
+      ],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:I/influence", "RB:III/ready-round"],
+        "textSha256": "274403625d23286e990997603e06a8c40fbc6405afc0618a5091cfbc324e17ec",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "agenda_servants_of_order",
+      "title": "Servants of Order",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"], "ambassadorOnly": true },
+      "conditions": [],
+      "operations": [
+        { "primitive": "MARK_GRANT", "params": { "mark": "VORLON", "count": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "CUTOFF_PURGE",
+      "provenance": {
+        "ruleIds": ["RB:VI/marks"],
+        "textSha256": "274403625d23286e990997603e06a8c40fbc6405afc0618a5091cfbc324e17ec",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    }
+  ]
+}

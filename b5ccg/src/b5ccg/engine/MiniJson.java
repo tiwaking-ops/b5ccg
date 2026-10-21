@@ -20,10 +20,29 @@ import java.util.Map;
  * has no floating-point field, and accepting them here would let a corrupt
  * line through as a value the writer could never have written.</p>
  *
- * <p>Package-private: this exists to serve {@link ReplayRecorder#load}, not as
- * a general-purpose API.</p>
+ * <p><b>B5-0028 (WP-10, A3) widened this reader.</b> It was package-private
+ * and served only {@link ReplayRecorder#load}. A3's principle 1 asks for a
+ * registry of named primitives referenced by declarative data records, and
+ * A3's validation paragraph asks for a JSON Schema checked in the dev
+ * tooling - which means the shipped game needs a reader for its effect
+ * documents too. Rather than add a fourth hand-written JSON parser to a
+ * tree that already has three ({@link DeckLoader}'s flat tokeniser, this one,
+ * and {@link b5ccg.model.EffectCensusChecker}'s), this class was widened
+ * additively:</p>
+ * <ul>
+ *   <li>{@link #parseObject(String)} is unchanged and still package-private,
+ *       so the replay path is byte-for-byte the same code as before.</li>
+ *   <li>{@link #parseValue(String)} parses any JSON value.</li>
+ *   <li>{@link #parseArray(String)} parses a top-level array.</li>
+ * </ul>
+ *
+ * <p>The strictness is unchanged: trailing content is still an error, and
+ * floating-point values are still refused. The error prefix stays
+ * {@code B5-1975} because that is the change that introduced the reader and
+ * its grammar; a reader that has not changed its grammar should not change
+ * its error prefix either.</p>
  */
-final class MiniJson {
+public final class MiniJson {
 
     private final String src;
     private int          pos;
@@ -46,6 +65,43 @@ final class MiniJson {
         @SuppressWarnings("unchecked")
         Map<String, Object> m = (Map<String, Object>) v;
         return m;
+    }
+
+    /**
+     * Parses one complete JSON value of any kind (B5-0028).
+     *
+     * <p>Trailing content after the value is an error, exactly as it is for
+     * {@link #parseObject(String)}: a document must be one value and nothing
+     * else, so that a file with two concatenated documents cannot be read as
+     * the first one.</p>
+     *
+     * @return a {@link LinkedHashMap}, {@link ArrayList}, {@link String},
+     *     {@link Integer}, {@link Boolean}, or null
+     */
+    public static Object parseValue(String text) throws java.io.IOException {
+        MiniJson p = new MiniJson(text);
+        p.ws();
+        Object v = p.value();
+        p.ws();
+        if (p.pos != p.src.length()) {
+            throw new java.io.IOException("B5-1975: trailing content after JSON value at offset " + p.pos);
+        }
+        return v;
+    }
+
+    /**
+     * Parses one complete JSON array (B5-0028).
+     *
+     * @throws java.io.IOException when the text is not a single array
+     */
+    public static List<Object> parseArray(String text) throws java.io.IOException {
+        Object v = parseValue(text);
+        if (!(v instanceof List)) {
+            throw new java.io.IOException("B5-1975: expected a JSON array");
+        }
+        @SuppressWarnings("unchecked")
+        List<Object> l = (List<Object>) v;
+        return l;
     }
 
     private Object value() throws java.io.IOException {

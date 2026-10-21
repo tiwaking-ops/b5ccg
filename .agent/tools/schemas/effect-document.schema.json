@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://b5ccg.local/schemas/effect-document.schema.json",
+  "title": "B5 CCG effect document",
+  "description": "Schema for the B5 CCG data-driven effect system (WP-10 / B5-0028, A3). Validated by .agent/tools/validate-effect-schema.py in the dev tooling; the shipped game keeps a stdlib-only Java reader and fails closed at load time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "The document's schema version. The loader refuses a version it does not know."
+    },
+    "entries": {
+      "type": "array",
+      "description": "The effect entries, in document order. A card may carry more than one entry.",
+      "items": { "$ref": "#/$defs/effectEntry" }
+    }
+  },
+  "$defs": {
+    "effectEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cardId", "title", "kind", "window", "requirements", "target",
+        "conditions", "operations", "duration", "stacking", "protection",
+        "precedenceLayer", "sourceBinding", "provenance"
+      ],
+      "properties": {
+        "cardId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The canonical id of the card this entry describes. The de_ prefix is not used; a dual title is keyed by its Premiere id."
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "#/$defs/effectKind" },
+        "window": { "$ref": "#/$defs/effectWindow" },
+        "trigger": { "$ref": "#/$defs/effectTrigger" },
+        "requirements": {
+          "type": "array",
+          "description": "The cost block. An absent list and an empty list mean the same thing: no cost.",
+          "items": { "$ref": "#/$defs/requirement" }
+        },
+        "target": { "$ref": "#/$defs/target" },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/condition" }
+        },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The ordered list of typed primitives. The order is data.",
+          "items": { "$ref": "#/$defs/operation" }
+        },
+        "duration": { "$ref": "#/$defs/effectDuration" },
+        "stacking": { "$ref": "#/$defs/effectStacking" },
+        "protection": { "$ref": "#/$defs/effectProtection" },
+        "precedenceLayer": { "$ref": "#/$defs/effectPrecedence" },
+        "sourceBinding": { "$ref": "#/$defs/effectSourceBinding" },
+        "provenance": { "$ref": "#/$defs/provenance" }
+      }
+    },
+    "effectKind": {
+      "type": "string",
+      "enum": ["ONE_SHOT", "ONGOING", "TRIGGERED", "REPLACEMENT", "RESTRICTION", "COST_MODIFIER", "TRAIT"]
+    },
+    "effectWindow": {
+      "type": "string",
+      "enum": ["ANY", "READY", "SUSTAINED", "CONFLICT", "ACTION", "RESOLUTION", "AFTERMATH", "DRAW"]
+    },
+    "effectTrigger": {
+      "type": "string",
+      "enum": [
+        "ON_PLAY", "ON_RESOLUTION", "ROUND_START", "TURN_START",
+        "CONFLICT_BEGINS", "CONFLICT_RESOLVED", "CONFLICT_WON",
+        "CONFLICT_TYPE_INTRIGUE", "CONFLICT_TYPE_MILITARY", "CONFLICT_TYPE_DIPLOMACY",
+        "CHARACTER_DAMAGED", "CARD_DISCARDED"
+      ]
+    },
+    "effectDuration": {
+      "type": "string",
+      "enum": [
+        "INSTANT", "END_OF_TURN", "END_OF_ROUND", "END_OF_RESOLUTION_ROUND",
+        "WHILE_SOURCE_IN_PLAY", "PERMANENT", "UNTIL_CONDITION_ENDS"
+      ]
+    },
+    "effectStacking": { "type": "string", "enum": ["ADDITIVE", "REPLACING"] },
+    "effectProtection": { "type": "string", "enum": ["NONE", "IRREVOCABLE", "BOLDFACE"] },
+    "effectPrecedence": {
+      "type": "string",
+      "enum": [
+        "CARD_TEXT", "CARD_TEXT_EXCEPT_AMBASSADOR_DEPARTURE", "RULES",
+        "MULTIPLIER", "CANNOT_OVERRIDES"
+      ]
+    },
+    "effectSourceBinding": {
+      "type": "string",
+      "enum": ["NONE", "CUTOFF_PURGE", "PERMANENT_MARK"]
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "amount"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "APPLY_INFLUENCE", "LOSE_INFLUENCE", "ROTATE_SPONSOR", "ROTATE_CARD",
+            "PURGE_MARKS", "DISCARD_CARD", "TAKE_DAMAGE", "CONTROL_MARKS",
+            "CONTROL_CHARACTERS"
+          ]
+        },
+        "amount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "TENSION_AT_LEAST", "UNREST_AT_LEAST", "POWER_AT_LEAST",
+            "INFLUENCE_AT_LEAST", "MARK_COUNT_AT_LEAST", "STATE_EXISTS",
+            "SOURCE_ROTATED", "SOURCE_IN_PLAY", "CONTROL_CHARACTERS", "CARD_IN_PLAY"
+          ]
+        },
+        "amount": { "type": "integer", "minimum": 0 },
+        "subject": { "type": "string", "minLength": 1 }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "controllerRelation"],
+      "properties": {
+        "scope": { "type": "string", "enum": ["CARD", "FACTION", "RACE", "GLOBAL"] },
+        "controllerRelation": { "type": "string", "enum": ["ANY", "SELF", "OPPONENT"] },
+        "cardTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["CHARACTER", "FLEET", "CONFLICT", "AGENDA", "AFTERMATH", "EVENT", "CONTINGENCY", "ENHANCEMENT", "GROUP", "LOCATION"]
+          }
+        },
+        "races": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["HUMAN", "MINBARI", "CENTAURI", "NARN", "NON_ALIGNED", "VORLON"] }
+        },
+        "status": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["READY", "ROTATED", "NEUTRALIZED", "IN_PLAY"] }
+        },
+        "traits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "LIMITED", "UNIQUE", "MULTIPLE", "KHARI", "AMBASSADOR", "RANGER",
+              "ISA", "PSI_CORPS", "HOME_FACTION_LOYALTY", "NOT_AFFECTED_BY_SOURCE",
+              "IN_INNER_CIRCLE", "IN_SUPPORTING_ROLE"
+            ]
+          }
+        },
+        "innerCircleOnly": { "type": "boolean" },
+        "supportingOnly": { "type": "boolean" },
+        "ambassadorOnly": { "type": "boolean" }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primitive"],
+      "properties": {
+        "primitive": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The registry key. The loader refuses a name the registry does not hold."
+        },
+        "params": {
+          "type": "object",
+          "description": "Typed parameters. Values are strings or integers; the primitive's own closed set is checked by the loader, which is the authority."
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ruleIds", "printingScope"],
+      "properties": {
+        "ruleIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "The rulebook paragraphs this entry rests on, as rule-IDs."
+        },
+        "textSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the governing printed text exactly as the engine loads it."
+        },
+        "printingScope": {
+          "type": "string",
+          "enum": ["DELUXE_GOVERNS", "SINGLE_PRINTING"]
+        }
+      }
+    }
+  }
+}

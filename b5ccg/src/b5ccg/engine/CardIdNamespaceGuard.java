@@ -103,8 +103,10 @@ public class CardIdNamespaceGuard {
      * Parses the registry JSON. Hand-rolled against the same flat-object
      * splitter {@link CardSetManifestChecker} uses, extended for the nested
      * "sets" array — the build is stdlib-only (AGENTS.md §2) so there is no JSON
-     * library to reach for, and {@link MiniJson} is package-private and refuses
-     * anything but a single top-level object.
+     * library to reach for. {@link MiniJson} was package-private and refused
+     * anything but a single top-level object when this was written; B5-0028
+     * widened it for the effect-data loader, but it still parses one value
+     * at a time and does not help with a registry nested inside an array.
      */
     static List<Namespace> parseRegistry(String json) throws IOException {
         List<Namespace> out = new ArrayList<Namespace>();

@@ -179,6 +179,7 @@ b5ccg.engine.HeadlessUnimplementedTextTripwire
 b5ccg.engine.HeadlessInvariantCheckerSelfTest
 b5ccg.engine.HeadlessVictoryRulesGoldenMaster
 b5ccg.engine.HeadlessMarkCostRulesProbe
+b5ccg.engine.HeadlessEffectSchemaProbe
 b5ccg.engine.HeadlessPrintingDiffTriageProbe
 b5ccg.model.EffectCensusChecker
 b5ccg.engine.HeadlessRulebookPinProbe
@@ -364,7 +365,7 @@ GATE_EOF
   # must still run on a machine that has only a JDK. When it IS present and a
   # probe fails, the gate exits non-zero - a tooling guard that cannot fail
   # the gate is not a guard.
-  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1"
+  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1 ../.agent/tools/test-effect-schema.ps1"
   if command -v powershell > /dev/null 2>&1 && [ -f "../.agent/tools/test-param-guard.ps1" ]; then
     echo ""
     echo "=== Tooling probes (B5-0044) ==="
