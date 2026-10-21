@@ -1634,3 +1634,125 @@ the five paths cite `RB:I/victory`, and the reduced-power path cites
 
 **Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0032.md`.
 Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0032.txt`.
+
+## 2026-10-21 - MarkRules and CostRules extracted; three engine defects found (B5-0033)
+
+WP-16 (A6.2) and WP-17 (A6.3) are landed. The acceptance - "the 7 mark probes
+pass unchanged" and "the cost-audit probe passes; absent cost never becomes
+zero" - is met, and meeting it required fixing three defects in the shipped
+engine that reading the code did not reveal.
+
+**1. The ambassador's marks were invisible to its own faction.**
+
+`Player.getTotalMarks` and `Player.purgeMarks` scanned the Inner Circle,
+Supporting Role, asylum, fleets, locations, enhancements and the agenda, but
+not the ambassador's own field. Rulebook :838 says a faction's marks "include
+all marks attached to all characters in that faction", and every mark grant in
+the current pool targets the ambassador, so this was the mark a faction most
+often held.
+
+Measured before the fix: with a mark on the ambassador, `getTotalMarks`
+returned 0, `hasVorlonMarks()` was false, and `canGainMark(SHADOW)` was true.
+**The opposing-mark rule at :842 therefore did not fire, and a faction could
+hold both a Shadow and a Vorlon mark** - a direct rulebook violation, which
+the B5-0030 invariant checker could not detect because it reads the same
+total.
+
+The omission was invisible in a normal game only because
+`GameController.setupGame` puts the ambassador in the Inner Circle as well as
+setting it. The fix counts the ambassador, and counts it **once**: it is
+usually also in the Inner Circle list, so counting it twice would report 2
+marks where there is 1. A card in two zones is counted once, and purged once,
+because :844 says the character "must purge a mark of that type", singular.
+
+**2. A purge reported 0 marks purged after removing one.**
+
+`removeMarks` returns the count the card holds AFTER the removal - the right
+contract for a card, the wrong one for a tally. `Player.purgeMarks` summed
+those return values and called the sum "the total number of marks purged", so
+it was in fact the number of marks **remaining**.
+
+Measured before the fix: `removeMarks(type,1)` returned 0 after removing the
+mark; `RulesEngine.purgeMarks` on a faction holding one mark returned 0; and
+the player channel was empty. **Every purge the engine performed was
+silent**, including the agenda teardown that implements :844's cut-off rule.
+The state was always right and the count was always wrong, and wrong in the
+direction that hides the event. The fix compares each card's before-and-after
+counts, so the number returned is the number of marks actually removed. The
+same defect in `Player.purgeMarkFrom*` and `RulesEngine.purgeMarkFromCharacter`
+is fixed the same way.
+
+**3. The cost value object compared by identity.**
+
+`CardCost` did not override `equals` or `hashCode`. `CardCost.UNDEFINED` was
+therefore not equal to another undefined cost, and `CardCost.of(0)` was not
+equal to `CardCost.ZERO`. The distinction the class exists to express - "costs
+nothing" versus "costs was never assigned" - could not survive a comparison,
+and the probe's own check that an explicit 0 differs from UNDEFINED would have
+passed for the wrong reason, because identity inequality makes every pair
+unequal. It now overrides both, and the probe asserts the positive direction
+too, which is what catches a value object that only ever says "no".
+
+**4. The three states of a cost.**
+
+`Card.getCost()` is an `int` and reads 0 for three materially different
+records. The card now records the **state** alongside the number -
+`COST_ABSENT`, `COST_CORRUPT`, `COST_DEFINED` - and `getCardCost()` returns
+the corresponding `CardCost`. The engine still charges 0 for an absent or
+corrupt cost, because that is the engine's current behaviour and changing it
+is a behaviour change this row does not authorise; the probe asserts that
+explicitly so the behavioural promise is checked rather than assumed.
+`DeckLoader` records the state at load time instead of collapsing all three
+cases into "keep default 0".
+
+**5. The modules, and what the acceptance's "7" refers to.**
+
+`MarkRules` and `CostRules` are new modules; `CardCost` is the value. The
+acceptance names a count of mark probes and does not spell out which. The
+probe reconstructs the **seven distinct mark behaviours** the rulebook's
+Marks section states, and prints all seven before it runs, so a reader sees
+what was checked rather than being asked to trust a number. A census of the
+tree found 13 assertions whose text mentions a mark: 12 in the new probe and
+1 in `B52533ErrorHandlingProbe`, which is not a gate class.
+
+`CostRules` holds the priced-type set, the record-to-cost reading, the
+double-cost rule, the waivers and the sponsor discount, so the cost side has
+one answer rather than two that can drift.
+
+**6. The two inert schema stubs are still inert.**
+
+`MarkRulesSchema` and `CostRulesSchema` remain the 6-line interfaces the
+2026-10-19 correction recorded as having zero implementers and zero
+references. B5-0032 took the same approach with `VictoryRulesSchema`: it left
+the stub in place and added the real module beside it. This row does the
+same, for consistency and because deleting a public interface is a wider
+change than this row's scope. **The stubs remain a standing defect; they are
+not promoted by this row.**
+
+**7. Red-then-green, measured.**
+
+Each fix was reverted separately and the probe re-run, with `out/` deleted
+before every build so a stale class could not be mistaken for a fresh one:
+
+| Tree | javac | Probe | Failing checks |
+|---|---|---|---|
+| `Player.java` reverted to HEAD | 0 | **exit 1** | 5 |
+| only the purge-count fix reverted | 0 | **exit 1** | 1 (M5) |
+| only the ambassador scan reverted | 0 | **exit 1** | 4 (all M7) |
+| the fixed tree | 0 | **exit 0** | 0 - 65/65 |
+
+At gate level, with the probe wired into `compile.sh`: reverting
+`Player.java` produced `Summary: 35 passed, 1 failed (of 36 gate classes
+run)` and `GATE EXIT = 1`. The green run is `36 passed, 0 failed (of 36 gate
+classes run)`, plus the two B5-0044 tooling probes, `javac 25.0.4.1`,
+`--release 8`.
+
+**8. What did not change.** The engine still charges 0 for an absent cost. No
+conformance assertion was edited, and the gate stayed green without one: the
+engine changes are confined to the mark and cost paths the suite does not
+assert on. `B52574CardCostAuditProbe` was not edited and still exits 0 with 0
+violations and 591 findings.
+
+**Report.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0033.md`.
+Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0033.txt` (green) and
+`GATE-B5-0033-RED.txt` (red).

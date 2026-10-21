@@ -178,6 +178,7 @@ b5ccg.engine.HeadlessSortedOutputProbe
 b5ccg.engine.HeadlessUnimplementedTextTripwire
 b5ccg.engine.HeadlessInvariantCheckerSelfTest
 b5ccg.engine.HeadlessVictoryRulesGoldenMaster
+b5ccg.engine.HeadlessMarkCostRulesProbe
 b5ccg.engine.HeadlessPrintingDiffTriageProbe
 b5ccg.model.EffectCensusChecker
 b5ccg.engine.HeadlessRulebookPinProbe

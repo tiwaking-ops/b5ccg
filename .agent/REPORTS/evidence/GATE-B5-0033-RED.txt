@@ -1,0 +1,102 @@
+﻿=== B5 CCG Build ===
+Source: /c/temp/projects/b5ccg/b5ccg/src
+Output: /c/temp/projects/b5ccg/b5ccg/out
+Compiling 198 source filesÔÇª
+sh.exe : Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+At C:\Users\Tiwa Pene\AppData\Local\Temp\opencode\redgate33.ps1:19 char:8
++ $out = & 'C:\Program Files\Git\usr\bin\sh.exe' compile.sh 2>&1
++        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Picked up JAVA_....encoding=UTF-8:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resourcesÔÇª
+
+Ô£ô Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 36 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 198  |  Compiled class count: 597
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      13031ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5750ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5088ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      1183ms   PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      185605ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      203ms    PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      180ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      186ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      190ms    PASS       b5ccg.engine.HeadlessDrawRoundProbe
+0      238ms    PASS       b5ccg.engine.HeadlessJoinTimingProbe
+0      285ms    PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      230ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      446ms    PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      175ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      436ms    PASS       b5ccg.engine.HeadlessWarConflictProbe
+0      14474ms  PASS       b5ccg.engine.HeadlessRaceStateProbe
+0      213ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      325ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      452ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+0      429ms    PASS       b5ccg.engine.CardSetManifestChecker
+0      453ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+0      279ms    PASS       b5ccg.engine.HeadlessCanonicalParityProbe
+0      156ms    PASS       b5ccg.engine.HeadlessSortedOutputProbe
+0      295ms    PASS       b5ccg.engine.HeadlessUnimplementedTextTripwire
+0      179ms    PASS       b5ccg.engine.HeadlessInvariantCheckerSelfTest
+0      160ms    PASS       b5ccg.engine.HeadlessVictoryRulesGoldenMaster
+1      180ms    FAIL       b5ccg.engine.HeadlessMarkCostRulesProbe
+0      153ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+0      353ms    PASS       b5ccg.model.EffectCensusChecker
+0      342ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      188ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      1888ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      1874ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      4055ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      1929ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      2288ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 35 passed, 1 failed (of 36 gate classes run)
+Total gate time: 243891ms
+Per-class logs: out_gate/
+
+FAILING-NAME SET (compare by name, never by count):
+  - b5ccg.engine.HeadlessMarkCostRulesProbe
+
+----- tail of b5ccg.engine.HeadlessMarkCostRulesProbe (out_gate/HeadlessMarkCostRulesProbe.log) -----
+PASS  the double-cost rule does not turn an UNDEFINED cost into zero
+PASS  the double-cost rule form doubles a cost of 7 to 14
+PASS  the double-cost rule form leaves a cost alone when it does not apply
+PASS  CHARACTER is a priced type
+PASS  EVENT is not a priced type
+PASS  a priced card with no cost is an unassigned cost
+PASS  a priced card with a cost is not unassigned
+PASS  an unpriced card with no cost is not an unassigned cost
+UNKNOWN FIELD: id on card cst_def
+UNKNOWN FIELD: title on card cst_def
+UNKNOWN FIELD: type on card cst_def
+UNKNOWN FIELD: id on card cst_abs
+UNKNOWN FIELD: title on card cst_abs
+UNKNOWN FIELD: type on card cst_abs
+UNKNOWN FIELD: id on card cst_cor
+UNKNOWN FIELD: title on card cst_cor
+UNKNOWN FIELD: type on card cst_cor
+PASS  the loader parsed the three cost fixtures
+PASS  a loaded card with a cost key has a defined cost
+PASS  a loaded card with no cost key has an UNDEFINED cost
+PASS  a loaded card with a corrupt cost has an UNDEFINED cost
+PASS  an absent cost and a corrupt cost are both UNDEFINED but not EQUAL to zero
+PASS  the engine still charges 0 for an absent cost (unchanged behaviour)
+PASS  the engine still charges 0 for a corrupt cost (unchanged behaviour)
+RESULT: FAIL (65 checks, 5 failures)
+----- end b5ccg.engine.HeadlessMarkCostRulesProbe -----
+
+ERROR: 1 gate class(es) failed. Exit non-zero.

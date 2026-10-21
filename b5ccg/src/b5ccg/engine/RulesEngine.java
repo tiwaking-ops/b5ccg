@@ -2925,8 +2925,11 @@ public class RulesEngine {
      * Returns the number of marks purged (0 or 1).
      */
     public int purgeMarkFromCharacter(GameState state, Player p, CharacterCard target, MarkType type) {
-        if (p == null || target == null) return 0;
-        int purged = target.removeMarks(type, 1);
+        if (p == null) return 0;
+        // B5-0033: the count is the number REMOVED. removeMarks returns the
+        // count REMAINING, so this used to report 0 for every purge that
+        // succeeded and the player was never told a mark was purged.
+        int purged = p.purgeMarkFromCharacter(target, type);
         if (purged > 0 && state != null) {
             state.log(p.getName() + " purges 1 " + type + " mark from " + target.getTitle() + ".");
         }

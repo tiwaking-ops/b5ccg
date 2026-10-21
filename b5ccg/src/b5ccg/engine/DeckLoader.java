@@ -245,13 +245,30 @@ public class DeckLoader {
             try {
                 Card c = buildCard(obj);
                 // B5-0323: optional "cost" key (rulebook §Anatomy item 2).
-                // Absent → 0, preserving current behavior for the existing
-                // data (which carries no cost field — B5-0311 C1). Negative
-                // or unparseable values clamp to the default 0.
+                // B5-0033 (WP-17, A6.3) splits what this block used to
+                // collapse into one outcome. The rulebook at :1058 says an
+                // absent cost "is undefined as far as other cards are
+                // concerned. Undefined does not mean zero." The numeric field
+                // is unchanged - absent and corrupt both still read 0, which
+                // is what the engine charges - but the STATE is now recorded,
+                // so the difference between "costs nothing" and "costs was
+                // never assigned" survives the load instead of being lost
+                // here. See Card.getCardCost().
+                // B5-0323: absent -> 0, preserving current behavior for the
+                // existing data (which carries no cost field - B5-0311 C1).
+                // Negative or unparseable values clamp to the default 0.
                 String costStr = obj.get("cost");
-                if (costStr != null && costStr.length() > 0) {
-                    try { c.setCost(Integer.parseInt(costStr.trim())); }
-                    catch (NumberFormatException nfe) { /* keep default 0 */ }
+                if (costStr == null || costStr.trim().length() == 0) {
+                    c.markCostAbsent();
+                } else {
+                    int parsed = -1;
+                    try { parsed = Integer.parseInt(costStr.trim()); }
+                    catch (NumberFormatException nfe) { parsed = -1; }
+                    if (parsed < 0) {
+                        c.markCostCorrupt();
+                    } else {
+                        c.markCostDefined(parsed);
+                    }
                 }
                 // B5-0336: optional nested "participation" object on CONFLICT
                 // cards (proposal §3). Absent → null = open participation

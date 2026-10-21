@@ -23,6 +23,21 @@ public abstract class Card {
     private int strifeMarks = 0;
 
     private int cost = 0;
+    // B5-0033 (WP-17, A6.3): a cost has THREE states, not two. The rulebook
+    // at :1058 (RB:VI/cards-with-no-printed-cost) says "A card that does not
+    // have an orange cost bubble ... has a cost that is undefined as far as
+    // other cards are concerned. Undefined does not mean zero." The int field
+    // above cannot express that, because it reads 0 for an absent cost, for a
+    // cost of zero, and for a corrupt cost token alike. The state is recorded
+    // here so the distinction survives the load, and the numeric field keeps
+    // its historical meaning exactly.
+    //
+    // The numbers are deliberately not 0/1/2: they are the state ids, and a
+    // reader that prints one sees "COST_ABSENT", not a number.
+    public static final int COST_ABSENT  = 0;   // no cost key in the record
+    public static final int COST_CORRUPT = 1;   // a cost key that is not a usable number
+    public static final int COST_DEFINED = 2;   // a cost was assigned
+    private int costState = COST_ABSENT;
     // B5-0395 (rulebook §Mercenaries): flagged cards may each turn be used only
     // by the player who applied the most influence to control them. A boolean
     // flag per B5-0386's schema rec (absent = false); NO subtype overload — a
@@ -66,6 +81,76 @@ public abstract class Card {
 
     public int  getCost()      { return cost; }
     public void setCost(int c) { cost = Math.max(0, c); }
+
+    // ── B5-0033 (WP-17, A6.3): the three states of a cost ───────────────────
+    //
+    // getCost() keeps its historical contract exactly: it returns the number
+    // the engine will charge. For an absent or corrupt cost that number is
+    // still 0, because changing what the engine charges is a behaviour change
+    // this row does not authorise. What is new is the ability to ASK whether
+    // the 0 means "costs nothing" or "costs was never assigned", which the
+    // int alone cannot answer.
+
+    /**
+     * Whether the card carries a printed cost at all.
+     *
+     * <p>False for a card with no cost key in the record and for a card whose
+     * cost key holds something that is not a usable number. The rulebook's
+     * test is the printed cost bubble, and a corrupt token is no more a
+     * printed cost than a missing one is.</p>
+     */
+    public boolean hasDefinedCost() {
+        return costState == COST_DEFINED;
+    }
+
+    /**
+     * The cost as a {@link CardCost}: a number, or {@link CardCost#UNDEFINED}.
+     *
+     * <p>This is the single place the three states are turned into a value,
+     * so a caller never has to re-derive the distinction from the raw
+     * record.</p>
+     */
+    public CardCost getCardCost() {
+        if (costState != COST_DEFINED) {
+            return CardCost.UNDEFINED;
+        }
+        return CardCost.of(cost);
+    }
+
+    /**
+     * Records that the card's cost was never assigned.
+     *
+     * <p>Called by the loader when the record carries no cost key. The
+     * numeric field is left at 0, so {@link #getCost()} is unchanged and
+     * every existing caller keeps behaving exactly as before.</p>
+     */
+    public void markCostAbsent() {
+        this.costState = COST_ABSENT;
+    }
+
+    /**
+     * Records that the card carries a cost key that is not a usable number.
+     *
+     * <p>The numeric field is clamped to 0 exactly as the loader's old
+     * catch-block did, so the engine's behaviour is unchanged; what changes is
+     * that the difference from "costs nothing" is now recorded rather than
+     * lost.</p>
+     */
+    public void markCostCorrupt() {
+        this.costState = COST_CORRUPT;
+        this.cost = 0;
+    }
+
+    /**
+     * Records that the card carries a usable printed cost.
+     *
+     * <p>Called by the loader when the record's cost key parses to a
+     * non-negative integer.</p>
+     */
+    public void markCostDefined(int c) {
+        this.cost = Math.max(0, c);
+        this.costState = COST_DEFINED;
+    }
 
     public boolean isMercenary() { return mercenary; }
     public void    setMercenary(boolean v) { mercenary = v; }

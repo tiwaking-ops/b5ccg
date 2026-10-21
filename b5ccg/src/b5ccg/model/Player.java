@@ -436,6 +436,28 @@ public class Player {
      * locations this faction controls. Rulebook VI: "If a card refers to a
      * player's marks, or a faction's marks, then it includes all marks attached
      * to all characters in that faction."
+     *
+     * <p><b>B5-0033 (WP-16, A6.2) - the ambassador is counted, and the count
+     * is not double-counted.</b> The rulebook at :838 says "If a card refers to
+     * a player's marks, or a faction's marks, then it includes all marks
+     * attached to all characters in that faction", and the ambassador is a
+     * character in the faction: :488 makes it "always considered a member of
+     * your faction's Inner Circle", and the engine seats it in the Inner
+     * Circle in {@code GameController.setupGame}. Before this fix the
+     * ambassador's own field was never scanned, so a mark attached to the
+     * ambassador was invisible to the faction that held it. Measured
+     * consequence: the opposing-mark rule at :842 did not fire for a
+     * ambassador-borne mark, and a faction could hold both a Shadow and a
+     * Vorlon mark - a direct rulebook violation, and one the B5-0030
+     * invariant checker could not see either, because it reads the same
+     * total.</p>
+     *
+     * <p>The ambassador is frequently ALSO in the Inner Circle list, so
+     * scanning both would count its marks twice. The scan therefore counts
+     * each card once: a card already counted in a zone is not counted again
+     * as the ambassador. Identity, not equality, is the right test - the
+     * engine's card model has no {@code equals} override, so two distinct
+     * cards with the same title are two cards.</p>
      */
     public int getTotalMarks(MarkType type) {
         int total = 0;
@@ -443,10 +465,12 @@ public class Player {
             if (ch != null) total += ch.getMarkCount(type);
         }
         for (CharacterCard ch : supportingRole) {
-            if (ch != null) total += ch.getMarkCount(type);
+            if (ch != null && !innerCircle.contains(ch)) total += ch.getMarkCount(type);
         }
         for (CharacterCard ch : asylumCards) {
-            if (ch != null) total += ch.getMarkCount(type);
+            if (ch != null && !innerCircle.contains(ch) && !supportingRole.contains(ch)) {
+                total += ch.getMarkCount(type);
+            }
         }
         for (FleetCard fl : fleets) {
             if (fl != null) total += fl.getMarkCount(type);
@@ -459,6 +483,13 @@ public class Player {
             if (enh != null) total += enh.getMarkCount(type);
         }
         if (agenda != null) total += agenda.getMarkCount(type);
+        // B5-0033: the ambassador's own field, counted once. It is usually
+        // also in the Inner Circle list, so it is skipped there.
+        CharacterCard amb = ambassador;
+        if (amb != null && !innerCircle.contains(amb) && !supportingRole.contains(amb)
+                && !asylumCards.contains(amb)) {
+            total += amb.getMarkCount(type);
+        }
         return total;
     }
 
@@ -524,48 +555,117 @@ public class Player {
      * enhancement is discarded or blanked) then that character must purge
      * a mark of that type."
      * Returns the total number of marks purged.
+     *
+     * <p><b>B5-0033 (WP-16, A6.2) - the return value counts marks PURGED,
+     * not marks remaining.</b> {@code removeMarks} returns the count the card
+     * holds AFTER the removal, which is the right contract for a card and the
+     * wrong one for a tally. Summing those return values gives the number of
+     * marks LEFT on the faction's cards, and calling that "the number of marks
+     * purged" reported <b>0</b> for a faction that had just lost a mark. The
+     * mark was removed correctly, so the bug was invisible in the state - but
+     * the count that decides whether to log "you purged 1 mark" was always
+     * wrong, and it was wrong in the direction that hides the event. Each
+     * card's before-and-after counts are compared here instead, so the
+     * number returned is the number of marks actually removed.</p>
      */
     public int purgeMarks(MarkType type) {
         int totalPurged = 0;
-        for (CharacterCard ch : innerCircle) {
-            if (ch != null) totalPurged += ch.removeMarks(type, 1);
-        }
-        for (CharacterCard ch : supportingRole) {
-            if (ch != null) totalPurged += ch.removeMarks(type, 1);
-        }
-        for (CharacterCard ch : asylumCards) {
-            if (ch != null) totalPurged += ch.removeMarks(type, 1);
-        }
+        totalPurged += purgeFrom(innerCircle, type);
+        totalPurged += purgeFrom(supportingRole, type);
+        totalPurged += purgeFrom(asylumCards, type);
         for (FleetCard fl : fleets) {
-            if (fl != null) totalPurged += fl.removeMarks(type, 1);
+            if (fl != null) totalPurged += purgeOne(fl, type);
         }
         for (LocationCard loc : locations) {
-            if (loc != null) totalPurged += loc.removeMarks(type, 1);
+            if (loc != null) totalPurged += purgeOne(loc, type);
         }
         for (EnhancementCard enh : enhancements) {
-            if (enh != null) totalPurged += enh.removeMarks(type, 1);
+            if (enh != null) totalPurged += purgeOne(enh, type);
         }
-        if (agenda != null) totalPurged += agenda.removeMarks(type, 1);
+        if (agenda != null) totalPurged += purgeOne(agenda, type);
+        // B5-0033: the ambassador's own field, purged once. Without this the
+        // cut-off purge at rulebook :844 could not reach a mark the ambassador
+        // held, so a faction could keep a mark whose source had left.
+        CharacterCard amb = ambassador;
+        if (amb != null && !innerCircle.contains(amb) && !supportingRole.contains(amb)
+                && !asylumCards.contains(amb)) {
+            totalPurged += purgeOne(amb, type);
+        }
         return totalPurged;
+    }
+
+    /**
+     * Purges one mark of the type from each card in a zone and returns how
+     * many marks were actually removed.
+     *
+     * <p>A card that is in two zones is purged once, not twice: the rulebook
+     * says the character "must purge a mark of that type", singular, however
+     * many lists happen to name it.</p>
+     */
+    private int purgeFrom(List<CharacterCard> zone, MarkType type) {
+        int purged = 0;
+        for (CharacterCard ch : zone) {
+            if (ch == null) continue;
+            if (innerCircle.contains(ch) && zone != innerCircle) continue;
+            if (supportingRole.contains(ch) && zone != supportingRole) continue;
+            if (asylumCards.contains(ch) && zone != asylumCards) continue;
+            purged += purgeOne(ch, type);
+        }
+        return purged;
+    }
+
+    /** Removes one mark of the type from a card and returns how many went. */
+    private int purgeOne(Card card, MarkType type) {
+        if (card == null) return 0;
+        int before = markCountOf(card, type);
+        if (before <= 0) return 0;
+        if (card instanceof CharacterCard) {
+            ((CharacterCard) card).removeMarks(type, 1);
+        } else if (card instanceof FleetCard) {
+            ((FleetCard) card).removeMarks(type, 1);
+        } else if (card instanceof LocationCard) {
+            ((LocationCard) card).removeMarks(type, 1);
+        } else if (card instanceof EnhancementCard) {
+            ((EnhancementCard) card).removeMarks(type, 1);
+        } else if (card instanceof AgendaCard) {
+            ((AgendaCard) card).removeMarks(type, 1);
+        } else {
+            return 0;
+        }
+        int after = markCountOf(card, type);
+        return before - after;
+    }
+
+    /** The mark count of any card that can hold marks. */
+    private static int markCountOf(Card card, MarkType type) {
+        if (card instanceof CharacterCard) return ((CharacterCard) card).getMarkCount(type);
+        if (card instanceof FleetCard)     return ((FleetCard) card).getMarkCount(type);
+        if (card instanceof LocationCard)  return ((LocationCard) card).getMarkCount(type);
+        if (card instanceof EnhancementCard) return ((EnhancementCard) card).getMarkCount(type);
+        if (card instanceof AgendaCard)    return ((AgendaCard) card).getMarkCount(type);
+        return 0;
     }
 
     /**
      * Purges marks of a specific type from a specific target card.
      * Returns the number of marks purged (0 or 1 per rulebook "purge a mark").
+     *
+     * <p>B5-0033: the count is the number REMOVED, not the count remaining.
+     * {@code removeMarks} returns the latter, so this method reported 0 for
+     * every purge that succeeded - which is the count that decides whether
+     * the player is told that a mark was purged. The agenda teardown was
+     * therefore silent about every mark it actually removed.</p>
      */
     public int purgeMarkFromCharacter(CharacterCard target, MarkType type) {
-        if (target == null) return 0;
-        return target.removeMarks(type, 1);
+        return purgeOne(target, type);
     }
 
     public int purgeMarkFromFleet(FleetCard target, MarkType type) {
-        if (target == null) return 0;
-        return target.removeMarks(type, 1);
+        return purgeOne(target, type);
     }
 
     public int purgeMarkFromLocation(LocationCard target, MarkType type) {
-        if (target == null) return 0;
-        return target.removeMarks(type, 1);
+        return purgeOne(target, type);
     }
 
     @Override
