@@ -309,7 +309,22 @@ public final class EffectLoader {
                     optionalBoolean(oMap.get("optional"), ol + ".optional"));
             // Resolve against the registry NOW: an unknown primitive, or a
             // parameter outside the primitive's closed set, is a load error.
+            EffectPrimitive resolved = registry.primitive(primitive, ol);
             registry.describe(op, ol);
+            // The primitive declares the effect kinds it may appear under
+            // (EffectPrimitive.kinds()), and that declaration is part of the
+            // contract. A KNOWN kind used with a primitive that does not
+            // allow it is the second kind of kind - and it used to fail
+            // OPEN, because nothing read the declaration. B5-0051 measured one
+            // such operation in the shipped data. A3 principle 4 is "fail
+            // closed", so it is refused here, and the message names both
+            // halves: the kind the entry declares and the kinds the
+            // primitive allows.
+            if (!resolved.kinds().contains(kind)) {
+                throw new EffectLoadException(ol,
+                        "operation '" + primitive + "' does not allow effect kind " + kind.name()
+                        + "; it allows " + resolved.kinds());
+            }
             operations.add(op);
         }
 

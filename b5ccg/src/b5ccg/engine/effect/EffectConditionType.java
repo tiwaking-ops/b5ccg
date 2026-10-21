@@ -73,7 +73,33 @@ public enum EffectConditionType {
      * <em>at most</em> something, and a missing condition would be a missing
      * rule.</p>
      */
-    DAMAGED_CHARACTERS_AT_MOST;
+    DAMAGED_CHARACTERS_AT_MOST,
+
+    /**
+     * "The conflict was won by the source's controller" - the outcome filter
+     * a card's "if you win" clause asks for.
+     *
+     * <p><b>Added by B5-0052, from the B5-0051 verification of B5-0034.</b>
+     * A3's effect-entry shape puts the conjunction in the trigger ("conflict
+     * resolved <em>and initiator won</em>", RB:VI/triggered-effects), and the
+     * v0 trigger set carries the two halves separately - {@code CONFLICT_WON}
+     * for the outcome and {@code CONFLICT_TYPE_*} for the conflict class -
+     * with no way to say both at once. The Groups pilot therefore wrote three
+     * "if you win" clauses (Diplomatic Corps, Secret Police, Imperial
+     * Telepaths) against the bare {@code CONFLICT_WON} trigger, which states
+     * a <em>broader</em> rule than the card prints: the rider fired after
+     * winning a conflict of any type. The filter belongs on the condition,
+     * which is where the v0's own trigger javadoc says it belongs ("the
+     * filter ('and the initiator won') belongs on the entry's
+     * EffectConditions"), and the trigger keeps the conflict class.</p>
+     *
+     * <p>The rulebook's "Won" is the initiator's outcome
+     * ({@code RB:IV/aftermath-cards}), and a participant may also be
+     * considered to have won it ({@code RB:VI/sample-conflict}); the card's
+     * own "if you win" is the group's controller, which is the reading this
+     * predicate takes.</p>
+     */
+    CONTROLLER_WON_CONFLICT;
 
     /** Parses a condition type, failing closed. */
     public static EffectConditionType parse(String raw, String location)

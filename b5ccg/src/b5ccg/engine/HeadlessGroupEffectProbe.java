@@ -1,6 +1,7 @@
 package b5ccg.engine;
 
 import b5ccg.engine.effect.EffectCardStatus;
+import b5ccg.engine.effect.EffectCondition;
 import b5ccg.engine.effect.EffectConditionType;
 import b5ccg.engine.effect.EffectDocument;
 import b5ccg.engine.effect.EffectDuration;
@@ -330,6 +331,69 @@ public class HeadlessGroupEffectProbe {
         check("the real winner still gains when the controller is the winner",
                 SpinDoctorsPerceivedWinner.actualWinnerGains("minbari", "minbari"), "");
 
+        // ── the conflict-type scope (B5-0052) ─────────────────────────────
+        // Three group cards print "if you win" and one prints "a Diplomacy
+        // conflict". The v0 trigger vocabulary could say the outcome
+        // (CONFLICT_WON) or the conflict class (CONFLICT_TYPE_*) but not
+        // both, and the pilot wrote the three riders against the bare
+        // outcome - a broader rule than the card prints. The conjunction is
+        // now expressible (a conflict-class trigger plus a
+        // CONTROLLER_WON_CONFLICT condition), and the checks below are what
+        // keep it that way.
+        System.out.println("--- the conflict-type scope ---");
+        List<String> bareWon = new ArrayList<String>();
+        for (EffectEntry entry : pilot.getEntries()) {
+            if ("CONFLICT_WON".equals(entry.getTrigger())) {
+                bareWon.add(entry.getCardId());
+            }
+        }
+        check("no pilot entry uses the bare CONFLICT_WON trigger", bareWon.isEmpty(),
+                "bare " + bareWon);
+
+        String[][] wonRiders = {
+            { "group_diplomatic_corps", "CONFLICT_TYPE_DIPLOMACY" },
+            { "group_secret_police", "CONFLICT_TYPE_INTRIGUE" },
+            { "group_imperial_telepaths", "CONFLICT_TYPE_PSI" }
+        };
+        for (String[] rider : wonRiders) {
+            EffectEntry entry = null;
+            for (EffectEntry candidate : pilot.entriesFor(rider[0])) {
+                if ("RESOLUTION".equals(candidate.getWindow().name())) entry = candidate;
+            }
+            boolean ok = entry != null
+                    && rider[1].equals(entry.getTrigger() == null ? "" : entry.getTrigger().name())
+                    && hasCondition(entry, "CONTROLLER_WON_CONFLICT");
+            check("the \"if you win\" rider of " + rider[0]
+                    + " names its conflict class (" + rider[1] + ") and the outcome filter",
+                    ok, entry == null ? "(no such entry)"
+                            : ("trigger=" + entry.getTrigger() + " conditions=" + conditionsOf(entry)));
+        }
+
+        EffectEntry spin = firstEntryFor(pilot, "group_spin_doctors");
+        check("\"Spin Doctors\" is scoped to a Diplomacy conflict",
+                spin != null && spin.getTrigger() != null
+                        && "CONFLICT_TYPE_DIPLOMACY".equals(spin.getTrigger().name()),
+                spin == null ? "(no such entry)" : ("trigger=" + spin.getTrigger()));
+
+        // ── the loader refuses a kind the primitive does not allow ────────
+        // EffectPrimitive.kinds() declares the effect kinds a primitive may
+        // appear under, and that declaration used to fail OPEN: nothing read
+        // it, and one shipped operation (STAT_MODIFY under a ONE_SHOT entry)
+        // violated it without the loader noticing.
+        System.out.println("--- the kind constraint fails closed ---");
+        expectLoadFailure("the loader refuses an operation whose primitive does not "
+                + "allow the entry's kind",
+                "{\"schema_version\":1,\"entries\":[{"
+                + "\"cardId\":\"probe_card\",\"title\":\"Probe Card\",\"kind\":\"TRAIT\","
+                + "\"window\":\"ANY\",\"requirements\":[],"
+                + "\"target\":{\"scope\":\"CARD\",\"controllerRelation\":\"ANY\"},"
+                + "\"conditions\":[],\"operations\":[{\"primitive\":\"DRAW\",\"params\":{\"count\":1}}],"
+                + "\"duration\":\"INSTANT\",\"stacking\":\"ADDITIVE\",\"protection\":\"NONE\","
+                + "\"precedenceLayer\":\"CARD_TEXT\",\"sourceBinding\":\"NONE\","
+                + "\"provenance\":{\"ruleIds\":[\"RB:I/influence\"],\"printingScope\":\"SINGLE_PRINTING\"}"
+                + "}]}",
+                "does not allow effect kind");
+
         // ── the renderer ───────────────────────────────────────────────────
         System.out.println("--- the renderer ---");
         String rendered = renderer.render(pilot);
@@ -618,6 +682,43 @@ public class HeadlessGroupEffectProbe {
     private static EffectEntry firstEntryFor(EffectDocument doc, String cardId) {
         List<EffectEntry> entries = doc.entriesFor(cardId);
         return entries.isEmpty() ? null : entries.get(0);
+    }
+
+    /** Whether an entry carries a condition of the named type. */
+    private static boolean hasCondition(EffectEntry entry, String type) {
+        for (EffectCondition c : entry.getConditions()) {
+            if (type.equals(c.getType().name())) return true;
+        }
+        return false;
+    }
+
+    /** An entry's condition types, comma-separated, for a failure message. */
+    private static String conditionsOf(EffectEntry entry) {
+        StringBuilder sb = new StringBuilder();
+        for (EffectCondition c : entry.getConditions()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(c.getType().name());
+        }
+        return sb.length() == 0 ? "(none)" : sb.toString();
+    }
+
+    /**
+     * Asserts that a document is refused, and that the refusal names the
+     * offending thing.
+     */
+    private static void expectLoadFailure(String what, String json, String expectedFragment) {
+        EffectRegistry registry = EffectRegistry.defaultRegistry();
+        try {
+            EffectLoader.parse(json, registry);
+            check(what, false, "the document LOADED - it should have been refused");
+        } catch (EffectLoadException ele) {
+            String message = ele.getMessage();
+            boolean named = message != null && message.indexOf(expectedFragment) >= 0;
+            check(what, named, "refused, but the message did not name '"
+                    + expectedFragment + "': " + message);
+        } catch (Exception other) {
+            check(what, false, "refused with the wrong exception type: " + other);
+        }
     }
 
     private static String readResource(String path) throws Exception {

@@ -39,10 +39,23 @@ public final class StatPrimitives {
     /** The derived amounts a stat modification may name. */
     private static final String[] DERIVED = { "HALF_PSI_ROUNDED_UP" };
 
-    /** The single primitive of this family. */
+    /**
+     * The single primitive of this family.
+     *
+     * <p><b>ONE_SHOT was added to the allowed kinds in B5-0052.</b> The v0
+     * declaration was {ONGOING, REPLACEMENT, TRIGGERED}, and "Motivated
+     * Leaders" - a one-shot: "All your characters in Inner Circle gain +1
+     * Leadership permanently. Discard after this effect triggers." - was
+     * therefore a kind violation, one of 59 operations in the shipped
+     * documents (measured by the B5-0051 verification). A one-shot stat
+     * bonus is an ordinary card effect, so the primitive's declaration was
+     * the thing that was wrong, not the data. The declaration is now
+     * enforced by the loader, so this cannot drift again.</p>
+     */
     public static final EffectPrimitive STAT_MODIFY = new SimplePrimitive(
             "STAT_MODIFY", FAMILY,
-            EffectKind.ONGOING, EffectKind.REPLACEMENT, EffectKind.TRIGGERED) {
+            EffectKind.ONE_SHOT, EffectKind.ONGOING, EffectKind.REPLACEMENT,
+            EffectKind.TRIGGERED) {
         @Override
         protected String body(EffectOperation op, String location) throws EffectLoadException {
             String stat = requiredEnum(op, "stat", location, STATS);

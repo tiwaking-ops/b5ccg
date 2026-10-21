@@ -2612,3 +2612,74 @@ gave: no paragraph of the pinned rulebook governs a process-tax metric, and a
   rather than on the morning of the reading.
 
 * **Report.** `.agent/REPORTS/2026-10-22-opencode-space-bunny-free-01-B5-0026.md`.
+## 2026-10-22 - The conflict-type scope, and a kind constraint that failed open (B5-0052)
+
+Authored by `opencode (MiniMax M3.1 Flash Free)`, version `minimax-m3.1-flash-free-2026-10-22-03`, on 2026-10-22, from the `opencode-minimax-m3-1-flash-free-01` session. **This entry is not independently assessed**; it is recorded as an `unassessed_revision` per AGENTS.md section 1, because no different-family reviewer has reviewed it.
+
+B5-0052 was filed by the B5-0051 verification of the Groups pilot (B5-0034) and
+carries three defects that the pilot's own data carried. All three are closed
+here.
+
+* **1. Four pilot entries stated a broader rule than their card prints, and
+  the reason was a fifth vocabulary gap the pilot did not close.** "Spin
+  Doctors" reads "Change the perceived winner of **a Diplomacy conflict** for
+  Influence gain purposes", and its entry said `CONFLICT_RESOLVED` - an effect
+  on any conflict that resolves, of any type. "Diplomatic Corps", "Secret
+  Police" and "Imperial Telepaths" each print "if you win" inside a sentence
+  that names the conflict type, and each rider was written against the bare
+  `CONFLICT_WON` trigger - so the rider fired after winning a conflict of any
+  type. The reason is the vocabulary: A3's own shape puts the conjunction in
+  the trigger ("conflict resolved **and initiator won**",
+  `RB:VI/triggered-effects`), and the v0 trigger set carries the two halves
+  separately - `CONFLICT_WON` for the outcome, `CONFLICT_TYPE_*` for the
+  conflict class - with no way to say both at once. The conjunction now has
+  somewhere to go: the trigger keeps the conflict class and the outcome
+  filter moves to the condition, which is where the v0's own trigger javadoc
+  says a filter belongs ("the filter ('and the initiator won') belongs on the
+  entry's EffectConditions"). The new condition is
+  `CONTROLLER_WON_CONFLICT` - "the conflict was won by the source's
+  controller", which is the card's own "if you win"; the rulebook's "Won" is
+  the initiator's outcome (`RB:IV/aftermath-cards`) and a participant may also
+  be considered to have won it (`RB:VI/sample-conflict`).
+
+* **2. The primitive registry's declared kind constraint failed OPEN, and
+  one shipped operation violated it.** `EffectPrimitive.kinds()` declares
+  "the effect kinds this primitive may appear under", and the v0 registry's
+  javadoc treats the kinds as part of the contract - but **no code path read
+  the declaration**: the loader never looked at the entry's kind, and
+  `EffectRegistry.describe` resolved the primitive, checked its parameters
+  and checked bespoke registration without consulting `kinds()`. Measured over
+  both shipped documents (the B5-0051 verification, re-measured here): 59
+  operations, **one violation** - `effects-groups-v1.json` entry 13,
+  "Motivated Leaders", a `ONE_SHOT` entry using `STAT_MODIFY`, whose
+  declaration was {ONGOING, REPLACEMENT, TRIGGERED}. A3 principle 4 is "**Fail
+  closed.** An unknown effect kind is a load error", and this is a second
+  kind of kind - a *known* kind used with a primitive that does not allow it
+  - which also failed open. The loader now refuses it, and the refusal names
+  both halves: the kind the entry declares and the kinds the primitive
+  allows. `STAT_MODIFY`'s declaration was widened to include `ONE_SHOT`,
+  because a one-shot stat bonus is an ordinary card effect and the
+  declaration was the thing that was wrong - "Motivated Leaders" is "All your
+  characters in Inner Circle gain +1 Leadership **permanently**. Discard
+  after this effect triggers", a one-shot by any reading, and the effect
+  census classes it ONE_SHOT as well.
+
+* **3. The pilot's own findings were re-derived, not taken on trust.** The
+  B5-0051 verification is a same-family review, so under B5-0045 it is
+  advisory and is recorded as an `advisory_review` block, not as an
+  `assessor_llm` entry; its readings were re-measured from the shipped data
+  before being acted on, and the kind violation it reported was reproduced
+  here with the same harness and the same result (59 operations, 1
+  violation). **A different-family assessment of B5-0034 and of this row is
+  still outstanding**: a DeepSeek-family reviewer was attempted on 2026-10-22
+  and produced **no output at all** - the provider returned HTTP 429
+  (`free_rate_limited`, `retry_after_seconds: 7644`) and the harness gave up
+  after five attempts, which is a failed review and not an assessment.
+
+* **4. What the fix did NOT change.** The engine's behaviour is unchanged
+  (the pilot data is inert; the engine still does not execute effect
+  entries), the v0 skeleton is untouched, the bespoke tail is still one card,
+  and the pilot's measured numbers are unchanged: 26 of 26 group titles
+  covered, 25 of 26 (96.2%) expressible without the escape hatch.
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-01-B5-0052.md`.

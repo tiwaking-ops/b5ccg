@@ -97,10 +97,10 @@
       "title": "Diplomatic Corps",
       "kind": "TRIGGERED",
       "window": "RESOLUTION",
-      "trigger": "CONFLICT_WON",
+      "trigger": "CONFLICT_TYPE_DIPLOMACY",
       "requirements": [],
       "target": { "scope": "FACTION", "controllerRelation": "SELF" },
-      "conditions": [],
+      "conditions": [{ "type": "CONTROLLER_WON_CONFLICT" }],
       "operations": [
         { "primitive": "DRAW", "params": { "count": 1 } }
       ],
@@ -461,10 +461,10 @@
       "title": "Secret Police",
       "kind": "TRIGGERED",
       "window": "RESOLUTION",
-      "trigger": "CONFLICT_WON",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
       "requirements": [],
       "target": { "scope": "CARD", "controllerRelation": "OPPONENT", "cardTypes": ["CHARACTER"] },
-      "conditions": [],
+      "conditions": [{ "type": "CONTROLLER_WON_CONFLICT" }],
       "operations": [
         { "primitive": "ROTATE_TARGET", "params": { "count": 1 } }
       ],
@@ -484,7 +484,7 @@
       "title": "Spin Doctors",
       "kind": "TRIGGERED",
       "window": "RESOLUTION",
-      "trigger": "CONFLICT_RESOLVED",
+      "trigger": "CONFLICT_TYPE_DIPLOMACY",
       "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
       "target": { "scope": "FACTION", "controllerRelation": "SELF" },
       "conditions": [],
@@ -576,10 +576,10 @@
       "title": "Imperial Telepaths",
       "kind": "TRIGGERED",
       "window": "RESOLUTION",
-      "trigger": "CONFLICT_WON",
+      "trigger": "CONFLICT_TYPE_PSI",
       "requirements": [],
       "target": { "scope": "FACTION", "controllerRelation": "OPPONENT" },
-      "conditions": [],
+      "conditions": [{ "type": "CONTROLLER_WON_CONFLICT" }],
       "operations": [
         { "primitive": "DISCARD", "params": { "count": 1 } }
       ],
