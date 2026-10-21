@@ -1,0 +1,804 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "cardId": "group_commercial_telepaths",
+      "title": "Commercial Telepaths",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "CARD", "controllerRelation": "ANY", "cardTypes": ["CHARACTER"] },
+      "conditions": [{ "type": "SOURCE_ROTATED" }],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "DIPLOMACY", "amount": "HALF_PSI_ROUNDED_UP" } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/sustained-actions", "RB:III/ready-and-rotated-cards"],
+        "textSha256": "2d6defe1a005741789016a4a9ce5e78c1c67c5fa54cb2577e90279c32a874710",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_counterintelligence",
+      "title": "Counterintelligence",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "INTRIGUE", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "709b221ddefa7c1b7954587b996b29f4732b229d19ca98ca667335ee8656f807",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_damage_control_team",
+      "title": "Damage Control Team",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["FLEET"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "UNROTATE_TARGET" }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/resolution-round", "RB:III/ready-and-rotated-cards"],
+        "textSha256": "ae07034da0ea5e669a0e58696b421aca729f84833ef557a856f457a998216512",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_diplomatic_corps",
+      "title": "Diplomatic Corps",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_DIPLOMACY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "DIPLOMACY", "amount": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "9e8b23811405f831cb1254629353e8940bd4a7a179f52530d28954f147ea6fda",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_diplomatic_corps",
+      "title": "Diplomatic Corps",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_WON",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "DRAW", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:III/draw-round"],
+        "textSha256": "9e8b23811405f831cb1254629353e8940bd4a7a179f52530d28954f147ea6fda",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_extended_contacts",
+      "title": "Extended Contacts",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "DRAW", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "REPLACING",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/draw-round"],
+        "textSha256": "93504cadf304395f182478be044f2c15f118a0506dbfbad1140bd9417c7c713c",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_extended_contacts",
+      "title": "Extended Contacts",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"], "innerCircleOnly": true },
+      "conditions": [{ "type": "CONTROL_CHARACTERS", "amount": 3 }],
+      "operations": [
+        { "primitive": "DRAW", "params": { "count": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "REPLACING",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/draw-round", "RB:VI/cumulative-effects"],
+        "textSha256": "93504cadf304395f182478be044f2c15f118a0506dbfbad1140bd9417c7c713c",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_government_opposition",
+      "title": "Government Opposition",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "OPPONENT" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_LOSE", "params": { "amount": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:I/influence", "RB:II/influence-changes"],
+        "textSha256": "340f7fff45fe73aa3a54d05ce07586bb687d50c66244404c758f20554e93057b",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_interstellar_corporation",
+      "title": "Interstellar Corporation",
+      "kind": "TRIGGERED",
+      "window": "READY",
+      "trigger": "ROUND_START",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/ready-round", "RB:I/influence"],
+        "textSha256": "5cc9c2980f6c08ef8fd0b0b2c747ed7cf29a50becca2a4a43d0b6c37a80fd436",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_isn",
+      "title": "ISN",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "OPPONENT" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "REVEAL_HAND" }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/action-round"],
+        "textSha256": "58341abea18fa2b67f79e00b44e5264de6ac81de0c8fc46ee8c39a266654aab0",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_military_cadre",
+      "title": "Military Cadre",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "MILITARY", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "b9b18c6f151022f2a3e931092e2cceefe046314b9306d99618e19af4d09e5f73",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_military_telepaths",
+      "title": "Military Telepaths",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_PSI",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "PSI", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "3c8ab0220d919b0be0b727674386be5e57d7eeb60b83838294d941ab627ae242",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_military_telepaths",
+      "title": "Military Telepaths",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "INTRIGUE", "amount": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "3c8ab0220d919b0be0b727674386be5e57d7eeb60b83838294d941ab627ae242",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_motivated_leaders",
+      "title": "Motivated Leaders",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "trigger": "ON_PLAY",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"], "innerCircleOnly": true },
+      "conditions": [],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "LEADERSHIP", "amount": 1 } },
+        { "primitive": "DISCARD_SOURCE" }
+      ],
+      "duration": "PERMANENT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:VI/bonuses-and-blanking", "RB:VI/discards"],
+        "textSha256": "0fa3bab48ad4868105851b250033e22a3765c468acd08d1cfc43f67b291a85a3",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_observers",
+      "title": "Observers",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_RESOLVED",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "VIEW_HAND" },
+        { "primitive": "DISCARD", "params": { "count": 1 }, "optional": true }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/resolution-round", "RB:VI/discards"],
+        "textSha256": "148aa02671d568c0a6cf02aef7391031256b5d051b7eb6287d054df6828cc3dd",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_rabble_rousers",
+      "title": "Rabble Rousers",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "OPPONENT" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "DISCARD", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:VI/discards"],
+        "textSha256": "42d21a43635d854e3b2c2ebd80bfdc55c960d1f30a6acb00174452d264feb856",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_ranger_strike_team",
+      "title": "Ranger Strike Team",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "ANY", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "4af1bea2b0ebbcc1e5e1c3c1627d9f7617b1de9586cefbea6f861fd8d8d0c36b",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_ranger_strike_team",
+      "title": "Ranger Strike Team",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "ANY", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "4af1bea2b0ebbcc1e5e1c3c1627d9f7617b1de9586cefbea6f861fd8d8d0c36b",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_rangers_surveillance",
+      "title": "Rangers Surveillance",
+      "kind": "ONE_SHOT",
+      "window": "ANY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "ANY" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "REORDER_DRAW_PILE", "params": { "count": 5 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/draw-round"],
+        "textSha256": "980f968da9bcb0c0ae5414a6421eb226180bc5663e88dc96fe45bbe6120f5b4b",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_secret_police",
+      "title": "Secret Police",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "INTRIGUE", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "78de2a70dc0e6cdb7c55abdf75a77c51c74f10612501e7ef0becc1beb05400a9",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_secret_police",
+      "title": "Secret Police",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_WON",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "OPPONENT", "cardTypes": ["CHARACTER"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "ROTATE_TARGET", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:III/ready-and-rotated-cards"],
+        "textSha256": "78de2a70dc0e6cdb7c55abdf75a77c51c74f10612501e7ef0becc1beb05400a9",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_spin_doctors",
+      "title": "Spin Doctors",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_RESOLVED",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "BESPOKE", "params": { "handler": "SPIN_DOCTORS_PERCEIVED_WINNER" } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:I/influence"],
+        "textSha256": "6cda04cb10232f41d9f75a4f09f902abfb8fa1146a099cf187fe0be7e51f149d",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_war_college",
+      "title": "War College",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "MILITARY", "amount": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "5ae0cb59f30ec8c671493e110c717d5002a6ffee035ce508ab2625c24ccfb546",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_war_college",
+      "title": "War College",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [{ "type": "SOURCE_ROTATED" }],
+      "operations": [
+        { "primitive": "DRAW", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:III/draw-round"],
+        "textSha256": "5ae0cb59f30ec8c671493e110c717d5002a6ffee035ce508ab2625c24ccfb546",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_imperial_telepaths",
+      "title": "Imperial Telepaths",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_PSI",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "PSI", "amount": 3 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "576fddbde203158ea0be4aeb29dc6727c1748645b4e664a8a9a2bcd1441d60a0",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_imperial_telepaths",
+      "title": "Imperial Telepaths",
+      "kind": "TRIGGERED",
+      "window": "RESOLUTION",
+      "trigger": "CONFLICT_WON",
+      "requirements": [],
+      "target": { "scope": "FACTION", "controllerRelation": "OPPONENT" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "DISCARD", "params": { "count": 1 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:VI/discards"],
+        "textSha256": "576fddbde203158ea0be4aeb29dc6727c1748645b4e664a8a9a2bcd1441d60a0",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_influential_lords",
+      "title": "Influential Lords",
+      "kind": "TRIGGERED",
+      "window": "READY",
+      "trigger": "ROUND_START",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"], "races": ["CENTAURI"], "innerCircleOnly": true },
+      "conditions": [{ "type": "CONTROL_CHARACTERS", "amount": 2 }],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/ready-round", "RB:I/influence"],
+        "textSha256": "c995292297a4bb2d93e027f03ebc9a193dda6542fb6b57db77a1c4f9ac4e3c7f",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_psi_corps_intelligence",
+      "title": "Psi Corps Intelligence",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "ANY", "amount": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "7a3c9b9ef9f286cb64cafbbd9dd4c26a76b8f423b50a104fa994ad443d852ec5",
+        "printingScope": "SINGLE_PRINTING"
+      }
+    },
+    {
+      "cardId": "group_psi_corps_intelligence",
+      "title": "Psi Corps Intelligence",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_PSI",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "ANY", "amount": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "7a3c9b9ef9f286cb64cafbbd9dd4c26a76b8f423b50a104fa994ad443d852ec5",
+        "printingScope": "SINGLE_PRINTING"
+      }
+    },
+    {
+      "cardId": "group_religious_caste",
+      "title": "Religious Caste",
+      "kind": "TRIGGERED",
+      "window": "READY",
+      "trigger": "ROUND_START",
+      "requirements": [],
+      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
+      "conditions": [{ "type": "DAMAGED_CHARACTERS_AT_MOST", "amount": 0 }],
+      "operations": [
+        { "primitive": "INFLUENCE_GAIN", "params": { "amount": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:III/ready-round", "RB:I/influence"],
+        "textSha256": "8467b1799d62ee9907b47fd0ca1ea7feef2944d141bad1af7ebb74ab9f711c69",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_warrior_caste",
+      "title": "Warrior Caste",
+      "kind": "ONGOING",
+      "window": "ANY",
+      "requirements": [],
+      "target": { "scope": "RACE", "controllerRelation": "SELF", "cardTypes": ["FLEET"], "races": ["MINBARI"] },
+      "conditions": [],
+      "operations": [
+        { "primitive": "STAT_MODIFY", "params": { "stat": "MILITARY", "amount": 1 } }
+      ],
+      "duration": "WHILE_SOURCE_IN_PLAY",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/fleet-cards"],
+        "textSha256": "da9085bc628bf7bf7182d67025ee33daaf002fbe98fa626db874abea029b4a58",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_wind_swords",
+      "title": "Wind Swords",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "MILITARY", "amount": 4 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "9059218b6293bb30b9a99ab976f2e0605a7182dae5890b84229ebacbc253fddf",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_narn_rabble",
+      "title": "Narn Rabble",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_DIPLOMACY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "ANY", "amount": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "e6a704d151c2b5098a9b25fb7fc420a8cab04a560706ebb68618c4b73f67c81f",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_narn_rabble",
+      "title": "Narn Rabble",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_MILITARY",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "ANY", "amount": 2 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "e6a704d151c2b5098a9b25fb7fc420a8cab04a560706ebb68618c4b73f67c81f",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    },
+    {
+      "cardId": "group_thenta_makur",
+      "title": "Thenta Makur",
+      "kind": "TRIGGERED",
+      "window": "CONFLICT",
+      "trigger": "CONFLICT_TYPE_INTRIGUE",
+      "requirements": [{ "type": "ROTATE_CARD", "amount": 1 }],
+      "target": { "scope": "FACTION", "controllerRelation": "SELF" },
+      "conditions": [],
+      "operations": [
+        { "primitive": "CONFLICT_BONUS", "params": { "stat": "INTRIGUE", "amount": 4 } }
+      ],
+      "duration": "INSTANT",
+      "stacking": "ADDITIVE",
+      "protection": "NONE",
+      "precedenceLayer": "CARD_TEXT",
+      "sourceBinding": "NONE",
+      "provenance": {
+        "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
+        "textSha256": "15bf29c27d4a31088249e98aea09a3bb8f764a4f4239b2e7a06cb09d581b8807",
+        "printingScope": "DELUXE_GOVERNS"
+      }
+    }
+  ]
+}

@@ -75,7 +75,7 @@
         "ON_PLAY", "ON_RESOLUTION", "ROUND_START", "TURN_START",
         "CONFLICT_BEGINS", "CONFLICT_RESOLVED", "CONFLICT_WON",
         "CONFLICT_TYPE_INTRIGUE", "CONFLICT_TYPE_MILITARY", "CONFLICT_TYPE_DIPLOMACY",
-        "CHARACTER_DAMAGED", "CARD_DISCARDED"
+        "CONFLICT_TYPE_PSI", "CHARACTER_DAMAGED", "CARD_DISCARDED"
       ]
     },
     "effectDuration": {
@@ -124,7 +124,8 @@
           "enum": [
             "TENSION_AT_LEAST", "UNREST_AT_LEAST", "POWER_AT_LEAST",
             "INFLUENCE_AT_LEAST", "MARK_COUNT_AT_LEAST", "STATE_EXISTS",
-            "SOURCE_ROTATED", "SOURCE_IN_PLAY", "CONTROL_CHARACTERS", "CARD_IN_PLAY"
+            "SOURCE_ROTATED", "SOURCE_IN_PLAY", "CONTROL_CHARACTERS", "CARD_IN_PLAY",
+            "DAMAGED_CHARACTERS_AT_MOST"
           ]
         },
         "amount": { "type": "integer", "minimum": 0 },
@@ -182,6 +183,10 @@
         "params": {
           "type": "object",
           "description": "Typed parameters. Values are strings or integers; the primitive's own closed set is checked by the loader, which is the authority."
+        },
+        "optional": {
+          "type": "boolean",
+          "description": "True when the printed text permits the operation rather than requiring it - the rulebook's 'may' against its 'must'. Added by WP-11 (B5-0034)."
         }
       }
     },

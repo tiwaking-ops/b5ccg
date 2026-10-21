@@ -48,6 +48,20 @@ public enum EffectTrigger {
     /** A conflict of the Diplomacy type begins. */
     CONFLICT_TYPE_DIPLOMACY,
 
+    /**
+     * A conflict of the Psi type begins.
+     *
+     * <p><b>Added by WP-11 (B5-0034), the Groups pilot.</b> The v0 trigger set
+     * named three of the rulebook's four conflict types
+     * ({@code RB:IV/type-of-conflict} names Military, Diplomatic, Intrigue
+     * and Psi), and three group cards - "Military Telepaths", "Imperial
+     * Telepaths" and "Psi Corps Intelligence" - rotate during a Psi conflict.
+     * A trigger vocabulary that cannot name a Psi conflict cannot express
+     * those three cards, so the missing name is added here rather than worked
+     * around.</p>
+     */
+    CONFLICT_TYPE_PSI,
+
     /** A character is damaged. */
     CHARACTER_DAMAGED,
 

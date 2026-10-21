@@ -26,11 +26,15 @@ import java.util.List;
  * handlers the engine has actually published, and publishing one is a
  * deliberate act.</p>
  *
- * <p><b>The v0 registry ships zero handlers.</b> That is the strongest
- * statement the schema can make about the size of the bespoke tail: the
- * escape hatch is <em>specified</em> and <em>empty</em>. A card that needs
- * bespoke behaviour cannot be written yet, and that is visible at load time
- * rather than discovered later.</p>
+ * <p><b>The handler table is measured, not asserted.</b> In v0 this registry
+ * shipped zero handlers, which said the bespoke tail was empty - but it said
+ * so without having measured it. WP-11 (B5-0034) measured it: the Groups
+ * pilot, 26 group titles, one of them - "Spin Doctors" - a behaviour no
+ * general primitive can express. That card's handler is published, and the
+ * census (B5-0005) independently classified the same card as BESPOKE, so the
+ * two agree. A card that needs bespoke behaviour and has no published
+ * handler cannot be written yet, and that is visible at load time rather
+ * than discovered later.</p>
  */
 public final class BespokePrimitives {
 

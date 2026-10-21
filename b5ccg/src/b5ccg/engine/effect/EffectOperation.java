@@ -26,13 +26,34 @@ import java.util.TreeMap;
  * Keeping them as strings means the loader can reject an unrecognised value
  * against a closed set rather than coercing it, and it means the JSON is
  * diffable and human-editable.</p>
+ *
+ * <p><b>"Optional" is the rulebook's "may".</b> Added by WP-11 (B5-0034),
+ * the Groups pilot. The rulebook distinguishes a compulsory action from a
+ * permitted one - "the loser must discard 2 cards" against "all players
+ * <em>may</em> discard as many cards as they wish"
+ * ({@code RB:III/draw-round}) - and the v0 operation shape could not say the
+ * difference, so an effect that printed "may" had to be written as if it
+ * printed "must". That is a rule stated wrongly, which is worse than a rule
+ * left unstated. The flag is on the operation rather than in the parameters
+ * because it is a property of the operation, not a value one primitive
+ * happens to take: every primitive accepts it and no primitive's closed
+ * parameter set changes.</p>
  */
 public final class EffectOperation {
 
     private final String primitive;
     private final Map<String, String> params;
+    private final boolean optional;
 
     public EffectOperation(String primitive, Map<String, String> params) {
+        this(primitive, params, false);
+    }
+
+    /**
+     * @param optional whether the operation is a permitted choice ("may")
+     *     rather than a compulsory effect ("must")
+     */
+    public EffectOperation(String primitive, Map<String, String> params, boolean optional) {
         if (primitive == null || primitive.trim().length() == 0) {
             throw new IllegalArgumentException("operation primitive is null or empty");
         }
@@ -45,6 +66,7 @@ public final class EffectOperation {
             }
         }
         this.params = Collections.unmodifiableMap(copy);
+        this.optional = optional;
     }
 
     /**
@@ -62,6 +84,12 @@ public final class EffectOperation {
 
     /** One parameter, or null when it is absent. */
     public String get(String key) { return params.get(key); }
+
+    /**
+     * Whether this operation is a permitted choice rather than a compulsory
+     * effect - the rulebook's "may" against its "must".
+     */
+    public boolean isOptional() { return optional; }
 
     /** One parameter as an integer.
      *
@@ -91,6 +119,10 @@ public final class EffectOperation {
      * renders the same way. A renderer that is not order-stable cannot be
      * compared against a golden value, which is the whole point of having
      * one.</p>
+     *
+     * <p>An optional operation is marked with a trailing "?", so that a
+     * permitted choice and a compulsory effect never render the same way.
+     * The marker is the same one the canonical renderer uses.</p>
      */
     public String describe() {
         StringBuilder sb = new StringBuilder();
@@ -103,6 +135,7 @@ public final class EffectOperation {
             first = false;
         }
         sb.append(')');
+        if (optional) sb.append('?');
         return sb.toString();
     }
 
@@ -116,11 +149,13 @@ public final class EffectOperation {
         if (this == o) return true;
         if (!(o instanceof EffectOperation)) return false;
         EffectOperation other = (EffectOperation) o;
-        return primitive.equals(other.primitive) && params.equals(other.params);
+        return primitive.equals(other.primitive)
+                && params.equals(other.params)
+                && optional == other.optional;
     }
 
     @Override
     public int hashCode() {
-        return primitive.hashCode() * 31 + params.hashCode();
+        return primitive.hashCode() * 31 + params.hashCode() * 7 + (optional ? 1 : 0);
     }
 }

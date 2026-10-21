@@ -1,16 +1,23 @@
 <#
 .SYNOPSIS
-  Tooling probe for B5-0028 / WP-10 (A3): the effect data must validate against
-  the JSON Schema, the validator must be able to FAIL, and every rule ID the
-  data cites must exist in the rule index.
+  Tooling probe for B5-0028 / WP-10 (A3) and B5-0034 / WP-11 (A3): the effect
+  data must validate against the JSON Schema, the validator must be able to
+  FAIL, and every rule ID the data cites must exist in the rule index.
 .DESCRIPTION
   The Java gate class `b5ccg.engine.HeadlessEffectSchemaProbe` checks the
   shipped game's half of the contract: the engine's own loader fails closed
-  and the renderer is canonical. This probe checks the other half, in the dev
-  tooling, in a different language and a different process:
+  and the renderer is canonical. `b5ccg.engine.HeadlessGroupEffectProbe` checks
+  the Groups pilot: coverage of every group title, the bespoke tail, and that
+  the schema's closed sets and the engine's closed sets agree. This probe
+  checks the other half, in the dev tooling, in a different language and a
+  different process:
 
-    1. The shipped effect document validates against
-       `.agent/tools/schemas/effect-document.schema.json`.
+    1. EVERY shipped effect document validates against
+       `.agent/tools/schemas/effect-document.schema.json`. There are two:
+       the v0 skeleton (`effects-v0.json`) and the Groups pilot
+       (`effects-groups-v1.json`, added by WP-11 / B5-0034). A schema that
+       only one of them satisfies is a schema that does not describe the
+       shipped data.
     2. The validator REFUSES a document that breaks the schema. This is the
        red-then-green half: a validator that only ever says PASS is not a
        validator, and this assertion is what proves the check can fail. The
@@ -37,8 +44,14 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $validator = Join-Path $PSScriptRoot 'validate-effect-schema.py'
 $schema   = Join-Path $PSScriptRoot 'schemas/effect-document.schema.json'
-$document = Join-Path $repoRoot 'b5ccg/resources/effects/effects-v0.json'
 $ruleIndex = Join-Path $repoRoot 'docs/RULE_INDEX.md'
+
+# The shipped effect documents. The v0 skeleton first, then the Groups pilot
+# document (WP-11 / B5-0034).
+$documents = @(
+    (Join-Path $repoRoot 'b5ccg/resources/effects/effects-v0.json'),
+    (Join-Path $repoRoot 'b5ccg/resources/effects/effects-groups-v1.json')
+)
 
 $failures = @()
 $checks = 0
@@ -76,18 +89,26 @@ if ($null -eq $python) {
     exit 0
 }
 
-Write-Host "=== TOOLING PROBE (B5-0028 / WP-10 effect schema) ==="
+Write-Host "=== TOOLING PROBE (B5-0028 / WP-10 effect schema; B5-0034 / WP-11 pilot) ==="
 Write-Host ("  python: " + $python)
 
-# ── 1. The shipped document validates ───────────────────────────────────────
-$out = & $python $validator $schema $document 2>&1
-$code = $LASTEXITCODE
-Check "the shipped effect document validates against the JSON Schema" ($code -eq 0) `
-    ("exit ${code}: " + ($out -join ' '))
+# ── 1. Every shipped effect document validates ─────────────────────────────
+foreach ($document in $documents) {
+    $name = Split-Path -Leaf $document
+    if (-not (Test-Path -LiteralPath $document)) {
+        Check ("the effect document exists (" + $name + ")") $false ("not found: " + $document)
+        continue
+    }
+    $out = & $python $validator $schema $document 2>&1
+    $code = $LASTEXITCODE
+    Check ("the shipped effect document validates against the JSON Schema (" + $name + ")") `
+        ($code -eq 0) ("exit ${code}: " + ($out -join ' '))
+}
 
 # ── 2. The validator REFUSES a broken document ──────────────────────────────
 # The fixture breaks the schema in a way the schema itself forbids: an effect
 # kind outside the closed set. The validator must exit non-zero.
+$document = $documents[0]
 $broken = $null
 $tmp = $null
 try {
@@ -113,13 +134,16 @@ if (Test-Path -LiteralPath $ruleIndex) {
     foreach ($m in [regex]::Matches($index, 'RB:[A-Za-z0-9]+/[A-Za-z0-9\-]+')) {
         $known[$m.Value] = $true
     }
-    $data = Get-Content -LiteralPath $document -Raw -Encoding UTF8 | ConvertFrom-Json
     $cited = @{}
     $unknown = @()
-    foreach ($entry in $data.entries) {
-        foreach ($id in $entry.provenance.ruleIds) {
-            $cited[$id] = $true
-            if (-not $known.ContainsKey($id)) { $unknown += ("{0}: {1}" -f $entry.cardId, $id) }
+    foreach ($doc in $documents) {
+        if (-not (Test-Path -LiteralPath $doc)) { continue }
+        $data = Get-Content -LiteralPath $doc -Raw -Encoding UTF8 | ConvertFrom-Json
+        foreach ($entry in $data.entries) {
+            foreach ($id in $entry.provenance.ruleIds) {
+                $cited[$id] = $true
+                if (-not $known.ContainsKey($id)) { $unknown += ((Split-Path -Leaf $doc) + ": " + $entry.cardId + " -> " + $id) }
+            }
         }
     }
     Check ("every rule ID the data cites is in the rule index ({0} distinct ID(s))" -f $cited.Count) `
@@ -142,10 +166,13 @@ foreach ($f in $cardFiles) {
         $ids[$canonical] = $true
     }
 }
-$data = Get-Content -LiteralPath $document -Raw -Encoding UTF8 | ConvertFrom-Json
 $missing = @()
-foreach ($entry in $data.entries) {
-    if (-not $ids.ContainsKey($entry.cardId)) { $missing += $entry.cardId }
+foreach ($doc in $documents) {
+    if (-not (Test-Path -LiteralPath $doc)) { continue }
+    $data = Get-Content -LiteralPath $doc -Raw -Encoding UTF8 | ConvertFrom-Json
+    foreach ($entry in $data.entries) {
+        if (-not $ids.ContainsKey($entry.cardId)) { $missing += $entry.cardId }
+    }
 }
 Check ("every card id the data names exists in the card pool ({0} card(s) in the pool)" -f $ids.Count) `
     ($missing.Count -eq 0) (($missing | Select-Object -Unique) -join ', ')

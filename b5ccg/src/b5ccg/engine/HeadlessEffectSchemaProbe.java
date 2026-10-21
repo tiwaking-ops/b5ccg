@@ -67,11 +67,21 @@ public class HeadlessEffectSchemaProbe {
     /** The shipped v0 effect document. */
     private static final String RESOURCE = "/effects/effects-v0.json";
 
-    /** The number of entries the v0 document holds. */
-    private static final int EXPECTED_ENTRIES = 29;
+    /**
+     * The number of entries the v0 document holds.
+     *
+     * <p><b>22, not 29.</b> The five group cards the v0 skeleton also carried
+     * - Commercial Telepaths, Secret Police, War College, Warrior Caste and
+     * Wind Swords - moved to the Groups pilot document
+     * ({@code /effects/effects-groups-v1.json}) in WP-11 (B5-0034), so that
+     * every card has exactly one home. The v0 skeleton keeps the twelve
+     * cards that are not part of either pilot: enhancements, events and an
+     * agenda.</p>
+     */
+    private static final int EXPECTED_ENTRIES = 22;
 
-    /** The number of distinct cards the v0 document describes. */
-    private static final int EXPECTED_CARDS = 17;
+    /** The number of distinct cards the v0 document describes (12, not 17). */
+    private static final int EXPECTED_CARDS = 12;
 
     /**
      * The canonical rendering of one known entry.

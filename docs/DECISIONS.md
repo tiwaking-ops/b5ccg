@@ -1936,3 +1936,370 @@ renderer exists.**
 * **Report.** `.agent/REPORTS/2026-10-22-opencode-space-bunny-free-01-B5-0028.md`.
   Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0028.txt` (green) and
   `GATE-B5-0028-RED.txt` (red).
+## 2026-10-22 - Owner ruling: B5-0026 closes when the window elapses, on 2026-10-30 (WP-09 / B2)
+
+Authored by `opencode (Space Bunny Free)`, version `space-bunny-free-2026-10-22-03`, on
+2026-10-22, from the `opencode-space-bunny-free-01` session. The ruling below is
+the **owner's**; this entry records it and records the measurement that will
+close the row.
+
+**No rule-ID is cited, deliberately.** This is a governance and measurement
+ruling, not an interpretation of the rulebook. No paragraph of the pinned
+rulebook governs a process-tax KPI, and a `RB:` citation here would be a
+fabrication. The B5-0008 entry set that precedent and it is followed.
+
+* **1. The ruling.** The B5-0026 acceptance reads "B2 targets in 7.4 met and
+  measured over a two-week window", and the proposal's §7.4 "Verified by"
+  clause names three numbers and one method: "process documents per ledger row
+  falls from about 5.1 to about 1 or less; boot tokens per task fall;
+  gate-green merged changes per day stay flat or rise. **Measure before and
+  after on the same two-week window.**" The owner ruled on 2026-10-22: **wait,
+  measure the three KPIs on 2026-10-30, and close the row then.** The row
+  therefore stays **OPEN** until the window elapses, and the reading is taken
+  on 2026-10-30 with the same instrument that takes the baseline.
+
+  This supersedes the position the 2026-10-19 UNATTRIBUTED audit recorded -
+  "The window has not elapsed, so marking it DONE would be a false claim" -
+  not by contradicting it, but by settling what happens next. The audit's
+  reasoning stands: the window had not elapsed. The owner's ruling says the
+  answer is to wait for it, not to reinterpret the acceptance.
+
+* **2. The instrument now exists, so the window can actually be closed.** A
+  before/after measured with two different instruments is not a measurement,
+  it is a comparison of two people's habits. `.agent/tools/measure-process-tax.ps1`
+  is that instrument: it states its own definitions, prints its denominators,
+  and writes a JSON snapshot carrying the definitions with the numbers.
+  `.agent/tools/test-process-tax-measurement.ps1` (22 checks, a tooling probe
+  wired into `compile.sh`) proves the instrument still works - it asserts that
+  the instrument RUNS and that its output CARRIES its definitions, and it
+  deliberately does **not** assert particular values, because the values move
+  daily by design and a probe that asserted them would have to be edited every
+  day and so would not be running on the day it mattered.
+
+  The baseline snapshot is `.agent/REPORTS/measurements/process-tax-2026-10-22.json`.
+  The "before" end of the window, measured with the same instrument against
+  the fork, is `.agent/REPORTS/measurements/process-tax-2026-10-16-fork.json`.
+
+* **3. The definitions are the instrument's real content.** A number without a
+  definition is a rumour, so each one is printed with the reading and carried
+  in the snapshot:
+
+  - **KPI (a) - process documents per DONE ledger row.** A *process document*
+    is a Markdown file under `.agent/REPORTS/`, `.agent/PATTERNS/`, `docs/` or
+    `investigations/`; the denominator is the number of ledger rows with
+    status DONE. The primary figure is the total; a narrower figure (reports
+    and patterns only) is also printed, because `docs/` mixes project-wide
+    artefacts with per-task ones and the proposal's 5.1/row figure counted
+    both. Both are reported rather than one being chosen silently.
+  - **KPI (b) - boot read cost per task.** The size of `.agent/00_BOOT.md`,
+    which every session reads once. Bytes and lines are measured; a token
+    count is an **estimate** (bytes / 4) and is labelled as one, because the
+    tokeniser's vocabulary is unknown.
+  - **KPI (c) - gate-green merged changes per day.** Commits per day on the
+    working branch - in this repo a commit IS the unit of merged work, because
+    AGENTS.md §5 forbids agents committing to `main`/`master` and D3 permits
+    private task branches - counted over the days that have at least one
+    GREEN gate capture. "Green" is parsed from the capture: a capture is RED
+    if it reports a failed class, a failed tooling probe, or an ERROR line.
+    **A capture whose file name carries `-RED` is deliberate red-then-green
+    evidence, not a failure**, and is counted separately from a red capture
+    with no `-RED` in its name. The coverage - how many days have a capture
+    at all - is printed with the number, because a rate with unknown coverage
+    is not a rate.
+
+* **4. The "before" baseline is ambiguous, and BOTH readings are recorded.**
+  The acceptance says "measure before and after on the same two-week window"
+  without saying what "before" is, and the two candidates give different
+  verdicts. This is the substance of the finding, not a footnote:
+
+  | KPI | "before" = the old repo (the proposal's own baseline) | "before" = the fork, 2026-10-16 (the start of this repo's window) |
+  |---|---|---|
+  | (a) process docs per row | 5.1/row (the proposal's figure) | **UNDEFINED** - the fork had 0 DONE rows |
+  | (b) boot cost | 21.7 KB (the proposal's figure) | **2 653 B** |
+  | (c) gate-green changes/day | not recorded | **UNDEFINED** - the fork had 0 gate captures |
+
+  So: against the old repo's baseline, KPIs (a) and (b) are comfortably met
+  (2.214 vs 5.1; 4 295 B vs 21.7 KB). Against the fork's baseline, KPI (a) has
+  no denominator, KPI (c) has no coverage, and **KPI (b) has moved the WRONG
+  way - the boot file has grown 62 %, from 2 653 B to 4 295 B.** Both readings
+  are in the snapshots; the 2026-10-30 reading is taken against the same
+  instrument and reports against the same two baselines.
+
+* **5. KPI (b) cannot be made to fall on the fork baseline, and that is a
+  finding rather than a task.** The growth in the boot file is *required
+  content*, and the diff names every line of it: the JDK 25 / `--release 8`
+  toolchain and the "a JDK 8 `javac` is a stop condition" rule (the D2
+  ruling), the correction that `RUN_TESTS=1 sh compile.sh` is the verification
+  gate and a green fast gate is not (the B5-0026-era gate honesty work), the
+  four-name baseline failing-set clause, and the heartbeat and claim tool
+  corrections. Bringing the boot file back under the fork's 2 653 B means
+  cutting those lines, which would make the boot file **wrong**. A boot trim
+  that satisfies a number by deleting the instructions that keep the gate
+  honest is the failure this project has already recorded twice, so it is not
+  proposed. §7.4's own remedy - "a core of about 4 KB plus modules loaded on
+  demand" - would apply to the ~1.2 KB baseline clause, and is the one lever
+  left if the owner wants KPI (b) met on the fork baseline. **That is an
+  owner decision, not an agent's.**
+
+* **6. The reading, as measured today (2026-10-22), with the denominators.**
+  KPI (a) = **2.209** process documents per DONE row over 43 DONE rows (95
+  documents: 71 reports + 2 patterns + 22 docs + 0 investigations); the narrow
+  reading is **1.698**. The target is "about 1 or less", so **on the primary
+  definition KPI (a) is NOT met today** - and that is the number the
+  2026-10-30 reading has to beat or match. KPI (b) = **4 295 B / 74 lines**
+  (estimated 1 073.8 tokens). KPI (c) = **6 gate-green merged changes per
+  day** over the 3 active days that have a GREEN capture, with coverage
+  **3 of 6** active days carrying any capture at all. The §7.4 target table
+  is met today on every row: boot 4 295 B, ledger 31 483 B, 0 investigations,
+  2 pattern namespaces, no root `.md` debris, 0 DONE rows eligible to rotate.
+  The committed snapshot is
+  `.agent/REPORTS/measurements/process-tax-2026-10-22.json`, and these
+  numbers are the ones in it.
+
+* **7. What is NOT done, deliberately.** The row is **not** closed, and this
+  entry does not promote it. The window has not elapsed. The 2026-10-30
+  reading, the comparison against both baselines, and the flip are all still
+  ahead; per AGENTS.md §4, the ambiguity is logged and the item is stopped
+  rather than resolved by assertion.
+
+* **8. The appointment.** On **2026-10-30** a session should: run
+  `.agent/tools/measure-process-tax.ps1 -OutFile
+  .agent/REPORTS/measurements/process-tax-2026-10-30.json`; compare it
+  against `process-tax-2026-10-22.json` (the same-window baseline) and
+  `process-tax-2026-10-16-fork.json` (the window's other end); record the
+  comparison in a report and in a DECISIONS entry; and only then flip the row
+  - with the owner's ruling on §5 if KPI (b) is to be read on the fork
+  baseline. The tooling probe is in the gate, so a broken instrument is
+  caught on every gate run rather than on the morning of the reading.
+
+* **9. A scope collision, live, and what it cost.** While this row was being
+  worked, a second agent (`opencode-minimax-m3-1-flash-free-01`) took a claim
+  on **B5-0034** with scope `engine,tooling,resources,docs` while this row's
+  claim on **B5-0026** (`docs,tooling`) was live - eight minutes later. The
+  overlap is `tooling` and `docs`, and **no tooling enforces it**: the
+  freeze-guard gap already recorded in this file is exactly why the three
+  breaches of B5-0039/0040/0041 happened, and this is a fourth live instance
+  of it. The 2026-10-19 correction recorded the gap; it has now produced a
+  fourth instance.
+
+  **What it cost, measured.** The two rows touched the same files, and the
+  tree's gate went **RED**: the B5-0034 pilot moved the five Group entries
+  out of the shared v0 data file and into a Groups file of its own - a
+  defensible move, "so that every card has exactly one home" - and the
+  effect-schema probe, which asserted the v0 file's entry count exactly,
+  went red with it: 22 entries, 12 cards, against the 29 and 17 it expected.
+  The other agent corrected the counts; the gate went green (38 classes, 4
+  tooling probes, exit 0) with both rows' work in it.
+
+  **The lesson is about the probe, not about the collision.** A probe that
+  asserts an exact count of a file another row is entitled to extend will
+  break every time the pilots land, and the fix that restores it by editing
+  the constant is a fix that will have to be repeated. The count should be a
+  **floor** - the data may GROW, because the pilots add entries by design,
+  but it must not SHRINK, because a lost file is a defect. That is the
+  B5-0044 pattern applied to a count. It was **not** applied here, because
+  the file was under the other agent's active edit and rewriting a file
+  another agent is working in is the one thing this collision already
+  demonstrated to be expensive. It is recorded as a recommendation for
+  whoever next touches the count.
+
+  **Neither agent's claim or heartbeat was touched, and no work of either
+  was reverted.** The collision was resolved by the two agents cooperating
+  inside a tree that does not prevent them from colliding.
+
+* **10. What the next row measured about THIS row's deliverable.** The
+  B5-0034 Groups pilot is the first thing to use the v0 schema, so it is the
+  first measurement of it, and the number belongs in this row's record
+  because it describes the v0 vocabulary rather than the pilot.
+
+  **The v0 vocabulary could express 19 of 26 group cards - 73%.** The
+  pilot gate's threshold is 70%, so the v0 schema cleared it - but by three
+  points, and only before the pilot's own work: with the registry as this row
+  shipped it, **seven of the 26 group cards could not be expressed at all**.
+  The four gaps the pilot exposed were a trigger vocabulary that could not
+  name a Psi conflict (the rulebook names four conflict types and the v0 named
+  three), a condition vocabulary with no "at most" test, an operation shape
+  that could not tell "may" from "must", and three missing primitive
+  families (information, unrotation, discarding the source card). All four are
+  now closed, so the pilot's 96% expressibility figure is **the result of
+  those additions and not a measurement of what this row delivered.**
+
+  **One inconsistency in the v0 data was found and is recorded here.** The
+  v0 skeleton modelled "Add 4 to your total" ("Shadow Strike") with a
+  FACTION-scoped target but modelled the five group cards' equivalent rule
+  with a CHARACTER-scoped one - the same rule written two ways in the same
+  file. The group entries have moved to the pilot document, which uses the
+  faction-scoped form throughout. The v0 skeleton's remaining entries are
+  unaffected.
+
+  **One statement in this entry is now superseded.** §3 above says the
+  escape hatch is "specified and empty"; that was the state at this row's
+  reading, and the B5-0034 pilot has since published the first handler
+  (`SPIN_DOCTORS_PERCEIVED_WINNER`), so the hatch is now specified and one
+  card wide. §3 is left as written, dated, because this file's convention is
+  to append rather than to rewrite, and a later reader needs to see the
+  measurement as it stood.
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-space-bunny-free-01-B5-0026.md`.
+## 2026-10-22 - The Groups pilot: 26 titles, one bespoke card, four vocabulary gaps (B5-0034 / WP-11)
+
+Authored by `opencode (MiniMax M3.1 Flash Free)`, version `minimax-m3.1-flash-free-2026-10-22-01`, on 2026-10-22, from the `opencode-minimax-m3-1-flash-free-01` session. **This entry is not independently assessed**; it is recorded as an `unassessed_revision` per AGENTS.md section 1, because no different-family reviewer has reviewed it.
+
+WP-11's acceptance is the proposal's pilot gate applied to Groups (A3, "Pilot
+and migration"): "at least 70% of pilot cards expressible without the escape
+hatch, zero UNIMPLEMENTED hits for pilot cards in fuzz runs, no regression in
+the existing probes". This entry records what the pilot measured, the four
+places where the v0 vocabulary could not express a printed card, and the one
+clause that is **not** met in its literal form.
+
+* **1. The pilot's scope is 26 group titles, not the proposal's 51.** The
+  proposal's work-package table sizes WP-11 as "51 group titles". That is the
+  two printings added together: the Premiere printing holds 26 group cards and
+  the Deluxe printing holds 25, and merging the twins by canonical id leaves
+  **26 distinct titles** - one of them, "Psi Corps Intelligence", is
+  Premiere-only. The number matters because the pilot gate's 70% is a share
+  of the pilot cards: 70% of 51 is 36, 70% of 26 is 19, and a pilot that
+  reported "24 of 51" would have flattered itself. Measured from the card
+  files, not carried forward: premiere GROUP = 26, deluxe GROUP = 25, distinct
+  = 26, and the effect census (B5-0005) holds exactly 26 GROUP records.
+
+* **2. The expressibility number, measured: 25 of 26 cards, 96%.** The pilot
+  gate's threshold is 70%. The measured figure is **96.2%** (25 of 26 pilot
+  cards need no escape hatch), and the one that does is measured in §3. The
+  figure is the *result* of four vocabulary additions, and the number that
+  describes the schema is the one **before** them: with the v0 registry as
+  B5-0028 left it, only **16 of the 26 group cards (61.5%)** could be
+  expressed at all, and the gate's threshold is 70%. **The v0 vocabulary
+  would have failed the Groups pilot.** Ten cards could not be expressed:
+  three because the trigger set could not name a conflict of the Psi type
+  (§4), one because the condition set could not say "at most" (§5), one
+  because the operation shape could not say "may" (§6), four because the
+  registry had no primitive for them (§7), and one because the escape hatch
+  was empty (§3). A pilot that measures 96% and does not say what it was
+  before would be a pilot that flatters itself.
+
+* **3. The bespoke tail is one card, and the census had already said so.**
+  "Spin Doctors" reads "Rotate this Group after any conflict. Change the
+  perceived winner of a Diplomacy conflict for Influence gain purposes. (you
+  gain their Influence; they gain none)". The rule is not an operation on a
+  card or a player: it changes **who a conflict's outcome belongs to**, and
+  then lets the ordinary influence-gain rule run against that answer. The
+  effect census classified that same card as BESPOKE independently, and the
+  pilot's gate now asserts that the data's bespoke usage and the census's
+  BESPOKE class are the *same set* - in both directions, so neither artefact
+  can drift away from the other. The handler is published
+  (`SPIN_DOCTORS_PERCEIVED_WINNER` -> `SpinDoctorsPerceivedWinner`, a pure
+  rule with no `GameState` dependency, in the shape A6 asks for). Publishing
+  it ends the v0's "the escape hatch is specified and empty" state; the
+  escape hatch is now **specified and one card wide**, and that is the first
+  measured statement anyone can make about the tail.
+
+* **4. The trigger vocabulary could not name a Psi conflict.** The rulebook
+  names four conflict types - Military, Diplomatic, Intrigue and Psi
+  (`RB:IV/type-of-conflict`) - and the v0 trigger set named three of them.
+  Three group cards rotate during a Psi conflict ("Military Telepaths",
+  "Imperial Telepaths", "Psi Corps Intelligence"), so a vocabulary that cannot
+  say "a Psi conflict" cannot express a quarter of the pilot. The missing
+  name is added, and the gate now asserts that the trigger vocabulary names
+  all four types the rulebook names - checked against the rulebook, not
+  against itself.
+
+* **5. The condition vocabulary could not say "at most".** "Religious Caste"
+  reads "At the start of each round, if you have no damaged characters, gain 1
+  Influence." The v0 conditions could count characters, marks and thresholds,
+  but every one of them was an "at least" test; a missing condition is a
+  missing rule, so `DAMAGED_CHARACTERS_AT_MOST` is added.
+
+* **6. The operation shape could not say "may".** The rulebook distinguishes a
+  compulsory action from a permitted one - "the loser must discard 2 cards"
+  against "all players **may** discard as many cards as they wish"
+  (`RB:III/draw-round`). The v0 operation shape had no way to tell them
+  apart, so the Deluxe change to "Observers" ("may also discard 1 card from
+  any one hand") could only be written as if it printed "must", which is a
+  rule stated wrongly - worse than a rule left unstated. Operations now carry
+  an `optional` flag, and the canonical renderer marks a permitted operation
+  with a trailing "?" so that it can never render the same way as a
+  compulsory one. The flag is on the operation, not in the parameters, because
+  it is a property of the operation rather than a value one primitive takes.
+
+* **7. Three primitive families were missing, and none of them is bespoke.**
+  The v0 registry had no way to say anything about information, no way to
+  unrotate a card, and no way to discard the source card. "ISN" (reveal a
+  hand to all players), "Observers" (look at all players' hands) and "Rangers
+  Surveillance" (look at the top of a draw pile and reorder it) are
+  information effects; "Damage Control Team" unrotates a fleet; "Motivated
+  Leaders" discards itself after it triggers. The new families are
+  `INFORMATION` (`REVEAL_HAND`, `VIEW_HAND`, `REORDER_DRAW_PILE`), `ROTATION`
+  (`ROTATE_TARGET`, which moved there from `CONFLICT`, and the new
+  `UNROTATE_TARGET`) and `DISCARD_SOURCE` in the `DISCARD` family. They are
+  primitives rather than bespoke handlers because they are *general*: three
+  different cards reveal or look at information, and a keyed handler for each
+  would make the escape hatch measure the wrong thing. A3 principle 1 asks
+  for a hatch that handles "the genuinely bespoke tail", and a tail padded
+  with one-off handlers is not a measurement.
+
+* **8. "Rotate this card" means the source card, and that is now the
+  documented meaning of `ROTATE_CARD`.** Fourteen of the 26 group cards pay
+  their cost by rotating the group itself ("Rotate this Group during any
+  Intrigue conflict"). The v0's `ROTATE_CARD` requirement was already
+  documented as the source card rotating, and the pilot confirms that reading:
+  the rotation is a cost paid by the *card that carries the effect*, not a
+  cost paid by the effect's target.
+
+* **9. "Your total" is a faction total, and the v0's group entries said
+  otherwise.** "Add 3 to your Intrigue total" is a modifier on the
+  controller's side of the conflict total, not a modifier on one character.
+  The v0 skeleton modelled the event "Shadow Strike" ("Add 4 to your total")
+  with a FACTION-scoped target but modelled the five group cards with a
+  CHARACTER-scoped one - the same rule written two ways in the same file. The
+  pilot document uses the faction-scoped form throughout, and the five group
+  entries have moved out of the v0 skeleton (§11). The residual limitation is
+  recorded as an open item in §13.
+
+* **10. "Centauri only." is a play restriction, and it is card data.** The
+  rulebook says "If a race name is part of a group's Card Type, then the card
+  is restricted to that race. Only the player controlling the race listed as
+  part of the Card Type may bring a restricted card into play"
+  (`RB:IV/group-cards`). That is a restriction on **who may play the card**,
+  not a filter on what the effect targets, and the card files already carry
+  it (`faction: CENTAURI`). Putting the race into the effect's target filter
+  would have stated a different rule - it would have restricted the effect's
+  target instead of the card's eligibility. "Influential Lords" is the case
+  that shows the difference: its leading "Centauri only." is the play
+  restriction (card data), while the "3 or more Centauri characters in your
+  Inner Circle" inside the sentence is a condition on a counted set (effect
+  data), and the entry says so.
+
+* **11. The five group cards have one home each.** The v0 skeleton carried
+  five group cards as well as the twelve cards that are not part of either
+  pilot. They now live only in the pilot document
+  `b5ccg/resources/effects/effects-groups-v1.json`, so that every card has
+  exactly one entry set and the two documents cannot disagree about it. The
+  v0 skeleton's counts change accordingly (29 entries over 17 cards -> 22
+  over 12) and the v0 gate class's two constants change with them; its three
+  acceptance clauses and every other check in it are unchanged.
+
+* **12. The pilot gate's third clause is NOT met in its literal form, and
+  this entry does not pretend otherwise.** The clause is "zero UNIMPLEMENTED
+  hits for pilot cards **in fuzz runs**". Two of its preconditions do not
+  exist yet: the engine does not execute effect entries (the legacy strangler
+  is not built), and there are no fuzz runs in the gate. What is measured
+  instead is the data-level equivalent of the tripwire's question - every
+  group title has at least one effect entry, 26 of 26 - and the existing
+  tripwire's own baseline is unchanged by this row, because the engine's
+  behaviour is unchanged (the group titles are still unimplemented *by the
+  engine*, and the tripwire still says so). The clause becomes measurable
+  when the strangler lands, and until then it is unmet.
+
+* **13. Two open items, recorded rather than resolved.** (a) The `stacking`
+  field's semantics for "N instead of M" are not yet pinned down: the v0
+  skeleton and the pilot document both write a conditional draw as a base
+  entry with `REPLACING` and a conditional entry over it, and whether the
+  conditional replaces the base's amount or adds to it is a question for the
+  strangler, which is the first code that will have to answer it (`RB:VI/cumulative-effects`).
+  (b) The target vocabulary cannot say "the side you support in this
+  conflict", so a conflict-total bonus is modelled as a faction-scoped
+  modifier (`RB:III/conflict-round`); that is as close as the current
+  vocabulary gets, and the strangler may need to narrow it.
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-01-B5-0034.md`.

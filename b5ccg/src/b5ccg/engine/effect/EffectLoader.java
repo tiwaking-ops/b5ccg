@@ -71,7 +71,7 @@ public final class EffectLoader {
     };
 
     /** The keys an operation may carry. */
-    private static final String[] OPERATION_KEYS = { "primitive", "params" };
+    private static final String[] OPERATION_KEYS = { "primitive", "params", "optional" };
 
     /** The keys a requirement may carry. */
     private static final String[] REQUIREMENT_KEYS = { "type", "amount" };
@@ -305,7 +305,8 @@ public final class EffectLoader {
                     params.put(e.getKey(), String.valueOf(v));
                 }
             }
-            EffectOperation op = new EffectOperation(primitive, params);
+            EffectOperation op = new EffectOperation(primitive, params,
+                    optionalBoolean(oMap.get("optional"), ol + ".optional"));
             // Resolve against the registry NOW: an unknown primitive, or a
             // parameter outside the primitive's closed set, is a load error.
             registry.describe(op, ol);

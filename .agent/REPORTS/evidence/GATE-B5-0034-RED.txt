@@ -1,0 +1,104 @@
+=== B5 CCG Build ===
+Source: /c/Users/Tiwa Pene/AppData/Local/Temp/opencode/redtree/b5ccg/src
+Output: /c/Users/Tiwa Pene/AppData/Local/Temp/opencode/redtree/b5ccg/out
+Compiling 242 source filesÔÇª
+sh.exe : Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+At C:\Users\Tiwa Pene\AppData\Local\Temp\opencode\gate-red.ps1:31 char:1
++ & sh compile.sh 2>&1 | Out-File -FilePath (Join-Path $root 'gate-red. ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Picked up JAVA_....encoding=UTF-8:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resourcesÔÇª
+
+Ô£ô Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 38 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 242  |  Compiled class count: 667
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      13204ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5520ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5972ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      1957ms   PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      186506ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      1044ms   PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      318ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      315ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      339ms    PASS       b5ccg.engine.HeadlessDrawRoundProbe
+0      371ms    PASS       b5ccg.engine.HeadlessJoinTimingProbe
+0      460ms    PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      266ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      563ms    PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      208ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      677ms    PASS       b5ccg.engine.HeadlessWarConflictProbe
+0      11193ms  PASS       b5ccg.engine.HeadlessRaceStateProbe
+0      194ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      205ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      330ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+0      343ms    PASS       b5ccg.engine.CardSetManifestChecker
+0      344ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+0      432ms    PASS       b5ccg.engine.HeadlessCanonicalParityProbe
+0      259ms    PASS       b5ccg.engine.HeadlessSortedOutputProbe
+0      646ms    PASS       b5ccg.engine.HeadlessUnimplementedTextTripwire
+0      398ms    PASS       b5ccg.engine.HeadlessInvariantCheckerSelfTest
+0      300ms    PASS       b5ccg.engine.HeadlessVictoryRulesGoldenMaster
+0      371ms    PASS       b5ccg.engine.HeadlessMarkCostRulesProbe
+0      1144ms   PASS       b5ccg.engine.HeadlessEffectSchemaProbe
+1      617ms    FAIL       b5ccg.engine.HeadlessGroupEffectProbe
+0      214ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+0      410ms    PASS       b5ccg.model.EffectCensusChecker
+0      535ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      201ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      2094ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      2477ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      5458ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      3663ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      3325ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 37 passed, 1 failed (of 38 gate classes run)
+Total gate time: 252873ms
+Per-class logs: out_gate/
+
+FAILING-NAME SET (compare by name, never by count):
+  - b5ccg.engine.HeadlessGroupEffectProbe
+
+----- tail of b5ccg.engine.HeadlessGroupEffectProbe (out_gate/HeadlessGroupEffectProbe.log) -----
+PASS  the real winner still gains when the controller is the winner
+--- the renderer ---
+PASS  the whole pilot document renders
+PASS  the render is stable across two runs
+PASS  the render has one line per entry
+PASS  a known group entry renders to its golden line
+PASS  an entry with an optional operation renders to its second golden line
+--- the schema and the engine agree ---
+PASS  the JSON Schema was read
+PASS  the schema and the engine agree on effectKind
+PASS  the schema and the engine agree on effectWindow
+PASS  the schema and the engine agree on effectTrigger
+PASS  the schema and the engine agree on effectDuration
+PASS  the schema and the engine agree on effectStacking
+PASS  the schema and the engine agree on effectProtection
+PASS  the schema and the engine agree on effectPrecedence
+PASS  the schema and the engine agree on effectSourceBinding
+PASS  the schema and the engine agree on requirement.type
+PASS  the schema and the engine agree on condition.type
+PASS  the schema and the engine agree on target.cardTypes
+PASS  the schema and the engine agree on target.races
+PASS  the schema and the engine agree on target.status
+PASS  the schema and the engine agree on target.traits
+PASS  the schema allows the operation's optional flag
+RESULT: FAIL (45 checks, 2 failures)
+----- end b5ccg.engine.HeadlessGroupEffectProbe -----
+
+ERROR: 1 gate class(es) failed. Exit non-zero.

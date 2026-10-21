@@ -68,6 +68,9 @@ public final class EffectRenderer {
         for (int i = 0; i < ops.size(); i++) {
             if (i > 0) sb.append("; ");
             sb.append(registry.describe(ops.get(i), "render[" + entry.getCardId() + "]"));
+            // A permitted choice ("may") is marked, so that it never renders
+            // the same way as a compulsory effect ("must").
+            if (ops.get(i).isOptional()) sb.append('?');
         }
         sb.append(']');
         sb.append(" duration=").append(entry.getDuration().name());

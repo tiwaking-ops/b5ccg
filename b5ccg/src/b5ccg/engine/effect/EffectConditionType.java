@@ -59,7 +59,21 @@ public enum EffectConditionType {
      * filter on a target, and it names a specific card, so it needs a
      * subject.</p>
      */
-    CARD_IN_PLAY;
+    CARD_IN_PLAY,
+
+    /**
+     * "You control at most N damaged characters" - the subject is the
+     * character set the entry's target names, as with
+     * {@link #CONTROL_CHARACTERS}.
+     *
+     * <p><b>Added by WP-11 (B5-0034), the Groups pilot.</b> "Religious Caste"
+     * reads "At the start of each round, if you have no damaged characters,
+     * gain 1 Influence." The v0 condition vocabulary could count characters
+     * and marks and thresholds, but it had no way to say a count is
+     * <em>at most</em> something, and a missing condition would be a missing
+     * rule.</p>
+     */
+    DAMAGED_CHARACTERS_AT_MOST;
 
     /** Parses a condition type, failing closed. */
     public static EffectConditionType parse(String raw, String location)

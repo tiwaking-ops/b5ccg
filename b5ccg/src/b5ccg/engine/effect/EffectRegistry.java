@@ -1,14 +1,17 @@
 package b5ccg.engine.effect;
 
+import b5ccg.engine.effect.bespoke.SpinDoctorsPerceivedWinner;
 import b5ccg.engine.effect.primitives.BespokePrimitives;
 import b5ccg.engine.effect.primitives.ConflictPrimitives;
 import b5ccg.engine.effect.primitives.CostPrimitives;
 import b5ccg.engine.effect.primitives.DamagePrimitives;
 import b5ccg.engine.effect.primitives.DiscardPrimitives;
 import b5ccg.engine.effect.primitives.DrawPrimitives;
+import b5ccg.engine.effect.primitives.InformationPrimitives;
 import b5ccg.engine.effect.primitives.InfluencePrimitives;
 import b5ccg.engine.effect.primitives.MarkPrimitives;
 import b5ccg.engine.effect.primitives.RestrictionPrimitives;
+import b5ccg.engine.effect.primitives.RotationPrimitives;
 import b5ccg.engine.effect.primitives.StatPrimitives;
 import b5ccg.engine.effect.primitives.StatePrimitives;
 import b5ccg.engine.effect.primitives.TensionPrimitives;
@@ -59,12 +62,22 @@ public final class EffectRegistry {
     }
 
     /**
-     * The v0 registry: every family shipped with WP-10, and no bespoke
-     * handlers.
+     * The shipped registry: every family, and the bespoke handlers the
+     * shipped data names.
      *
      * <p>Building it is explicit rather than reflective, so the set of
      * primitives is visible in this method and cannot drift when a family is
      * added elsewhere.</p>
+     *
+     * <p><b>The bespoke table is no longer empty.</b> In v0 it published zero
+     * handlers, which said the bespoke tail was empty without having measured
+     * it. WP-11 (B5-0034) measured it - the Groups pilot - and the tail is
+     * one card: "Spin Doctors", whose effect changes who a Diplomacy
+     * conflict's winner <em>is</em>, which no operation on a card or a player
+     * can express. The handler is published here, under a key, so a data file
+     * that names it loads; the class it names is a pure rule, and the engine
+     * does not yet execute effect entries, so the call site is still to
+     * come.</p>
      */
     public static EffectRegistry defaultRegistry() {
         EffectRegistry reg = new EffectRegistry();
@@ -80,6 +93,8 @@ public final class EffectRegistry {
             reg.addAll(CostPrimitives.all());
             reg.addAll(ConflictPrimitives.all());
             reg.addAll(RestrictionPrimitives.all());
+            reg.addAll(RotationPrimitives.all());
+            reg.addAll(InformationPrimitives.all());
             reg.addAll(BespokePrimitives.all());
         } catch (EffectLoadException ele) {
             // Unreachable in practice: the shipped families have distinct
@@ -91,6 +106,8 @@ public final class EffectRegistry {
                     "the shipped v0 effect registry has a duplicate primitive name: "
                     + ele.getMessage());
         }
+        reg.registerBespokeHandler(SpinDoctorsPerceivedWinner.HANDLER_KEY,
+                SpinDoctorsPerceivedWinner.HANDLER_NAME);
         return reg;
     }
 

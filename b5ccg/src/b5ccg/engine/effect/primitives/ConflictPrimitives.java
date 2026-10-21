@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * WP-10 / B5-0028 (A3): the conflict family.
  *
- * <p>Two primitives: {@code CONFLICT_BONUS} and {@code ROTATE_TARGET}.</p>
+ * <p>Two primitives: {@code CONFLICT_BONUS} and {@code PARTICIPATION_GRANT}.</p>
  *
  * <p>{@code CONFLICT_BONUS} is the "add N to your total" operation - "Secret
  * Police" adds 2 to your Intrigue total, "Shadow Strike" adds 4 to your
@@ -20,9 +20,12 @@ import java.util.List;
  * parameter is a closed set: a {@code StatKey} name, or {@code ANY} for
  * "your total" with no stat named.</p>
  *
- * <p>{@code ROTATE_TARGET} is the "the loser must also rotate one character"
- * operation - the same verb the rulebook uses for a card being spent, and the
- * same word that appears in a Group's own rotation rule.</p>
+ * <p><b>{@code ROTATE_TARGET} moved to the ROTATION family in WP-11
+ * (B5-0034).</b> It was here in v0 because "the loser must also rotate one
+ * character" reads like a conflict operation, but rotation is a card-state
+ * verb that the rulebook uses everywhere, and the Groups pilot needed its
+ * inverse in the same place. The name is unchanged, so no data file that used
+ * it has to change; only the family it is reported under.</p>
  */
 public final class ConflictPrimitives {
 
@@ -47,16 +50,6 @@ public final class ConflictPrimitives {
         protected String body(EffectOperation op, String location) throws EffectLoadException {
             String stat = requiredEnum(op, "stat", location, STATS);
             return "stat=" + stat + ", amount=" + requiredInt(op, "amount", location);
-        }
-    };
-
-    /** A target card is rotated. */
-    public static final EffectPrimitive ROTATE_TARGET = new SimplePrimitive(
-            "ROTATE_TARGET", FAMILY,
-            EffectKind.ONE_SHOT, EffectKind.ONGOING, EffectKind.TRIGGERED) {
-        @Override
-        protected String body(EffectOperation op, String location) throws EffectLoadException {
-            return "count=" + requiredInt(op, "count", location);
         }
     };
 
@@ -87,6 +80,6 @@ public final class ConflictPrimitives {
     /** Every primitive in this family. */
     public static List<EffectPrimitive> all() {
         return Collections.unmodifiableList(
-                Arrays.asList(CONFLICT_BONUS, ROTATE_TARGET, PARTICIPATION_GRANT));
+                Arrays.asList(CONFLICT_BONUS, PARTICIPATION_GRANT));
     }
 }
