@@ -1,0 +1,105 @@
+=== Calibration corpus scoring (B5-0046) ===
+cases                    : 33
+scorers                  : 3 (S1-gpt, S2-deepseek, S3-nemotron)
+unanimous agreement      : 22 / 33
+majority vote == truth   : 33 / 33
+ALL scorers == truth     : 22 / 33
+NO scorer == truth       : 0 / 33
+disputed                 : 11  -> A-10, A-2, B-1, B-2, B-3, B-4, B-5, C-1, C-2, C-4, C-5
+
+  S1-gpt                 matches truth: 22 / 33
+  S2-deepseek            matches truth: 33 / 33
+  S3-nemotron            matches truth: 33 / 33
+
+CASE  TRUTH      S1-gpt    S2-deepse S3-nemotr 
+--------------------------------------------------
+A-1   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-10  DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+A-11  DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-12  DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-2   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+A-3   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-4   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-5   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-6   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-7   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-8   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+A-9   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+B-1   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+B-2   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+B-3   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+B-4   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+B-5   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+B-6   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+B-7   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+B-8   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+C-1   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+C-2   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+C-3   DEFECTIVE  DEFECTIVE DEFECTIVE DEFECTIVE 
+C-4   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+C-5   DEFECTIVE  SOUND     DEFECTIVE DEFECTIVE 
+D-1   SOUND      SOUND     SOUND     SOUND     
+D-2   SOUND      SOUND     SOUND     SOUND     
+D-3   SOUND      SOUND     SOUND     SOUND     
+D-4   SOUND      SOUND     SOUND     SOUND     
+D-5   SOUND      SOUND     SOUND     SOUND     
+D-6   SOUND      SOUND     SOUND     SOUND     
+D-7   SOUND      SOUND     SOUND     SOUND     
+D-8   SOUND      SOUND     SOUND     SOUND     
+
+Disputed cases (not unanimous), with each scorer's phrase:
+
+  A-10  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: prefix filter "$Id*" wrongly matches B5-0202c
+    S3-nemotron: prefix filter matches B5-0202c.json different id wrongly blocks
+
+  A-2  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: precedence makes malformed ids accepted instead of rejected
+    S3-nemotron: -not binds tighter than -match malformed non-empty ids accepted
+
+  B-1  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: interface only; no implementer, no rule the program obeys
+    S3-nemotron: unused interface no implementer/caller no rule the program obeys
+
+  B-2  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: interface only; no implementer, no rule the program obeys
+    S3-nemotron: unused interface no implementer/caller no rule the program obeys
+
+  B-3  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: interface only; no implementer, no rule the program obeys
+    S3-nemotron: unused interface no implementer/caller no rule the program obeys
+
+  B-4  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: interface only; no implementer, no rule the program obeys
+    S3-nemotron: unused interface no implementer/caller no rule the program obeys
+
+  B-5  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: interface only; no implementer, no rule the program obeys
+    S3-nemotron: unused interface no implementer/caller no rule the program obeys
+
+  C-1  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: unknown -DryRun silently ignored (no CmdletBinding)
+    S3-nemotron: undeclared -DryRun silently ignored plain param accepts unknown args
+
+  C-2  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: unknown -Statuss silently ignored; default filter applied
+    S3-nemotron: mistyped -Statuss silently ignored unknown argument not reported
+
+  C-4  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: unknown -Statusx silently ignored; default filter applied
+    S3-nemotron: mistyped -Statusx silently ignored unknown argument not reported
+
+  C-5  truth=DEFECTIVE
+    S1-gpt: none
+    S2-deepseek: unknown -Pathh silently ignored; named file never checked
+    S3-nemotron: mistyped -Pathh silently ignored wrong file checked

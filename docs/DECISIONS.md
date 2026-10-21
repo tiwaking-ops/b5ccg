@@ -1270,3 +1270,110 @@ different-family assessment rather than being closed on a same-family word.
 (which carries the advisory review in its front matter under
 `advisory_review`, explicitly marked as not independent) and
 `-B5-0045.md`.
+## 2026-10-21 - The calibration corpus, and what it can and cannot measure (B5-0046)
+
+A calibration corpus built from this repository's own recorded failures, scored
+by three agents from three different model families. This entry states what
+the corpus measures and, at more length, what it does not - because a
+calibration instrument that is described only by what it does is not
+calibrated.
+
+**The corpus.** `docs/CALIBRATION_CORPUS.md`, 33 cases in four families: 12
+guards that are dead or mis-aimed (the F-list), 8 stubs that assert nothing
+(the withdrawn files), 5 tools that absorb what they should reject (the five
+that lacked `[CmdletBinding()]`), and 8 the fixes this repository shipped for
+those same defects. Every case is a self-contained snippet with a stated
+**required behaviour** and one question of a single shape: does the code
+achieve the required behaviour? The answer key is the corpus's own family
+table, so the key and the corpus cannot drift apart.
+
+**The measurement.** Three scorers, three families, all free, none shown the
+key and none shown another scorer's answers:
+
+| Scorer | Model | Family | Matches the key |
+|---|---|---|---|
+| S1 | `nvidia/openai/gpt-oss-20b` | gpt | 22 / 33 |
+| S2 | `nvidia/deepseek-ai/deepseek-v4.1-flash` | deepseek | **33 / 33** |
+| S3 | `opencode/nemotron-3.5-super-vl-free` | nemotron | **33 / 33** |
+
+* Unanimous agreement: **22 / 33**.
+* Majority vote against the key: **33 / 33**.
+* Cases where no scorer matched the key: **0**.
+* Cases where every scorer matched the key: 22.
+
+**The two scorers agree with each other completely, and the third does not.**
+S2 and S3 produced identical verdicts on all 33 cases. S1 differed on 11, and
+every one of S1's differences is the same error in the same direction: it
+answered SOUND where the required behaviour was not achieved. Not one of S1's
+answers was a false DEFECTIVE. So the disagreement is a *capability*
+difference on this instrument, not a difference of opinion about any case -
+which is the most useful kind of disagreement to have, because it measures
+something.
+
+**What the corpus CAN measure.**
+
+* Whether a model can tell that a guard is dead - that the code compiles, runs,
+  and never fires the check it appears to perform. This is the failure mode
+  that produced the withdrawn stubs and the three recorded freeze breaches.
+* Whether a model can tell that a file which asserts nothing has been recorded
+  as work that was done.
+* Whether a model can tell that a tool silently discarded what the caller
+  asked for and used a default instead.
+* Whether a model can tell a repair from the defect it repairs. The eight
+  family-D cases are this repository's own fixes, and all three scorers called
+  every one of them SOUND.
+* Whether a model reads a required behaviour or pattern-matches on surface
+  form. The family-D cases are the control for exactly that: a scorer's prior
+  that "PowerShell scripts in this shape are broken" would score them wrong.
+
+**What the corpus CANNOT measure.**
+
+* **It cannot measure whether a model would have found the defect in the
+  original file.** Every case is a snippet with the defect isolated and a
+  required behaviour written out. A model that reads slowly, or that would
+  need to explore the tree to notice that a type has no implementer, is
+  scored as though it had been handed the answer. Family B states the "no
+  implementer, no caller" fact in its header precisely because of this, and
+  stating it makes the case easier than the real one was.
+* **It cannot measure general code review.** Thirty-three narrow cases with a
+  stated required behaviour are not "can this model review code". They are
+  "can this model spot these eleven behaviours". A model could score 33/33 and
+  still miss a class of defect the corpus does not contain.
+* **It cannot measure severity, priority, or whether a defect matters.** Every
+  case counts once. A dead guard that is never reached and a dead guard that
+  silently permits a duplicate ledger row score the same.
+* **It cannot measure the model behind the scorer.** Two of the three scorers
+  are 20B-class and VL-class models with a generous free tier; a different
+  fleet would produce a different table. The numbers in this entry describe
+  these three models on this corpus, not models in general.
+* **It cannot measure whether a scorer read carefully.** A scorer that
+  pattern-matches a family label would score well. The family labels are
+  stripped from the scorer package for that reason, but a sufficiently
+  determined pattern-matcher could still infer the answer from the shapes of
+  the snippets, and the corpus cannot detect that.
+* **It is not a regression gate for the engine.** It exercises no Java, opens
+  no card pool, and asserts nothing about the game. It is an instrument for
+  the review process, not for the game.
+
+**The honest summary.** On this instrument, two of three families are
+perfect and one is 22/33 with a one-directional error. The instrument
+discriminates - it separated the two groups cleanly - but it is narrow, and
+its cases are easier than the incidents they came from.
+
+**One methodological finding worth keeping.** Building this corpus took three
+attempts, and the first two were wrong in instructive ways. The first
+version put the defect in the case *title* ("A guard that reads a path that
+does not exist"), so a scorer could answer from the title alone. The second
+version asked descriptive questions ("what happens?") instead of stating a
+required behaviour, and a scorer duly answered the question instead of
+judging the code. The third version states the required behaviour explicitly,
+and S1's score went from 18/25 to 22/33 on the same underlying defects.
+**A calibration corpus measures the instrument as much as the model, and the
+instrument has to be debugged the same way a test suite is: by watching it
+produce the wrong answer and asking why.**
+
+**Reports.** `docs/CALIBRATION_CORPUS.md` and
+`.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0046.md`. The three
+score sheets and the computed table are in `.agent/REPORTS/evidence/`
+(`CALIB-S1-gpt.txt`, `CALIB-S2-deepseek.txt`, `CALIB-S3-nemotron.txt`,
+`CALIB-SCORE.txt`).

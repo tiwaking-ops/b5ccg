@@ -1,0 +1,102 @@
+I am Nemotron 3.5 Super VL Free, family nemotron.
+case: A-1
+verdict: DEFECTIVE
+defect: looks in /repo/.agent/.agent/CLAIMS wrong dir misses live claim
+case: A-2
+verdict: DEFECTIVE
+defect: -not binds tighter than -match malformed non-empty ids accepted
+case: A-3
+verdict: DEFECTIVE
+defect: relative reports path depends on cwd misses report from /tmp
+case: A-4
+verdict: DEFECTIVE
+defect: creates backup and copies ledger before refusing touches filesystem
+case: A-5
+verdict: DEFECTIVE
+defect: does not check claim owner blocks the claim's own holder
+case: A-6
+verdict: DEFECTIVE
+defect: takes first match on ambiguous id instead of refusing
+case: A-7
+verdict: DEFECTIVE
+defect: joins all lines with CRLF changes line endings of unchanged lines
+case: A-8
+verdict: DEFECTIVE
+defect: read-modify-write overwrites concurrently appended row lost update
+case: A-9
+verdict: DEFECTIVE
+defect: overwrites status cell blindly without validating row shape
+case: A-10
+verdict: DEFECTIVE
+defect: prefix filter matches B5-0202c.json different id wrongly blocks
+case: A-11
+verdict: DEFECTIVE
+defect: substring filter matches B5-0034b.md different id wrongly allows flip
+case: A-12
+verdict: DEFECTIVE
+defect: default ledger path relative to cwd not found from other dirs
+case: B-1
+verdict: DEFECTIVE
+defect: unused interface no implementer/caller no rule the program obeys
+case: B-2
+verdict: DEFECTIVE
+defect: unused interface no implementer/caller no rule the program obeys
+case: B-3
+verdict: DEFECTIVE
+defect: unused interface no implementer/caller no rule the program obeys
+case: B-4
+verdict: DEFECTIVE
+defect: unused interface no implementer/caller no rule the program obeys
+case: B-5
+verdict: DEFECTIVE
+defect: unused interface no implementer/caller no rule the program obeys
+case: B-6
+verdict: DEFECTIVE
+defect: always returns true placeholder examines no invariant
+case: B-7
+verdict: DEFECTIVE
+defect: always returns true exercises no program state
+case: B-8
+verdict: DEFECTIVE
+defect: string-matches card text instead of consulting actual implementation
+case: C-1
+verdict: DEFECTIVE
+defect: undeclared -DryRun silently ignored plain param accepts unknown args
+case: C-2
+verdict: DEFECTIVE
+defect: mistyped -Statuss silently ignored unknown argument not reported
+case: C-3
+verdict: DEFECTIVE
+defect: -DryRun ignored ledger write proceeds despite dry run
+case: C-4
+verdict: DEFECTIVE
+defect: mistyped -Statusx silently ignored unknown argument not reported
+case: C-5
+verdict: DEFECTIVE
+defect: mistyped -Pathh silently ignored wrong file checked
+case: D-1
+verdict: SOUND
+defect: none
+case: D-2
+verdict: SOUND
+defect: none
+case: D-3
+verdict: SOUND
+defect: none
+case: D-4
+verdict: SOUND
+defect: none
+case: D-5
+verdict: SOUND
+defect: none
+case: D-6
+verdict: SOUND
+defect: none
+case: D-7
+verdict: SOUND
+defect: none
+case: D-8
+verdict: SOUND
+defect: none
+DEFECTIVE count: 25
+SOUND count: 8

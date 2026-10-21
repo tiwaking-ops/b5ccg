@@ -1,0 +1,102 @@
+I am DeepSeek V4.1 Flash, family deepseek.
+case: A-1
+verdict: DEFECTIVE
+defect: wrong claims path (.agent/.agent/CLAIMS); live foreign claim never seen
+case: A-2
+verdict: DEFECTIVE
+defect: precedence makes malformed ids accepted instead of rejected
+case: A-3
+verdict: DEFECTIVE
+defect: relative reports path misses report when cwd is /tmp
+case: A-4
+verdict: DEFECTIVE
+defect: backup written before refusal check; filesystem changed on refusal
+case: A-5
+verdict: DEFECTIVE
+defect: caller's own live claim blocks it; no owner check
+case: A-6
+verdict: DEFECTIVE
+defect: takes first match; duplicate id not refused as ambiguous
+case: A-7
+verdict: DEFECTIVE
+defect: joins with CRLF, rewriting all LF lines; not byte-identical
+case: A-8
+verdict: DEFECTIVE
+defect: read-modify-write loses concurrently appended row
+case: A-9
+verdict: DEFECTIVE
+defect: no row-shape validation; malformed status row written blindly
+case: A-10
+verdict: DEFECTIVE
+defect: prefix filter "$Id*" wrongly matches B5-0202c
+case: A-11
+verdict: DEFECTIVE
+defect: wildcard match accepts B5-0034b as report for B5-0034
+case: A-12
+verdict: DEFECTIVE
+defect: relative default ledger path; cwd-dependent, no loud failure
+case: B-1
+verdict: DEFECTIVE
+defect: interface only; no implementer, no rule the program obeys
+case: B-2
+verdict: DEFECTIVE
+defect: interface only; no implementer, no rule the program obeys
+case: B-3
+verdict: DEFECTIVE
+defect: interface only; no implementer, no rule the program obeys
+case: B-4
+verdict: DEFECTIVE
+defect: interface only; no implementer, no rule the program obeys
+case: B-5
+verdict: DEFECTIVE
+defect: interface only; no implementer, no rule the program obeys
+case: B-6
+verdict: DEFECTIVE
+defect: check() always returns true; no invariant examined
+case: B-7
+verdict: DEFECTIVE
+defect: fuzz() always returns true; no state exercised
+case: B-8
+verdict: DEFECTIVE
+defect: keys off card text, not what the program actually implements
+case: C-1
+verdict: DEFECTIVE
+defect: unknown -DryRun silently ignored (no CmdletBinding)
+case: C-2
+verdict: DEFECTIVE
+defect: unknown -Statuss silently ignored; default filter applied
+case: C-3
+verdict: DEFECTIVE
+defect: writes the ledger despite -DryRun being requested
+case: C-4
+verdict: DEFECTIVE
+defect: unknown -Statusx silently ignored; default filter applied
+case: C-5
+verdict: DEFECTIVE
+defect: unknown -Pathh silently ignored; named file never checked
+case: D-1
+verdict: SOUND
+defect: none
+case: D-2
+verdict: SOUND
+defect: none
+case: D-3
+verdict: SOUND
+defect: none
+case: D-4
+verdict: SOUND
+defect: none
+case: D-5
+verdict: SOUND
+defect: none
+case: D-6
+verdict: SOUND
+defect: none
+case: D-7
+verdict: SOUND
+defect: none
+case: D-8
+verdict: SOUND
+defect: none
+DEFECTIVE count: 25
+SOUND count: 8

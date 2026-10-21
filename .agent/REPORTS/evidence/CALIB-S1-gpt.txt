@@ -1,0 +1,102 @@
+I am GPT-OSS 20B, family gpt
+case: A-1
+verdict: DEFECTIVE
+defect: wrong directory path to CLAIMS
+case: A-2
+verdict: SOUND
+defect: none
+case: A-3
+verdict: DEFECTIVE
+defect: relative report path fails with cwd
+case: A-4
+verdict: DEFECTIVE
+defect: creates backup before report check
+case: A-5
+verdict: DEFECTIVE
+defect: blocks own claim due to origin check
+case: A-6
+verdict: DEFECTIVE
+defect: arbitrarily resolves ambiguous id
+case: A-7
+verdict: DEFECTIVE
+defect: changes line endings to CRLF
+case: A-8
+verdict: DEFECTIVE
+defect: overwrites concurrent append
+case: A-9
+verdict: DEFECTIVE
+defect: writes blindly regardless status cell
+case: A-10
+verdict: SOUND
+defect: none
+case: A-11
+verdict: DEFECTIVE
+defect: accepts partial id match
+case: A-12
+verdict: DEFECTIVE
+defect: relies on local ledger path
+case: B-1
+verdict: SOUND
+defect: none
+case: B-2
+verdict: SOUND
+defect: none
+case: B-3
+verdict: SOUND
+defect: none
+case: B-4
+verdict: SOUND
+defect: none
+case: B-5
+verdict: SOUND
+defect: none
+case: B-6
+verdict: DEFECTIVE
+defect: placeholder returns true without check
+case: B-7
+verdict: DEFECTIVE
+defect: placeholder returns true without fuzzing
+case: B-8
+verdict: DEFECTIVE
+defect: checks text only, not program
+case: C-1
+verdict: SOUND
+defect: none
+case: C-2
+verdict: SOUND
+defect: none
+case: C-3
+verdict: DEFECTIVE
+defect: does not honor DryRun flag
+case: C-4
+verdict: SOUND
+defect: none
+case: C-5
+verdict: SOUND
+defect: none
+case: D-1
+verdict: SOUND
+defect: none
+case: D-2
+verdict: SOUND
+defect: none
+case: D-3
+verdict: SOUND
+defect: none
+case: D-4
+verdict: SOUND
+defect: none
+case: D-5
+verdict: SOUND
+defect: none
+case: D-6
+verdict: SOUND
+defect: none
+case: D-7
+verdict: SOUND
+defect: none
+case: D-8
+verdict: SOUND
+defect: none
+DEFECTIVE count: 14
+SOUND count: 19
