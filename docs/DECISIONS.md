@@ -2047,10 +2047,10 @@ fabrication. The B5-0008 entry set that precedent and it is followed.
   reading is **1.698**. The target is "about 1 or less", so **on the primary
   definition KPI (a) is NOT met today** - and that is the number the
   2026-10-30 reading has to beat or match. KPI (b) = **4 295 B / 74 lines**
-  (estimated 1 073.8 tokens). KPI (c) = **6 gate-green merged changes per
+  (estimated 1 073.8 tokens). KPI (c) = **6.33 gate-green merged changes per
   day** over the 3 active days that have a GREEN capture, with coverage
   **3 of 6** active days carrying any capture at all. The §7.4 target table
-  is met today on every row: boot 4 295 B, ledger 31 483 B, 0 investigations,
+  is met today on every row: boot 4 295 B, ledger 31 902 B, 0 investigations,
   2 pattern namespaces, no root `.md` debris, 0 DONE rows eligible to rotate.
   The committed snapshot is
   `.agent/REPORTS/measurements/process-tax-2026-10-22.json`, and these

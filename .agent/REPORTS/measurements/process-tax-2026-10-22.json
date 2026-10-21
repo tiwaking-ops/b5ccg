@@ -1,0 +1,239 @@
+{
+    "measured_utc":  "2026-10-21T21:17:06Z",
+    "tool":  ".agent/tools/measure-process-tax.ps1",
+    "tree":  "WORKING TREE",
+    "branch":  "task/opencode-space-bunny-free-01-post-b5-0034",
+    "definitions":  {
+                        "kpi_a":  "process documents (REPORTS + PATTERNS + docs + investigations .md files) per DONE ledger row",
+                        "kpi_a_narrow":  "as kpi_a, but counting only REPORTS + PATTERNS",
+                        "kpi_b_bytes":  "bytes of .agent/00_BOOT.md (the cost of one boot read)",
+                        "kpi_b_lines":  "lines of .agent/00_BOOT.md",
+                        "kpi_b_tokens_est":  "boot bytes / 4 - an ESTIMATE; the tokeniser is unknown",
+                        "kpi_c":  "commits per day on the working branch, counted over the days that have at least one GREEN gate capture; the coverage is reported with it",
+                        "gate_green_rule":  "a capture is RED if it reports a failed class, a failed tooling probe, or an ERROR line; GREEN if it reports Verification passed and no red signal; UNKNOWN otherwise",
+                        "deliberate_red":  "a capture whose file name carries -RED is deliberate red-then-green evidence, not a failure; it is counted separately from a red capture with no -RED in its name",
+                        "process_document":  "a Markdown file under .agent/REPORTS/, .agent/PATTERNS/, docs/ or investigations/"
+                    },
+    "counts":  {
+                   "reports":  71,
+                   "patterns":  2,
+                   "docs":  22,
+                   "investigations":  0,
+                   "process_documents":  95,
+                   "narrow_documents":  73,
+                   "done_rows":  43,
+                   "root_md":  3,
+                   "pattern_namespaces":  2,
+                   "ledger_bytes":  31902
+               },
+    "kpi_a":  2.209,
+    "kpi_a_narrow":  1.698,
+    "kpi_b_bytes":  4295,
+    "kpi_b_lines":  74,
+    "kpi_b_tokens_est":  1073.8,
+    "commits_per_day":  [
+                            {
+                                "date":  "2026-10-16",
+                                "commits":  8
+                            },
+                            {
+                                "date":  "2026-10-17",
+                                "commits":  10
+                            },
+                            {
+                                "date":  "2026-10-18",
+                                "commits":  2
+                            },
+                            {
+                                "date":  "2026-10-19",
+                                "commits":  7
+                            },
+                            {
+                                "date":  "2026-10-21",
+                                "commits":  7
+                            },
+                            {
+                                "date":  "2026-10-22",
+                                "commits":  5
+                            }
+                        ],
+    "days_with_gate_capture":  3,
+    "days_with_green_capture":  3,
+    "kpi_c_gate_green_commits_per_day":  6.33,
+    "gate_captures":  [
+                          {
+                              "file":  "GATE-B5-0026.txt",
+                              "date":  "2026-10-22",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0027.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0028-RED.txt",
+                              "date":  "2026-10-22",
+                              "verdict":  "RED",
+                              "deliberate_red":  true
+                          },
+                          {
+                              "file":  "GATE-B5-0028.txt",
+                              "date":  "2026-10-22",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0029.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0030.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0032.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0033-RED.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "RED",
+                              "deliberate_red":  true
+                          },
+                          {
+                              "file":  "GATE-B5-0033.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0034-RED.txt",
+                              "date":  "2026-10-22",
+                              "verdict":  "RED",
+                              "deliberate_red":  true
+                          },
+                          {
+                              "file":  "GATE-B5-0034-VERIFY.txt",
+                              "date":  "2026-10-22",
+                              "verdict":  "UNKNOWN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0034.txt",
+                              "date":  "2026-10-22",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0036-0037.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0038.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0039.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0041.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0042.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0043.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0044-RED.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "RED",
+                              "deliberate_red":  true
+                          },
+                          {
+                              "file":  "GATE-B5-0044.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0045.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-B5-0046.txt",
+                              "date":  "2026-10-21",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-big-pickle-2026-10-19.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "GREEN",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-FINAL.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-TRIAGE.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-TRIAGE2.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-TRIAGE3.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-TRIAGE4.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          },
+                          {
+                              "file":  "GATE-TRIAGE5.txt",
+                              "date":  "2026-10-19",
+                              "verdict":  "RED",
+                              "deliberate_red":  false
+                          }
+                      ]
+}

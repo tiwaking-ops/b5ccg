@@ -1,0 +1,46 @@
+{
+    "measured_utc":  "2026-10-21T20:38:00Z",
+    "tool":  ".agent/tools/measure-process-tax.ps1",
+    "tree":  "94f0fa7",
+    "branch":  "task/opencode-space-bunny-free-01-post-b5-0034",
+    "definitions":  {
+                        "kpi_a":  "process documents (REPORTS + PATTERNS + docs + investigations .md files) per DONE ledger row",
+                        "kpi_a_narrow":  "as kpi_a, but counting only REPORTS + PATTERNS",
+                        "kpi_b_bytes":  "bytes of .agent/00_BOOT.md (the cost of one boot read)",
+                        "kpi_b_lines":  "lines of .agent/00_BOOT.md",
+                        "kpi_b_tokens_est":  "boot bytes / 4 - an ESTIMATE; the tokeniser is unknown",
+                        "kpi_c":  "commits per day on the working branch, counted over the days that have at least one GREEN gate capture; the coverage is reported with it",
+                        "gate_green_rule":  "a capture is RED if it reports a failed class, a failed tooling probe, or an ERROR line; GREEN if it reports Verification passed and no red signal; UNKNOWN otherwise",
+                        "deliberate_red":  "a capture whose file name carries -RED is deliberate red-then-green evidence, not a failure; it is counted separately from a red capture with no -RED in its name",
+                        "process_document":  "a Markdown file under .agent/REPORTS/, .agent/PATTERNS/, docs/ or investigations/"
+                    },
+    "counts":  {
+                   "reports":  0,
+                   "patterns":  0,
+                   "docs":  2,
+                   "investigations":  0,
+                   "process_documents":  2,
+                   "narrow_documents":  0,
+                   "done_rows":  0,
+                   "root_md":  3,
+                   "pattern_namespaces":  0,
+                   "ledger_bytes":  2034
+               },
+    "kpi_a":  null,
+    "kpi_a_narrow":  null,
+    "kpi_b_bytes":  2653,
+    "kpi_b_lines":  57,
+    "kpi_b_tokens_est":  663.2,
+    "commits_per_day":  [
+                            {
+                                "date":  "2026-10-16",
+                                "commits":  1
+                            }
+                        ],
+    "days_with_gate_capture":  0,
+    "days_with_green_capture":  0,
+    "kpi_c_gate_green_commits_per_day":  null,
+    "gate_captures":  [
+
+                      ]
+}
