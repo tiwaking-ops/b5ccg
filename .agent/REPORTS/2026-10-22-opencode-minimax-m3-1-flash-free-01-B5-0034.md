@@ -6,8 +6,15 @@ provenance:
   author_llm: {name: "opencode (MiniMax M3.1 Flash Free)", version: "minimax-m3.1-flash-free-2026-10-22-01"}
   created_date: "2026-10-22"
   last_modified_date: "2026-10-22"
-  last_modified_by_llm: {name: "opencode (MiniMax M3.1 Flash Free)", version: "minimax-m3.1-flash-free-2026-10-22-01"}
+  last_modified_by_llm: {name: "opencode (MiniMax M3.1 Flash Free)", version: "minimax-m3.1-flash-free-2026-10-22-02"}
   assessor_llm: none
+  advisory_review:
+    - reviewer_llm: {name: "opencode (MiniMax M3.1 Flash Free)", version: "minimax-m3.1-flash-free-2026-10-22-02"}
+      family: "minimax"
+      author_family: "minimax"
+      independence: "NONE - same family as the author"
+      date: "2026-10-22"
+      note: "Under the B5-0045 rule (reviewer independence is by model family, not agent id) this review is NOT an independent assessment and is not recorded as an assessor_llm entry. It is advisory. It was measured by execution - the pilot document was loaded entry by entry against the v0 registry rebuilt from its own commit - and it found two things. (1) Section 3's '19 of the 26 cards (73%) could be expressed' is the count of cards with AT LEAST ONE expressible entry; the card-level answer is 16 of 26 (61.5%), because a card whose Psi-triggered entry cannot be written down is not expressible. That is the figure this row's own DECISIONS entry (item 2) and its commit message carry, and it inverts the conclusion: the v0 vocabulary would have FAILED the Groups pilot, not passed it. (2) Four entries state a broader rule than their card prints - Spin Doctors (entries[21]) carries no Diplomacy restriction, and Diplomatic Corps, Secret Police and Imperial Telepaths use CONFLICT_WON without the conflict class - and the loader does not enforce the primitive registry's declared kind constraint (1 violation in 59 operations). The report's prose body is NOT rewritten; the author's author_llm is untouched. See .agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-02-B5-0051-verification.md, docs/DECISIONS.md 'CORRECTION to the B5-0034 report' and 'FINDINGS from the verification of B5-0034', and ledger row B5-0052. A different-family assessment of this row is still outstanding."
   unassessed_revision:
     - {author_llm: {name: "opencode (MiniMax M3.1 Flash Free)", version: "minimax-m3.1-flash-free-2026-10-22-01"}, date: "2026-10-22", change: "initial report for B5-0034", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass. A different-family assessment of this row is outstanding."}
 ---
@@ -429,7 +436,9 @@ shared, and both were edited by both rows. The edits were additive and
 re-read immediately before each write, but **the scope guard is missing from
 the tooling, and the three recorded breaches (B5-0039/0040/0041) are the
 same kind of hole.** A new ledger row for it is filed as part of this row's
-close-out (see the report's close-out notes), because a hole that has already
+close-out - **B5-0048** (scope `tooling`), alongside **B5-0049** (the
+`rule-coverage.ps1` clone gap) and **B5-0050** (the five inert schema
+interfaces) - because a hole that has already
 let two rows touch one file is worth naming.
 
 ---

@@ -2321,6 +2321,179 @@ clause that is **not** met in its literal form.
 
 * **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-01-B5-0034.md`.
 
+## 2026-10-22 - CORRECTION to the B5-0034 report: the v0-expressibility figure is 16 of 26, not 19 of 26 (B5-0051)
+
+Recorded by `opencode (MiniMax M3.1 Flash Free)`, version
+`minimax-m3.1-flash-free-2026-10-22-02`, on 2026-10-22, from the
+`opencode-minimax-m3-1-flash-free-02` session. This entry supersedes **one
+figure** in the report named below. It does not supersede the row's work,
+its acceptance, the rest of its DECISIONS entry, or its gate result, all of
+which stand.
+
+* **What is corrected.** The report
+  `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-01-B5-0034.md`,
+  section 3, says: "With the v0 registry exactly as B5-0028 left it, **19
+  of the 26 cards (73%)** could be expressed; the other seven could not",
+  and concludes "The 73% was already above the gate's 70%". The DECISIONS
+  entry above (item 2) and the commit message of `0f8960f` say **16 of 26
+  (61.5%)**, ten cards not expressible, and conclude "**The v0 vocabulary
+  would have failed the Groups pilot.**" The two readings reach opposite
+  conclusions about whether the pilot would have passed on the v0
+  vocabulary, so the number was measured rather than argued about.
+
+* **The measurement.** The v0 effect package was rebuilt from its own commit
+  (`a60fd27`, the tree as B5-0028 left it: 12 primitive families, no
+  `CONFLICT_TYPE_PSI`, no `DAMAGED_CHARACTERS_AT_MOST`, no `optional`
+  field, and zero published bespoke handlers), and the pilot document was
+  taken from `0f8960f` unchanged. Each of the pilot document's 35 entries
+  was then loaded **on its own** against the v0 registry, so that one bad
+  entry cannot hide the others. The result is three different card-level
+  counts, and the row quoted the third while calling it the first:
+
+  | Measure | Value |
+  |---|---|
+  | cards whose **every** entry is expressible under the v0 vocabulary | **16 of 26 (61.5%)** |
+  | cards with **at least one** expressible entry | 19 of 26 (73%) |
+  | cards with **no** expressible entry at all | 7 of 26 |
+
+  Ten cards have at least one inexpressible entry.
+
+* **Which figure answers the pilot gate.** The gate asks about a **card**
+  ("at least 70% of pilot cards expressible without the escape hatch"). A
+  card is expressible or it is not: a card whose Psi-triggered entry cannot
+  be written down is not expressible, because half of what it prints is
+  missing. The answer is therefore **16 of 26 = 61.5%, below the 70%
+  threshold - the v0 vocabulary would have failed the Groups pilot**, which
+  is what the DECISIONS entry above and the commit message already say. The
+  report's 19 is the count of cards whose behaviour could be written down in
+  part; it is a real number, but it is not the number the gate asks for, and
+  it inverts the conclusion.
+
+* **The ten cards, and what the v0 vocabulary could not say.** Damage
+  Control Team (no `UNROTATE_TARGET`); Imperial Telepaths, Military
+  Telepaths and Psi Corps Intelligence (the trigger set could not name a
+  conflict of the Psi type - `RB:IV/type-of-conflict`); ISN (no
+  `REVEAL_HAND`); Motivated Leaders (no `DISCARD_SOURCE`); Observers (no
+  `VIEW_HAND`, and behind it the operation shape could not say "may" against
+  "must" - the v0 loader refuses the field outright: `unknown field
+  'optional'`); Rangers Surveillance (no `REORDER_DRAW_PILE`); Religious
+  Caste (no "at most" condition); Spin Doctors (the escape hatch published
+  no handler, so the card could not be written down at all). All of them are
+  groups, and all of them are within the pilot's subject matter
+  (`RB:IV/group-cards`).
+
+* **What is NOT corrected.** Everything else in the report stands as
+  measured: the 26 of 26 coverage, the 25 of 26 (96.2%) expressible without
+  the escape hatch after the four vocabulary gaps were closed, the single
+  bespoke card and its agreement with the census, the provenance hashes, the
+  rule IDs, the two golden render lines, the red-then-green evidence and the
+  gate result. The report's prose body is **not** rewritten - the author's
+  `author_llm` is never overwritten (AGENTS.md section 1) - and the report's
+  front matter carries an `advisory_review` block recording this
+  same-family review.
+
+* **Scope and governance.** B5-0026 held a live claim on `docs,tooling`
+  while this entry was written, and this row touches `docs`.
+  `new-claim.ps1` has no scope-overlap check and no freeze references,
+  which is how the three recorded breaches (B5-0039/0040/0041) and this one
+  happened; B5-0048 is the open row for that hole.
+
+* **Verification.** The gate was re-run independently in the shared tree:
+  `RUN_TESTS=1 sh compile.sh`, javac 25.0.4.1, `--release 8`, 38 gate
+  classes, **38 passed, 0 failed**, 4 tooling probes passed, exit 0. The red
+  state was reproduced independently in an isolated copy of the tree:
+  **37 passed, 1 failed**, failing-name set exactly
+  `{b5ccg.engine.HeadlessGroupEffectProbe}`, exit 1. `run-dup-census.ps1`
+  and `check-citations.ps1` exit 0; `lint-encoding.ps1` reports the
+  documented 20-hit baseline, unchanged.
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-02-B5-0051-verification.md`.
+
+## 2026-10-22 - FINDINGS from the verification of B5-0034: four entries state a broader rule than their card prints, and the primitive registry's kind constraint is not enforced (B5-0051)
+
+Recorded by `opencode (MiniMax M3.1 Flash Free)`, version
+`minimax-m3.1-flash-free-2026-10-22-02`, on 2026-10-22, from the
+`opencode-minimax-m3-1-flash-free-02` session. This entry records what the
+verification of the Groups pilot found in the shipped pilot data and in the
+loader that reads it. It does not change the pilot's acceptance, its gate
+result, or the row's status; the findings are filed as row **B5-0052**.
+
+The findings were first surfaced by a same-family advisory review of the
+pilot data and were then **re-derived from the artefacts** before being
+recorded here, because a reviewer's reading is evidence and a measurement is
+proof. Each finding below names the entry it is about.
+
+* **1. "Spin Doctors" does not carry the "a Diplomacy conflict" restriction.**
+  The card reads "Rotate this Group after any conflict. Change the perceived
+  winner of **a Diplomacy conflict** for Influence gain purposes."
+  `effects-groups-v1.json` `entries[21]` encodes the second sentence as
+  `trigger: "CONFLICT_RESOLVED"`, `window: "RESOLUTION"`,
+  `conditions: []` - an effect on **any** conflict that resolves, of any
+  type. The bespoke handler `SpinDoctorsPerceivedWinner` takes
+  `(controller, actualWinner)` and has **no conflict-type parameter**, so the
+  restriction is nowhere in the data or in the code. As data, the entry
+  states a **stronger** rule than the card prints, and it does so on the one
+  card the escape hatch exists for. The narrower encoding is available in
+  the vocabulary the same file already uses - see the War College draw
+  (`entries[23]`, `trigger: "CONFLICT_TYPE_MILITARY"`, `window:
+  "RESOLUTION"`, `conditions: [{"type": "SOURCE_ROTATED"}]`), which keeps
+  the conflict class and the step. The rulebook names the four conflict
+  types at `RB:IV/type-of-conflict` and the triggered-effect rules at
+  `RB:VI/triggered-effects`.
+
+* **2. Three "if you win" clauses drop the conflict type that scopes them.**
+  `entries[4]` (Diplomatic Corps), `entries[20]` (Secret Police) and
+  `entries[25]` (Imperial Telepaths) use `trigger: "CONFLICT_WON"`, which
+  names no conflict type. Each card's rule is scoped by its first sentence
+  ("during any Diplomacy conflict", "during any Intrigue conflict", "during
+  any Psi conflict"), so as data the draw, the rotation and the discard
+  would fire after winning a conflict of **any** type. The same file keeps
+  the scope for War College, so the inconsistency is inside one document.
+
+* **3. The conjunction "a conflict of type T that you won" is not
+  expressible, which is why item 2 was written the broad way.** This is a
+  **fifth vocabulary gap**, and the pilot closed four. The condition
+  vocabulary has no predicate for "the initiator won", and the trigger
+  vocabulary has `CONFLICT_WON` and `CONFLICT_TYPE_*` but no way to combine
+  them; A3's own shape puts the conjunction in the trigger ("conflict
+  resolved and initiator won"), and the pilot's convention puts the conflict
+  class in the trigger and the step in the window, which leaves the "and you
+  won" part with nowhere to go. The gap is why items 1 and 2 exist, and it
+  will be needed again by WP-12. `RB:VI/triggered-effects` is the anchor.
+
+* **4. The primitive registry's kind constraint is documented and not
+  enforced.** `EffectPrimitive.kinds()` declares "the effect kinds this
+  primitive may appear under", and the v0 registry's own javadoc says the
+  kinds are part of the contract. **No code path checks it**:
+  `EffectLoader` never reads the entry's kind, and
+  `EffectRegistry.describe` resolves the primitive, describes the operation
+  and checks bespoke registration without consulting `kinds()`. Measured
+  over both shipped documents: **59 operations, exactly one violation** -
+  `entries[13]` ("Motivated Leaders") declares `kind: "ONE_SHOT"` and uses
+  `STAT_MODIFY`, whose declared kinds are `ONGOING`, `REPLACEMENT`,
+  `TRIGGERED`. The document loads cleanly, so the constraint that fails open
+  is invisible to the loader. A3 principle 4 is "**Fail closed.** An unknown
+  effect kind is a load error"; this is a second kind of kind - a *known*
+  kind used with a primitive that does not allow it - and it also fails
+  open.
+
+* **What is NOT a defect.** The "may" mapping is correct and is the only
+  optional operation in the file; all six play restrictions ("Centauri
+  only.", "Minbari only.", "Narn only.", "Human only.") are left as card
+  data rather than turned into effect-target race filters, and the two
+  inside-sentence race restrictions are correct; all fourteen titles whose
+  Deluxe text differs from Premiere reflect the **Deluxe** reading; the
+  bespoke card is unique and agrees with the census; every
+  `textSha256` matches the governing printed text; every cited rule ID
+  resolves.
+
+* **Filed.** Row **B5-0052** carries the fix: the conflict-type scope on
+  the four entries, the vocabulary gap behind it, and the loader's kind
+  check. It should land **before** WP-12 (B5-0035), which will need the
+  same conjunction.
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-02-B5-0051-verification.md`.
+
 ## 2026-10-22 - The metric is settled: the old project is the "before", and the three readings are defined (B5-0026 / WP-09 / B2)
 
 Authored by `opencode (Space Bunny Free)`, version `space-bunny-free-2026-10-22-04`, on

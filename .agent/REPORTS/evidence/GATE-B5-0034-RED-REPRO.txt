@@ -1,0 +1,122 @@
+=== RED-THEN-GREEN EVIDENCE FOR B5-0034 (WP-11 Groups pilot) ===
+Captured by opencode-minimax-m3-1-flash-free-02 (B5-0051), 2026-10-22.
+RED A: the 'ISN' entry block was removed from
+  b5ccg/resources/effects/effects-groups-v1.json  (35 entries -> 34 entries, 26 cards -> 25 cards)
+and NOTHING else was changed.
+
+This run was produced in an ISOLATED COPY of the tree
+  C:\Users\Tiwa Pene\AppData\Local\Temp\opencode\redtree\copy
+because another row (B5-0026) was running the gate in the shared working tree at
+the same time, and a red tree there would have put a false failure into another
+row's evidence file. The copy holds the same sources, the same data, the same
+compile.sh, the same tooling probes and the same pinned rulebook.
+
+Gate contract: the gate exits non-zero and prints the FAILING-NAME SET, which
+is compared by name and never by count (AGENTS.md section 4).
+=== B5 CCG Build ===
+Source: /c/Users/Tiwa Pene/AppData/Local/Temp/opencode/redtree/copy/b5ccg/src
+Output: /c/Users/Tiwa Pene/AppData/Local/Temp/opencode/redtree/copy/b5ccg/out
+Compiling 242 source filesÔÇª
+sh.exe : Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8
+At C:\Users\Tiwa Pene\AppData\Local\Temp\opencode\run_gate_red.ps1:32 char:1
++ & sh compile.sh *>&1 | Out-File -FilePath $out -Append -Encoding utf8
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Picked up JAVA_....encoding=UTF-8:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+Note: src\b5ccg\ui\MainWindow.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+3 warnings
+Copying resourcesÔÇª
+
+Ô£ô Build successful. Run with: ./run.sh
+
+=== Verification (RUN_TESTS=1) ===
+Running 38 gate classes (run-all-and-collect; a failure no longer hides later classes).
+Source count: 242  |  Compiled class count: 667
+
+CODE   TIME     RESULT     CLASS
+----------------------------------------------------------------------------
+0      13287ms  PASS       b5ccg.engine.HeadlessConformanceTest
+0      5840ms   PASS       b5ccg.engine.HeadlessSmokeTest
+0      5218ms   PASS       b5ccg.engine.B52481HumanPassRoundProbe
+0      2479ms   PASS       b5ccg.engine.HeadlessDoubleRunProbe
+0      186317ms PASS       b5ccg.engine.HeadlessHumanSeatProbe
+0      578ms    PASS       b5ccg.engine.HeadlessAIDifficultyContractTest
+0      688ms    PASS       b5ccg.ai.HeadlessAIScoreFloorTest
+0      620ms    PASS       b5ccg.engine.HeadlessConflictResolutionProbe
+0      1536ms   PASS       b5ccg.engine.HeadlessDrawRoundProbe
+0      682ms    PASS       b5ccg.engine.HeadlessJoinTimingProbe
+0      1892ms   PASS       b5ccg.engine.HeadlessHumanConflictAttackWindowTest
+0      408ms    PASS       b5ccg.engine.HeadlessLeadFleetScenarioProbe
+0      1466ms   PASS       b5ccg.engine.HeadlessParticipationGatesProbe
+0      758ms    PASS       b5ccg.engine.HeadlessStationVictoryTest
+0      2594ms   PASS       b5ccg.engine.HeadlessWarConflictProbe
+0      11551ms  PASS       b5ccg.engine.HeadlessRaceStateProbe
+0      569ms    PASS       b5ccg.engine.HeadlessBonusFloorProbe
+0      401ms    PASS       b5ccg.engine.HeadlessTieBreakProbe
+0      676ms    PASS       b5ccg.engine.HeadlessCardIdNamespaceProbe
+0      473ms    PASS       b5ccg.engine.CardSetManifestChecker
+0      424ms    PASS       b5ccg.engine.CardSetManifestCrossCheck
+0      625ms    PASS       b5ccg.engine.HeadlessCanonicalParityProbe
+0      722ms    PASS       b5ccg.engine.HeadlessSortedOutputProbe
+0      666ms    PASS       b5ccg.engine.HeadlessUnimplementedTextTripwire
+0      376ms    PASS       b5ccg.engine.HeadlessInvariantCheckerSelfTest
+0      316ms    PASS       b5ccg.engine.HeadlessVictoryRulesGoldenMaster
+0      303ms    PASS       b5ccg.engine.HeadlessMarkCostRulesProbe
+0      548ms    PASS       b5ccg.engine.HeadlessEffectSchemaProbe
+1      845ms    FAIL       b5ccg.engine.HeadlessGroupEffectProbe
+0      220ms    PASS       b5ccg.engine.HeadlessPrintingDiffTriageProbe
+0      544ms    PASS       b5ccg.model.EffectCensusChecker
+0      411ms    PASS       b5ccg.engine.HeadlessRulebookPinProbe
+0      241ms    PASS       b5ccg.model.HeadlessAftermathDetachProbe
+0      2113ms   PASS       b5ccg.ui.GameBoardAgendaBandTest
+0      1976ms   PASS       b5ccg.ui.TrackerColumnFitTest
+0      4468ms   PASS       b5ccg.ui.MainWindowToolbarLayoutTest
+0      2974ms   PASS       b5ccg.ui.MainWindowLeadFleetControlTest
+0      3478ms   PASS       b5ccg.ui.MainWindowAgendaLifecycleControlTest
+----------------------------------------------------------------------------
+Summary: 37 passed, 1 failed (of 38 gate classes run)
+Total gate time: 259283ms
+Per-class logs: out_gate/
+
+FAILING-NAME SET (compare by name, never by count):
+  - b5ccg.engine.HeadlessGroupEffectProbe
+
+----- tail of b5ccg.engine.HeadlessGroupEffectProbe (out_gate/HeadlessGroupEffectProbe.log) -----
+PASS  the real winner still gains when the controller is the winner
+--- the renderer ---
+PASS  the whole pilot document renders
+PASS  the render is stable across two runs
+PASS  the render has one line per entry
+PASS  a known group entry renders to its golden line
+PASS  an entry with an optional operation renders to its second golden line
+--- the schema and the engine agree ---
+PASS  the JSON Schema was read
+PASS  the schema and the engine agree on effectKind
+PASS  the schema and the engine agree on effectWindow
+PASS  the schema and the engine agree on effectTrigger
+PASS  the schema and the engine agree on effectDuration
+PASS  the schema and the engine agree on effectStacking
+PASS  the schema and the engine agree on effectProtection
+PASS  the schema and the engine agree on effectPrecedence
+PASS  the schema and the engine agree on effectSourceBinding
+PASS  the schema and the engine agree on requirement.type
+PASS  the schema and the engine agree on condition.type
+PASS  the schema and the engine agree on target.cardTypes
+PASS  the schema and the engine agree on target.races
+PASS  the schema and the engine agree on target.status
+PASS  the schema and the engine agree on target.traits
+PASS  the schema allows the operation's optional flag
+RESULT: FAIL (45 checks, 2 failures)
+----- end b5ccg.engine.HeadlessGroupEffectProbe -----
+
+ERROR: 1 gate class(es) failed. Exit non-zero.
+
+GATE EXIT = 1
+WALL CLOCK = 289s
