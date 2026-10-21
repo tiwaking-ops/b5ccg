@@ -1500,3 +1500,76 @@ same registry.
 
 **Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0029.md`.
 Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0029.txt`.
+## 2026-10-21 - The invariant checker found a real engine bug (B5-0030)
+
+WP-14 (A4.2, A4.3) asked for a rulebook-invariant checker tagged with
+rule-IDs and a seeded AI-versus-AI fuzz harness with a reachability
+histogram. Both previous versions were stubs that asserted nothing and were
+called from nowhere. They are now real instruments, and the harness found a
+genuine engine defect on its first full run.
+
+**The bug.** On seed 20348130 the harness reported:
+
+    java.lang.UnsupportedOperationException
+      at b5ccg.engine.CardEffects.applyAftermathEffect(CardEffects.java:948)
+      at b5ccg.engine.GameController.applyAftermathPlay(GameController.java:1591)
+      at b5ccg.engine.GameController.resolveQueuedConflict(GameController.java:1456)
+
+The line was `deck.getDiscardPile().remove(deck.getDiscardPile().size() - 1)`,
+and `Deck.getDiscardPile()` returns `Collections.unmodifiableList(discardPile)`.
+So the removal threw **every time**: the "Focus Your Efforts" aftermath - "Move
+one card from your discard pile to your hand" - could never have worked. It
+was the only call site in the tree that removed from the discard pile through
+the read-only view, and the engine had been running with a latent exception in
+a card effect that no gate class reached. `Deck` now has `takeTopDiscarded()`,
+the mutator the read-only view was hiding the need for, and the seed that
+threw now completes with `GAME_OVER`.
+
+**Why it matters beyond the bug.** The conformance suite, the canonical-parity
+probe and every other gate class were green with that exception in the tree.
+This is the "green is not evidence" lesson (the 2026-10-19 entry) with a
+concrete instance and a concrete fix, which is what it was missing until now.
+
+**The checker.** Seven invariants, each citing a rule ID that
+`check-citations.ps1` resolves: tension within 1..5 and unrest within 1..5
+(`RB:II/set-tension-tokens`), no faction holding both a Shadow and a Vorlon
+mark and no negative mark total (`RB:VI/marks`), at most one agenda
+(`RB:IV/agenda-cards`), every card in exactly one zone (`RB:I/influence`), and
+unrest never negative (`RB:VI/tension-and-unrest`).
+
+**One spec example deliberately not asserted, and why.** The spec lists
+"influence rating never below 3 (RB L288)". The engine does not enforce that
+floor at the model level, and this repository has already made that call:
+`HeadlessBonusFloorProbe` (B5-4145) removed its assertion against
+`Player.loseInfluence` as "a wrong-layer test", because the floor is a
+constraint on transfers and actions, not on the model, and the conformance
+suite itself uses `loseInfluence` to set influence to zero as a fixture.
+Asserting it in the invariant checker would re-introduce that wrong-layer
+test and would fire on the suite's own fixtures. The rule is enforced where it
+belongs.
+
+**The harness is a report-only rig, and the gap that creates is closed
+separately.** The harness takes about 20 seconds per game - 475 s for 24
+games - and that is the *game's* pace, not the harness's: at a 2 ms poll
+interval the 4-game run took 90.2 s against 90.6 s at 20 ms. It is therefore
+quarantined in `compile.sh` beside the other soak runners, with its measured
+time and reason recorded.
+
+That leaves the exact gap this project keeps being burned by: **if the
+invariant checker were broken, nothing in the gate tier would notice**, and
+the fuzz rig would report "no violations" because it was checking nothing -
+the withdrawn-stub failure mode rebuilt one layer up. `HeadlessInvariantCheckerSelfTest`
+closes it in 169 ms: it builds a state that violates an invariant on purpose
+and asserts the checker reports it with the right rule ID, builds a clean
+state and asserts it reports nothing, and asserts the checker is
+deterministic and that every invariant carries a rule ID. Measured red: a
+checker that returns no violations always, and a checker that always reports
+a violation, each turn the self-test red. A self-test that has never been
+seen failing is not evidence that it can fail.
+
+**Measurements.** 12 games: 860 state changes, 6,020 invariant checks, 0
+violations, 0 errors, every game ending `GAME_OVER`. Over 24 games: 1,628
+state changes, 13,024 invariant checks, 0 violations.
+
+**Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0030.md`.
+Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0030.txt`.

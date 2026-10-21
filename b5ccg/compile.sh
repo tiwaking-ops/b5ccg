@@ -176,6 +176,7 @@ b5ccg.engine.CardSetManifestCrossCheck
 b5ccg.engine.HeadlessCanonicalParityProbe
 b5ccg.engine.HeadlessSortedOutputProbe
 b5ccg.engine.HeadlessUnimplementedTextTripwire
+b5ccg.engine.HeadlessInvariantCheckerSelfTest
 b5ccg.engine.HeadlessPrintingDiffTriageProbe
 b5ccg.model.EffectCensusChecker
 b5ccg.engine.HeadlessRulebookPinProbe
@@ -197,6 +198,16 @@ GATE_EOF
   #   HeadlessStallSoakProbe       978.6s (16.3 min) - its own final line says
   #     "classifications are reporting, not failures"; exit 2/3 are argument
   #     and harness errors, not verdicts.
+  #   HeadlessFuzzProbe            475.4s for 24 games (B5-0030, measured
+  #     2026-10-21) - a seeded AI-versus-AI fuzz rig. It DOES have pass/fail
+  #     semantics (exit 1 on an invariant violation or an engine exception),
+  #     so it is not quarantined for that reason; it is quarantined for its
+  #     runtime. 20s per game is the GAME's own pace, not the harness's poll
+  #     interval: measured at a 2ms poll the 4-game run took 90.2s against
+  #     90.6s at 20ms. Run it on demand. It has already earned its keep - it
+  #     found a real engine exception (CardEffects.applyAftermathEffect
+  #     threw UnsupportedOperationException on seed 20348130) that no other
+  #     gate class caught.
   # The last three are soak runners whose runtime alone disqualifies them, and
   # their exit codes carry no pass/fail semantics. Run them on demand.
   #

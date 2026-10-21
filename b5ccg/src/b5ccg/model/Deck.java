@@ -79,4 +79,28 @@ public class Deck {
     public int              size()        { return drawPile.size(); }
     public boolean          isEmpty()     { return drawPile.isEmpty(); }
     public List<Card>       getDiscardPile() { return Collections.unmodifiableList(discardPile); }
+
+    /**
+     * Removes the most recently discarded card and returns it.
+     *
+     * <p>B5-0030. The "Focus Your Efforts" aftermath - "Move one card from
+     * your discard pile to your hand" - needs to take a card <em>out</em> of
+     * the discard pile. {@link #getDiscardPile()} deliberately returns an
+     * unmodifiable view, so the only way to do that through the public
+     * surface was to call {@code getDiscardPile().remove(...)} - which
+     * throws {@link UnsupportedOperationException} every time. The seeded
+     * fuzz harness found it: seed 20348130 throws
+     * {@code UnsupportedOperationException} at
+     * {@code CardEffects.applyAftermathEffect:948}. The effect could never
+     * have worked.</p>
+     *
+     * <p>This is the mutator that the read-only view was hiding the need
+     * for. It returns {@code null} when the discard pile is empty, so the
+     * caller must handle the empty case - which the rulebook requires
+     * anyway.</p>
+     */
+    public Card takeTopDiscarded() {
+        if (discardPile.isEmpty()) return null;
+        return discardPile.remove(discardPile.size() - 1);
+    }
 }

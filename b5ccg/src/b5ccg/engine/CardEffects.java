@@ -944,10 +944,19 @@ public final class CardEffects {
         // Focus Your Efforts: "Play after winning any conflict. Move one card from your discard pile to your hand."
         if (isFocusYourEfforts(amId)) {
             Deck deck = target.getDeck();
-            if (deck != null && deck.getDiscardPile() != null && !deck.getDiscardPile().isEmpty()) {
-                Card retrieved = deck.getDiscardPile().remove(deck.getDiscardPile().size() - 1);
-                target.getHand().add(retrieved);
-                state.log(target.getName() + " retrieves " + retrieved.getTitle() + " from discard (" + am.getTitle() + ").");
+            // B5-0030: this used to call deck.getDiscardPile().remove(...),
+            // which throws UnsupportedOperationException because
+            // getDiscardPile() returns an unmodifiable view. The effect
+            // could never have worked. Deck.takeTopDiscarded() is the
+            // mutator that the read-only view was hiding the need for.
+            if (deck != null) {
+                Card retrieved = deck.takeTopDiscarded();
+                if (retrieved != null) {
+                    target.getHand().add(retrieved);
+                    state.log(target.getName() + " retrieves " + retrieved.getTitle() + " from discard (" + am.getTitle() + ").");
+                } else {
+                    state.log(target.getName() + " has no cards in discard pile (" + am.getTitle() + ").");
+                }
             } else {
                 state.log(target.getName() + " has no cards in discard pile (" + am.getTitle() + ").");
             }
