@@ -2674,7 +2674,12 @@ here.
   still outstanding**: a DeepSeek-family reviewer was attempted on 2026-10-22
   and produced **no output at all** - the provider returned HTTP 429
   (`free_rate_limited`, `retry_after_seconds: 7644`) and the harness gave up
-  after five attempts, which is a failed review and not an assessment.
+  after five attempts. A second attempt, with a GLM-family reviewer, failed
+  the same way (HTTP 429, four attempts, an empty assistant message). Both
+  are recorded because "we tried" and "it worked" are different claims, and
+  only the first is true: the free reviewer capacity was exhausted, twice,
+  and neither attempt produced a word. **A failed review is not an
+  assessment.**
 
 * **4. What the fix did NOT change.** The engine's behaviour is unchanged
   (the pilot data is inert; the engine still does not execute effect
