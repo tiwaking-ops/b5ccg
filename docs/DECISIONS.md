@@ -1377,3 +1377,65 @@ produce the wrong answer and asking why.**
 score sheets and the computed table are in `.agent/REPORTS/evidence/`
 (`CALIB-S1-gpt.txt`, `CALIB-S2-deepseek.txt`, `CALIB-S3-nemotron.txt`,
 `CALIB-SCORE.txt`).
+## 2026-10-21 - Deterministic probe output: one latent defect, and one measurement error (B5-0027)
+
+B5-0027 closed the last of the four clauses of the B5-0021 determinism work:
+the TreeSet fix was verified, a **sorted-output probe** was built and wired into
+the gate, the 904/904 conformance identity was confirmed, and no divergence
+was found. Two things in it are worth recording beyond the row.
+
+**The probe found a defect the original fix missed.** The `TreeSet` fix at
+`CardEffects.behaviourReferences()` was sound, but the same reasoning had not
+been applied to `CardEffects.NON_POOL_FIXTURE_IDS`, which was still a
+`HashSet`. Two probes **iterate** that set and print one check line per
+member - `HeadlessCanonicalParityProbe` and `EffectCensusChecker` - so the
+order of those lines is part of the probe's output, and a `HashSet`'s order is
+hash order, which is not a contract: it depends on the table size and the
+insertion order, and it changes as the set grows. Measured with the three
+fixture ids and 0, 1, 7 and 37 filler ids, the relative order of the three
+ids changed at every size.
+
+The defect was **latent, not live**: with the current three members the order
+happened to be stable, and the suite's output was byte-identical across runs.
+It is now a `TreeSet`, and `HeadlessSortedOutputProbe` holds both it and
+`behaviourReferences()`.
+
+**The probe is built so that it fails when the fix is reverted.** It asserts
+not only that the output is sorted but that an explicitly unsorted `HashSet`
+of the same members iterates *differently* - so a sorted implementation
+cannot be confused with an accidentally sorted one. Reverting either
+collection to `HashSet` was measured to turn the probe red:
+
+    NON_POOL_FIXTURE_IDS -> HashSet   : exit 1, "NON_POOL_FIXTURE_IDS iterates in sorted order"
+    behaviourReferences() -> HashSet  : exit 1, "first divergence at index 0:
+                                        got event_balance, expected aftermath_approval_of_the_grey"
+
+**A measurement error worth recording, because it is the second time.** The
+first run of the conformance suite appeared to be non-deterministic: two runs
+differed in 474 lines, with the check lines and the `UNKNOWN FIELD` lines
+interleaved differently each time. They were not. The `UNKNOWN FIELD` lines
+go to `System.err` and the check lines to `System.out`, and my capture
+harness merged the two streams into one pipeline - and the interleaving of two
+streams is not deterministic even when each stream's content is. Separated,
+each stream is identical run to run (990 stdout lines, 9,766 stderr lines),
+and three consecutive merged captures produce the same SHA-256:
+`E6AC7A6BBDBF0F745CE900D2AFCEFE24EDF79CBFB7B3C7F9DF19E995D16A86B6`, with
+`CONFORMANCE SUITE PASSED (904 checks)`.
+
+This is the same class of error as the B5-0044 exit-code table, where two of
+the five tools' old exit codes were recorded wrong because the tools were run
+from a temporary directory where their CWD-relative defaults resolved to
+nothing. Both times the fault was in the measurement conditions rather than in
+the code, and both times the correction went the **wrong way** - the first
+measurement overstated a defect. A harness that merges two streams into one
+pipe, or that runs a tool outside the directory its defaults assume, will
+manufacture a finding. **The standing rule this establishes: a measurement of
+determinism must separate the streams, and a measurement of a tool's default
+behaviour must run it where its defaults resolve.**
+
+**The 904/904 identity is confirmed**, by SHA-256 over three consecutive runs
+of the merged capture, with the suite's output also byte-identical before and
+after this change: the same 904 checks, the same check names, the same order.
+
+**Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0027.md`.
+Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0027.txt`.

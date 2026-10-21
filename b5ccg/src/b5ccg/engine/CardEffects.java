@@ -1670,8 +1670,26 @@ public final class CardEffects {
      *  the pool (synthetic test fixtures). The headless probes subtract this set
      *  before checking that every behaviour literal names a pool entry, so a
      *  fixture id that is intentionally not a card is not reported as dangling.
-     *  Adding an id here is an assertion: the id is deliberately not a card. */
-    public static final Set<String> NON_POOL_FIXTURE_IDS = new HashSet<String>();
+     *  Adding an id here is an assertion: the id is deliberately not a card.
+     *
+     *  <p>B5-0027: this is a {@link TreeSet}, not a {@link HashSet}, and the
+     *  difference is load-bearing. Two probes - {@link
+     *  HeadlessCanonicalParityProbe} and {@link EffectCensusChecker} - ITERATE
+     *  this set and print one check line per member, so the ORDER of those
+     *  lines is part of the probe's output. A HashSet's iteration order is
+     *  hash order, which is not a contract: it depends on the table size and
+     *  the insertion order, and it CHANGES as the set grows. Measured with
+     *  these three ids and 0, 1, 7 and 37 filler ids, the relative order of
+     *  the three fixture ids changed from
+     *  {@code [mer_metric_fixture, probe_multi_side_conflict, enh_mines_rt]}
+     *  to a different order at every size. The order happened to be stable
+     *  across eight JVM runs with the current three members, so no output
+     *  had actually diverged - but a probe whose output order is a function
+     *  of a hash table's size is one member away from producing a different
+     *  report for the same tree. The same fix was already applied to
+     *  {@link #behaviourReferences()} for the same reason; this set was
+     *  missed. {@link HeadlessSortedOutputProbe} now holds both. */
+    public static final Set<String> NON_POOL_FIXTURE_IDS = new TreeSet<String>();
     static {
         // B5-2542: synthetic multi-side conflict probe id (no card record).
         NON_POOL_FIXTURE_IDS.add("probe_multi_side_conflict");
