@@ -2112,17 +2112,34 @@ fabrication. The B5-0008 entry set that precedent and it is followed.
   first measurement of it, and the number belongs in this row's record
   because it describes the v0 vocabulary rather than the pilot.
 
-  **The v0 vocabulary could express 19 of 26 group cards - 73%.** The
-  pilot gate's threshold is 70%, so the v0 schema cleared it - but by three
-  points, and only before the pilot's own work: with the registry as this row
-  shipped it, **seven of the 26 group cards could not be expressed at all**.
-  The four gaps the pilot exposed were a trigger vocabulary that could not
-  name a Psi conflict (the rulebook names four conflict types and the v0 named
-  three), a condition vocabulary with no "at most" test, an operation shape
-  that could not tell "may" from "must", and three missing primitive
-  families (information, unrotation, discarding the source card). All four are
-  now closed, so the pilot's 96% expressibility figure is **the result of
-  those additions and not a measurement of what this row delivered.**
+  **The v0 vocabulary could express 16 of 26 group cards - 61.5%.** The
+  pilot gate's threshold is 70%, so **the v0 schema as this row shipped it
+  would have FAILED the Groups pilot.** With the registry as this row left
+  it, **ten of the 26 group cards had at least one entry the vocabulary could
+  not express**: Damage Control Team (no unrotation), Imperial Telepaths,
+  Military Telepaths and Psi Corps Intelligence (the trigger set could not
+  name a conflict of the Psi type), ISN and Observers (no information
+  primitives), Motivated Leaders (no discarding the source card), Rangers
+  Surveillance (no reordering the draw pile), Religious Caste (no "at most"
+  condition) and Spin Doctors (the escape hatch published no handler, so the
+  card could not be written down at all). The four vocabulary gaps the pilot
+  exposed - the Psi trigger, the "at most" condition, the "may" against
+  "must" operation shape, and the three missing primitive families - are now
+  closed, so the pilot's 96% expressibility figure is **the result of those
+  additions and not a measurement of what this row delivered.**
+
+  **A figure this entry got wrong, and the correction.** The first draft of
+  this item said **19 of 26 (73%)**, taken from the Groups pilot's own report,
+  and concluded that the v0 schema cleared the threshold. The B5-0051
+  verification row re-measured it - rebuilding the v0 effect package from the
+  commit this row left it at and loading each of the pilot document's 35
+  entries on its own against it - and **19 of 26 is the count of cards with
+  AT LEAST ONE expressible entry**. The gate asks about a *card*: a card whose
+  Psi-triggered entry cannot be written down is not expressible, because half
+  of what it prints is missing. So the figure that answers the gate is
+  **16 of 26 = 61.5%**, and the v0 vocabulary would have failed. The
+  correction is the B5-0051 DECISIONS entry of 2026-10-22, and this item
+  follows it rather than arguing with it.
 
   **One inconsistency in the v0 data was found and is recorded here.** The
   v0 skeleton modelled "Add 4 to your total" ("Shadow Strike") with a
@@ -2303,3 +2320,122 @@ clause that is **not** met in its literal form.
   vocabulary gets, and the strangler may need to narrow it.
 
 * **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-01-B5-0034.md`.
+
+## 2026-10-22 - The metric is settled: the old project is the "before", and the three readings are defined (B5-0026 / WP-09 / B2)
+
+Authored by `opencode (Space Bunny Free)`, version `space-bunny-free-2026-10-22-04`, on
+2026-10-22, from the `opencode-space-bunny-free-01` session. **This entry is not
+independently assessed**; it is recorded as an `unassessed_revision` per
+AGENTS.md section 1, because no different-family reviewer has reviewed it.
+
+**No rule-ID is cited, deliberately**, for the same reason the previous entry
+gave: no paragraph of the pinned rulebook governs a process-tax metric, and a
+`RB:` citation here would be a fabrication.
+
+* **1. The ruling.** The acceptance says "B2 targets in 7.4 met and measured
+  over a two-week window", and §7.4's "Verified by" clause names three
+  numbers and a method: "process documents per ledger row falls from about 5.1
+  to about 1 or less; boot tokens per task fall; gate-green merged changes per
+  day stay flat or rise. Measure before and after on the same two-week
+  window." The acceptance never says what the **"before"** is, and the two
+  candidates gave opposite verdicts. The owner ruled on 2026-10-22: **the old
+  project - the pre-fork `Babylon5CCGGameDesign` - is the "before" for all
+  three readings.**
+
+  The ruling is right on the substance, and the reason is worth recording:
+  **the B2 process-tax cuts WERE the fork.** The fork's commit message reads
+  "Fork genesis: full game snapshot + **lean B-reset** workflow". The cuts
+  landed *at* the fork, so the fork is the *after* of the cuts and cannot be
+  a *before* of them. The old project's 5.1 documents per task and 21.7 KB
+  boot file are §7.4's own figures, so they are the right comparison; the
+  two-week window's job is to show that the cuts have **held** for a fortnight,
+  not that they happened.
+
+* **2. What the ruling dissolves.** The previous entry's §4 and §5 recorded a
+  real puzzle: against the fork's own day-one figures, KPI (b) had moved the
+  **wrong way** (the boot file grew from 2 653 B to 4 295 B, +62 %), and the
+  only available trim - moving the 764-character baseline-failure clause into
+  an on-demand module - would reach 3 508 B, still 855 B **above** the fork.
+  So no action could make KPI (b) fall against the fork baseline, because the
+  fork's boot file was written before the toolchain and gate rules existed and
+  returning to it would mean deleting the instructions that keep the gate
+  honest. **With the old project as the "before", that puzzle is not a
+  puzzle**: 21 700 B to 4 295 B is an **80 % cut**, and §7.4's own measurable
+  - "boot read down about 70 %" - is met with room. The earlier analysis
+  stands as a note about the *design* figure (§3 below), not as an objection
+  to the reading.
+
+* **3. The three readings, now defined.** The definitions are the substance
+  of the ruling, and they are **encoded in the instrument** rather than left
+  in prose (see §4).
+
+  - **KPI (a) - process documents per ledger row.**
+    *Denominator:* **ALL ledger rows**, because the acceptance says "per
+    ledger row" and not "per completed row". Today: 49 rows.
+    *Numerator:* the **per-task documents** - the reports scoped to a single
+    ledger row (54), plus the pattern files (2). Today: 56.
+    *Target:* **1.2**, not 1.0, because §7.4's own table caps patterns at
+    "at most 0.2 patterns per task", so a fleet that complies with every
+    other clause of B2 still averages 1 report + 0.2 patterns by design.
+    "About 1 or less" has to tolerate B2's own design point, or B2
+    contradicts itself.
+    *Why the project-wide corpus is excluded from the numerator:* §7.4's table
+    is the list of what was cut, and it is explicit about what survives -
+    "Keep it on authority-bearing documents (canonical, **proposals,
+    reports**)". The 22 project-wide files (11 proposals, 10 Claude replies,
+    `DECISIONS.md`, the rule index, the rulebook pin record, the calibration
+    corpus) are the standing investment B2 keeps, they are not a task's
+    document, and they amortise over more tasks. The 18 fleet-wide documents
+    (triage, adjudication, the open census, the Claude channel) are
+    substantive work rather than a task's document.
+    *Reading today:* **1.143** documents per row - **MET** against 1.2, and a
+    **78 % cut** from the old project's 5.1.
+    *For context, not the verdict:* every process document over all rows is
+    1.959, and over DONE rows 2.233. Both are printed by the instrument, and
+    both are larger because they charge the project-wide corpus to the task
+    count.
+  - **KPI (b) - boot read cost per task.** The size of `.agent/00_BOOT.md`.
+    *Before:* 21 700 B (the old project). *Target:* §7.4's **measurable**,
+    "boot read down about 70 %" (≤ 6 510 B), with §7.4's **design figure**
+    "a core of about 4 KB" (4 096 B) and a stated **10 % tolerance**, because
+    "about 4 KB" is a fuzzy figure and a strict byte comparison against it
+    would turn a 4.9 % overshoot into a red verdict.
+    *Reading today:* **4 295 B** - **MET** on both (an 80 % cut, and 4.9 %
+    over the design figure, inside the 10 % tolerance). Moving the
+    764-character baseline clause into a module would reach 3 508 B and bring
+    the design figure inside 4 KB; that is a tidy-up, not a requirement.
+  - **KPI (c) - gate-green merged changes per day.** Commits per day on the
+    working branch - in this repo a commit IS the unit of merged work,
+    because AGENTS.md section 5 forbids agents committing to `main`/`master`
+    and D3 permits private task branches - counted over the days that have at
+    least one GREEN gate capture.
+    **There is no old-project "before" for this one, and there does not need
+    to be:** "stay flat or rise" is a statement about the *window*, so the
+    window's own end is the reference, and the reading on 2026-10-30 is
+    compared with the reading of 2026-10-22.
+    *Reading today:* **6.67** gate-green merged changes per day over the 3
+    active days that have a GREEN capture, with coverage **3 of 6** active
+    days carrying any capture at all. The coverage is part of the reading.
+
+* **4. The ruling is in the instrument, not only in this file.** A baseline
+  that lives in prose is a baseline a future session can quietly change. So
+  the old project's figures, the two targets and the three definitions are
+  constants in `.agent/tools/measure-process-tax.ps1`, the snapshot writes
+  them into its own `baseline` and `targets` blocks, and
+  `.agent/tools/test-process-tax-measurement.ps1` asserts that the snapshot
+  carries them. A reading taken on 2026-10-30 with the wrong baseline is now
+  not a matter of carelessness: the tool will not produce one.
+
+  The verdicts are computed **once** and used by both the printed reading and
+  the JSON snapshot, because they disagreed once - the console applied the
+  boot file's tolerance and the snapshot did not - and a reading whose two
+  halves can disagree is not a reading.
+
+* **5. The row stays OPEN.** The window has not elapsed. The reading on
+  2026-10-30, the comparison, and the flip are all still ahead; per AGENTS.md
+  section 4 the ambiguity is logged and the item is stopped rather than
+  resolved by assertion. The instrument and both baselines are in place, and
+  the probe is in the gate, so a broken instrument is caught on every gate run
+  rather than on the morning of the reading.
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-space-bunny-free-01-B5-0026.md`.

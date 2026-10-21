@@ -1,11 +1,14 @@
 {
-    "measured_utc":  "2026-10-21T21:17:06Z",
+    "measured_utc":  "2026-10-21T21:32:21Z",
     "tool":  ".agent/tools/measure-process-tax.ps1",
     "tree":  "WORKING TREE",
     "branch":  "task/opencode-space-bunny-free-01-post-b5-0034",
     "definitions":  {
-                        "kpi_a":  "process documents (REPORTS + PATTERNS + docs + investigations .md files) per DONE ledger row",
-                        "kpi_a_narrow":  "as kpi_a, but counting only REPORTS + PATTERNS",
+                        "kpi_a":  "per-task documents (reports scoped to a single ledger row + pattern files) over ALL ledger rows - the owner ruling of 2026-10-22",
+                        "kpi_a_numerator":  "row-scoped reports + pattern files; the project-wide corpus and the fleet-wide audits are excluded",
+                        "kpi_a_denominator":  "ALL ledger rows, because the acceptance says \"process documents per ledger row\"",
+                        "kpi_a_all_docs":  "context only: every process document over all ledger rows",
+                        "kpi_a_over_done":  "context only: every process document over DONE rows",
                         "kpi_b_bytes":  "bytes of .agent/00_BOOT.md (the cost of one boot read)",
                         "kpi_b_lines":  "lines of .agent/00_BOOT.md",
                         "kpi_b_tokens_est":  "boot bytes / 4 - an ESTIMATE; the tokeniser is unknown",
@@ -15,19 +18,39 @@
                         "process_document":  "a Markdown file under .agent/REPORTS/, .agent/PATTERNS/, docs/ or investigations/"
                     },
     "counts":  {
-                   "reports":  71,
+                   "reports":  72,
                    "patterns":  2,
                    "docs":  22,
                    "investigations":  0,
-                   "process_documents":  95,
-                   "narrow_documents":  73,
+                   "process_documents":  96,
+                   "narrow_documents":  56,
                    "done_rows":  43,
+                   "ledger_rows":  49,
+                   "row_scoped_reports":  54,
+                   "per_task_documents":  56,
                    "root_md":  3,
                    "pattern_namespaces":  2,
                    "ledger_bytes":  31902
                },
-    "kpi_a":  2.209,
-    "kpi_a_narrow":  1.698,
+    "baseline":  {
+                     "source":  "the OLD project (pre-fork Babylon5CCGGameDesign), per the owner ruling of 2026-10-22",
+                     "docs_per_task":  5.1,
+                     "boot_bytes":  21700,
+                     "changes_per_day":  null
+                 },
+    "targets":  {
+                    "docs_per_row":  1.2,
+                    "boot_bytes":  4096
+                },
+    "kpi_a":  1.143,
+    "kpi_a_narrow":  56,
+    "kpi_a_all_docs":  1.959,
+    "kpi_a_over_done":  2.233,
+    "kpi_a_verdict":  "MET",
+    "kpi_b_verdict":  "MET",
+    "kpi_b_cut_percent":  80,
+    "kpi_b_design_figure_bytes":  4096,
+    "kpi_b_design_tolerance":  0.1,
     "kpi_b_bytes":  4295,
     "kpi_b_lines":  74,
     "kpi_b_tokens_est":  1073.8,
@@ -54,12 +77,12 @@
                             },
                             {
                                 "date":  "2026-10-22",
-                                "commits":  5
+                                "commits":  6
                             }
                         ],
     "days_with_gate_capture":  3,
     "days_with_green_capture":  3,
-    "kpi_c_gate_green_commits_per_day":  6.33,
+    "kpi_c_gate_green_commits_per_day":  6.67,
     "gate_captures":  [
                           {
                               "file":  "GATE-B5-0026.txt",
@@ -116,6 +139,12 @@
                               "deliberate_red":  false
                           },
                           {
+                              "file":  "GATE-B5-0034-RED-REPRO.txt",
+                              "date":  "2026-10-22",
+                              "verdict":  "RED",
+                              "deliberate_red":  true
+                          },
+                          {
                               "file":  "GATE-B5-0034-RED.txt",
                               "date":  "2026-10-22",
                               "verdict":  "RED",
@@ -124,7 +153,7 @@
                           {
                               "file":  "GATE-B5-0034-VERIFY.txt",
                               "date":  "2026-10-22",
-                              "verdict":  "UNKNOWN",
+                              "verdict":  "GREEN",
                               "deliberate_red":  false
                           },
                           {

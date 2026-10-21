@@ -78,6 +78,32 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
+# ── The owner ruling of 2026-10-22, encoded in the instrument ───────────────
+# The ruling is not a comment: the reading on 2026-10-30 must be taken against
+# these numbers, and an instrument that lets the caller pick a different
+# "before" is an instrument that can produce a convenient answer.
+#
+#   * The "before" for all three readings is the OLD PROJECT (the pre-fork
+#     Babylon5CCGGameDesign), not this project's fork. The B2 cuts WERE the
+#     fork, so the fork is not a "before" of them.
+#   * KPI (a)'s denominator is ALL ledger rows - the acceptance's own words
+#     are "process documents per ledger row", not per DONE row.
+#   * KPI (a)'s numerator is the PER-TASK documents: the reports scoped to a
+#     single ledger row, plus the pattern files. The project-wide corpus
+#     (proposals, DECISIONS, the rule index) is a standing investment that
+#     B2 explicitly keeps and that amortises; the fleet-wide audits are
+#     substantive work rather than a task's document.
+#   * The target is 1.2, not 1.0: B2's own table caps patterns at "at most
+#     0.2 patterns per task", so a compliant fleet averages 1 report + 0.2
+#     patterns by design. "About 1 or less" has to tolerate B2's own design.
+$BASELINE_DOCS_PER_TASK   = 5.1      # the old project's figure, from the proposal
+$BASELINE_BOOT_BYTES      = 21700    # the old project's boot file, from the proposal
+$BASELINE_CHANGES_PER_DAY = $null    # the old project's rate was never recorded
+$TARGET_DOCS_PER_ROW      = 1.2      # B2's own arithmetic: 1 report + 0.2 patterns
+$TARGET_BOOT_BYTES        = 4096     # "a core of about 4 KB" (section 7.4)
+$TARGET_BOOT_TOLERANCE    = 0.10     # "about 4 KB" is a fuzzy figure: 10% over is still "about"
+$TARGET_BOOT_CUT          = 0.70     # section 7.4's MEASURABLE: "boot read down about 70%"
+
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 function Get-RowValue {
@@ -94,6 +120,33 @@ function Get-RowValue {
 function Get-LedgerLines {
     param([string]$Path)
     return [System.IO.File]::ReadAllLines($Path, [System.Text.Encoding]::UTF8)
+}
+
+# Every ledger row id - the DENOMINATOR the acceptance names ("process
+# documents per ledger row"), which is every row and not only the DONE ones.
+function Get-LedgerRowIds {
+    param([string[]]$Lines)
+    $ids = @{}
+    foreach ($line in $Lines) {
+        $m = [regex]::Match($line, '^\|\s*(B5-[0-9]{4}[a-z]?)\s*\|')
+        if ($m.Success) { $ids[$m.Groups[1].Value] = $true }
+    }
+    return $ids
+}
+
+# How many of these report file names are scoped to a SINGLE ledger row.
+# A report is row-scoped when its name names a row that exists; a fleet-wide
+# audit (a triage, an adjudication, the open census) names no row and is not
+# a task's document.
+function Get-RowScopedCount {
+    param([string[]]$Names, [hashtable]$RowIds)
+    $n = 0
+    foreach ($name in $Names) {
+        foreach ($m in [regex]::Matches($name, 'B5-[0-9]{4}[a-z]?')) {
+            if ($RowIds.ContainsKey($m.Value)) { $n++; break }
+        }
+    }
+    return $n
 }
 
 # The number of ledger rows whose status cell reads DONE.
@@ -187,6 +240,10 @@ function Get-TreeFacts {
         $facts.ledger_bytes = ($ledger | Out-String).Length
         $facts.done_rows = Get-DoneRowCount $ledger
         $facts.rotation_eligible = $null
+        $rowIds = Get-LedgerRowIds $ledger
+        $facts.ledger_rows = $rowIds.Count
+        $reportNames = @($names | Where-Object { $_ -like '.agent/REPORTS/*' -and $_ -like '*.md' } | ForEach-Object { Split-Path -Leaf $_ })
+        $facts.row_scoped_reports = Get-RowScopedCount $reportNames $rowIds
     } else {
         $facts.ref = 'WORKING TREE'
         $facts.reports = @(Get-ChildItem (Join-Path $Root '.agent/REPORTS') -Recurse -File -Filter '*.md' -ErrorAction SilentlyContinue).Count
@@ -207,15 +264,27 @@ function Get-TreeFacts {
         $lines = Get-LedgerLines $ledgerPath
         $facts.done_rows = Get-DoneRowCount $lines
         $facts.rotation_eligible = Get-RotationEligibleCount $lines $ledgerPath 14
+        $rowIds = Get-LedgerRowIds $lines
+        $facts.ledger_rows = $rowIds.Count
+        $reportNames = @(Get-ChildItem (Join-Path $Root '.agent/REPORTS') -Recurse -File -Filter '*.md' -ErrorAction SilentlyContinue | ForEach-Object { $_.Name })
+        $facts.row_scoped_reports = Get-RowScopedCount $reportNames $rowIds
     }
     $facts.process_docs = $facts.reports + $facts.patterns + $facts.docs + $facts.investigations
-    $facts.narrow_docs = $facts.reports + $facts.patterns
-    if ($facts.done_rows -gt 0) {
-        $facts.kpi_a = [Math]::Round($facts.process_docs / [double]$facts.done_rows, 3)
-        $facts.kpi_a_narrow = [Math]::Round($facts.narrow_docs / [double]$facts.done_rows, 3)
+    # The RULED numerator: documents scoped to a single task, plus the pattern
+    # files. Not "all reports": a fleet-wide audit is not a task's document.
+    $facts.narrow_docs = $facts.row_scoped_reports + $facts.patterns
+    $facts.ledger_rows = $facts.ledger_rows
+    if ($facts.ledger_rows -gt 0) {
+        # The RULED figure: per-task documents over ALL ledger rows.
+        $facts.kpi_a = [Math]::Round($facts.narrow_docs / [double]$facts.ledger_rows, 3)
+        # The other two numerators, printed for context and NOT the verdict.
+        $facts.kpi_a_all_docs = [Math]::Round($facts.process_docs / [double]$facts.ledger_rows, 3)
+        $facts.kpi_a_over_done = $(if ($facts.done_rows -gt 0) {
+            [Math]::Round($facts.process_docs / [double]$facts.done_rows, 3) } else { $null })
     } else {
         $facts.kpi_a = $null
-        $facts.kpi_a_narrow = $null
+        $facts.kpi_a_all_docs = $null
+        $facts.kpi_a_over_done = $null
     }
     $facts.kpi_b_bytes = $facts.boot_bytes
     $facts.kpi_b_lines = $facts.boot_lines
@@ -341,27 +410,56 @@ try {
     $series = @(Get-CommitSeries $repoRoot $Ref)
     $captures = @(Get-GateCaptures $repoRoot $Ref)
 
+    # The verdicts are computed ONCE, here, and used by both the printed
+    # reading and the JSON snapshot - so the two can never disagree, which
+    # they did once when the console applied a tolerance and the snapshot
+    # did not.
+    $bootCut = [Math]::Round((1 - ($facts.boot_bytes / $BASELINE_BOOT_BYTES)) * 100)
+    $bootDesignOk = $facts.boot_bytes -le ($TARGET_BOOT_BYTES * (1 + $TARGET_BOOT_TOLERANCE))
+    $bootMeasureOk = $bootCut -ge ($TARGET_BOOT_CUT * 100)
+    $kpiAVerdict = $(if ($null -eq $facts.kpi_a) { 'UNDEFINED' } elseif ($facts.kpi_a -le $TARGET_DOCS_PER_ROW) { 'MET' } else { 'NOT MET' })
+    $kpiBVerdict = $(if ($bootDesignOk -and $bootMeasureOk) { 'MET' } else { 'NOT MET' })
+
     Write-Host "=== PROCESS-TAX MEASUREMENT (B5-0026 / WP-09 B2) ==="
     Write-Host ("  measured:      " + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + " local")
     Write-Host ("  tree:          " + $facts.ref)
     Write-Host ("  branch:        " + (git -C $repoRoot branch --show-current))
     Write-Host ""
 
-    Write-Host "--- KPI (a): process documents per DONE ledger row ---"
-    Write-Host ("  process documents: {0}  (REPORTS {1} + PATTERNS {2} + docs {3} + investigations {4})" -f `
-        $facts.process_docs, $facts.reports, $facts.patterns, $facts.docs, $facts.investigations)
-    Write-Host ("  DONE ledger rows:  {0}" -f $facts.done_rows)
+    Write-Host "--- KPI (a): process documents per ledger row (owner ruling 2026-10-22) ---"
+    Write-Host ("  ledger rows (the denominator, ALL rows): {0}" -f $facts.ledger_rows)
+    Write-Host ("  per-task documents (the numerator):    {0}" -f $facts.narrow_docs)
+    Write-Host ("     row-scoped reports {0} + pattern files {1}" -f $facts.row_scoped_reports, $facts.patterns)
     if ($null -eq $facts.kpi_a) {
-        Write-Host ("  KPI (a): UNDEFINED - the denominator is 0 (no DONE row to divide by)" -f $facts.done_rows)
+        Write-Host "  KPI (a): UNDEFINED - the denominator is 0 (no ledger row to divide by)"
     } else {
-        Write-Host ("  KPI (a) = {0} docs/row  (target: about 1 or less)" -f $facts.kpi_a)
-        Write-Host ("  narrow reading (REPORTS + PATTERNS only) = {0} docs/row" -f $facts.kpi_a_narrow)
+        Write-Host ("  KPI (a) = {0} documents/row   target: {1} or less" -f $facts.kpi_a, $TARGET_DOCS_PER_ROW)
+        Write-Host ("  before (old project): {0} documents/task  ->  a {1}% cut" -f `
+            $BASELINE_DOCS_PER_TASK, [Math]::Round((1 - ($facts.kpi_a / $BASELINE_DOCS_PER_TASK)) * 100))
+        Write-Host ("  VERDICT: {0}" -f $kpiAVerdict)
+        Write-Host "  --- context only, NOT the ruled figure ---"
+        Write-Host ("  all process documents over all rows:   {0} = {1}/row" -f $facts.process_docs, $facts.kpi_a_all_docs)
+        Write-Host ("  all process documents over DONE rows:  {0} = {1}/row" -f $facts.process_docs, $facts.kpi_a_over_done)
     }
     Write-Host ""
 
-    Write-Host "--- KPI (b): boot read cost per task ---"
+    Write-Host "--- KPI (b): boot read cost per task (owner ruling 2026-10-22) ---"
     Write-Host ("  .agent/00_BOOT.md: {0} B / {1} lines" -f $facts.boot_bytes, $facts.boot_lines)
     Write-Host ("  estimated tokens = bytes/4 = {0}  (ESTIMATE: the tokeniser is unknown)" -f $facts.kpi_b_tokens_est)
+    Write-Host ("  before (old project): {0} B  ->  a {1}% cut" -f `
+        $BASELINE_BOOT_BYTES, [Math]::Round((1 - ($facts.boot_bytes / $BASELINE_BOOT_BYTES)) * 100))
+    $cut = $bootCut
+    $designOk = $bootDesignOk
+    $measureOk = $bootMeasureOk
+    Write-Host ("  target: a core of about {0} B (section 7.4); its MEASURABLE is a {1}% cut (<= {2} B)" -f `
+        $TARGET_BOOT_BYTES, ($TARGET_BOOT_CUT * 100), [Math]::Round($BASELINE_BOOT_BYTES * (1 - $TARGET_BOOT_CUT)))
+    $overPct = [Math]::Round((($facts.boot_bytes / $TARGET_BOOT_BYTES) - 1) * 100, 1)
+    $overWord = $(if ($overPct -lt 0) { "under" } else { "over" })
+    Write-Host ("  VERDICT: {0}  ({1} B - {2}% {3} the 'about {4} B' design figure, tolerance {5}%; {6}% cut against the {7}% measurable, which is {8})" -f `
+        $kpiBVerdict, $facts.boot_bytes, `
+        [Math]::Abs($overPct), $overWord, $TARGET_BOOT_BYTES, `
+        ($TARGET_BOOT_TOLERANCE * 100), $cut, ($TARGET_BOOT_CUT * 100), `
+        $(if ($measureOk) { "met" } else { "NOT met" }))
     Write-Host ""
 
     Write-Host "--- KPI (c): merged changes per day, and the gate verdicts ---"
@@ -394,6 +492,8 @@ try {
     Write-Host ("  'red(fail)' is a capture with no -RED in its name: a real red gate run.")
     Write-Host ("  'unknown' counts captures whose verdict could not be read, including one that is locked for writing")
     Write-Host ("             at the moment of measurement - a gap in the coverage, not a reason to report nothing.")
+    Write-Host ("  before: none exists - the old project's rate was never recorded, and 'stay flat or")
+    Write-Host ("          rise' is a statement about the WINDOW, so the window's own end is the reference.")
     Write-Host ("  'gate-green' is evidenced only where a capture exists. The coverage line above")
     Write-Host ("        is part of the measurement, not a footnote to it.")
     Write-Host ""
@@ -414,8 +514,11 @@ try {
             tree = $facts.ref
             branch = (git -C $repoRoot branch --show-current)
             definitions = [ordered]@{
-                'kpi_a' = 'process documents (REPORTS + PATTERNS + docs + investigations .md files) per DONE ledger row'
-                'kpi_a_narrow' = 'as kpi_a, but counting only REPORTS + PATTERNS'
+                'kpi_a' = 'per-task documents (reports scoped to a single ledger row + pattern files) over ALL ledger rows - the owner ruling of 2026-10-22'
+                'kpi_a_numerator' = 'row-scoped reports + pattern files; the project-wide corpus and the fleet-wide audits are excluded'
+                'kpi_a_denominator' = 'ALL ledger rows, because the acceptance says "process documents per ledger row"'
+                'kpi_a_all_docs' = 'context only: every process document over all ledger rows'
+                'kpi_a_over_done' = 'context only: every process document over DONE rows'
                 'kpi_b_bytes' = 'bytes of .agent/00_BOOT.md (the cost of one boot read)'
                 'kpi_b_lines' = 'lines of .agent/00_BOOT.md'
                 'kpi_b_tokens_est' = 'boot bytes / 4 - an ESTIMATE; the tokeniser is unknown'
@@ -432,12 +535,32 @@ try {
                 process_documents = $facts.process_docs
                 narrow_documents = $facts.narrow_docs
                 done_rows = $facts.done_rows
+                ledger_rows = $facts.ledger_rows
+                row_scoped_reports = $facts.row_scoped_reports
+                per_task_documents = $facts.narrow_docs
                 root_md = $facts.root_md
                 pattern_namespaces = $facts.pattern_namespaces
                 ledger_bytes = $facts.ledger_bytes
             }
+            baseline = [ordered]@{
+                source = 'the OLD project (pre-fork Babylon5CCGGameDesign), per the owner ruling of 2026-10-22'
+                docs_per_task = $BASELINE_DOCS_PER_TASK
+                boot_bytes = $BASELINE_BOOT_BYTES
+                changes_per_day = $BASELINE_CHANGES_PER_DAY
+            }
+            targets = [ordered]@{
+                docs_per_row = $TARGET_DOCS_PER_ROW
+                boot_bytes = $TARGET_BOOT_BYTES
+            }
             kpi_a = $facts.kpi_a
-            kpi_a_narrow = $facts.kpi_a_narrow
+            kpi_a_narrow = $facts.narrow_docs
+            kpi_a_all_docs = $facts.kpi_a_all_docs
+            kpi_a_over_done = $facts.kpi_a_over_done
+            kpi_a_verdict = $kpiAVerdict
+            kpi_b_verdict = $kpiBVerdict
+            kpi_b_cut_percent = $bootCut
+            kpi_b_design_figure_bytes = $TARGET_BOOT_BYTES
+            kpi_b_design_tolerance = $TARGET_BOOT_TOLERANCE
             kpi_b_bytes = $facts.kpi_b_bytes
             kpi_b_lines = $facts.kpi_b_lines
             kpi_b_tokens_est = $facts.kpi_b_tokens_est

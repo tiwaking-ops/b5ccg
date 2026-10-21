@@ -79,7 +79,7 @@ Check "it prints KPI (a)"            ($text -match 'KPI \(a\)') ""
 Check "it prints KPI (b)"            ($text -match 'KPI \(b\)') ""
 Check "it prints KPI (c)"            ($text -match 'KPI \(c\)') ""
 Check "it prints the section 7.4 target table" ($text -match 'section 7\.4 target table') ""
-Check "it prints the denominators"   ($text -match 'DONE ledger rows') ""
+Check "it prints the denominators"   ($text -match 'denominator') ""
 Check "it prints the coverage line for KPI (c)" ($text -match 'coverage:') ""
 
 # ── 3: it writes a snapshot that parses and carries its definitions ────────
@@ -105,6 +105,24 @@ try {
             (($json.PSObject.Properties.Name -contains 'kpi_a') -and `
              ($json.PSObject.Properties.Name -contains 'kpi_b_bytes') -and `
              ($json.PSObject.Properties.Name -contains 'kpi_c_gate_green_commits_per_day')) ""
+        # The owner ruling of 2026-10-22 must be IN the snapshot, so that a
+        # reading taken on 2026-10-30 cannot silently use another baseline.
+        Check "the snapshot records the baseline it is read against" `
+            (($json.PSObject.Properties.Name -contains 'baseline') -and `
+             ($json.baseline.PSObject.Properties.Name -contains 'docs_per_task') -and `
+             ($json.baseline.PSObject.Properties.Name -contains 'boot_bytes')) ""
+        Check "the snapshot records the targets it is judged against" `
+            (($json.PSObject.Properties.Name -contains 'targets') -and `
+             ($json.targets.PSObject.Properties.Name -contains 'docs_per_row') -and `
+             ($json.targets.PSObject.Properties.Name -contains 'boot_bytes')) ""
+        Check "the snapshot records a verdict for each judged KPI" `
+            (($json.PSObject.Properties.Name -contains 'kpi_a_verdict') -and `
+             ($json.PSObject.Properties.Name -contains 'kpi_b_verdict')) ""
+        Check "the snapshot's denominator is ALL ledger rows" `
+            (($json.counts.PSObject.Properties.Name -contains 'ledger_rows') -and `
+             ($json.counts.PSObject.Properties.Name -contains 'row_scoped_reports')) ""
+        Check "the ruling is stated in the definitions" `
+            (($defs.kpi_a -match 'owner ruling') -and ($defs.kpi_a_denominator -match 'ALL ledger rows')) ""
         Check "the snapshot names the tree it measured" ([bool]$json.tree) ""
         Check "the snapshot records the commit series" ($json.commits_per_day.Count -gt 0) ""
     }

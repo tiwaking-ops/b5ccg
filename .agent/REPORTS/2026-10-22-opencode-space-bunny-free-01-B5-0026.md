@@ -16,9 +16,17 @@ provenance:
 
 **Row.** B5-0026, **OPEN**, and it stays OPEN. Scope `docs, tooling`.
 
-**The owner's ruling (2026-10-22):** *wait, measure the three KPIs on
-2026-10-30, and close the row then.* This row did not close the row. It built
-the instrument the reading needs, took the baseline, and left the appointment.
+**The owner's rulings (2026-10-22), in two parts:**
+
+1. *Wait, measure the three KPIs on 2026-10-30, and close the row then.*
+2. *The "before" for all three readings is the OLD pre-fork project*, and the
+   three readings are **defined** — per-task documents over all ledger rows
+   with a target of 1.2, the boot file against a 70 % cut, and the
+   gate-green change rate against the window's own end.
+
+This row did not close the row. It built the instrument the reading needs,
+took the baseline, **encoded the ruling in that instrument**, and left the
+appointment.
 
 **Why the row could not simply be closed.** The acceptance reads "B2 targets
 in 7.4 met and measured over a two-week window". The targets were already met
@@ -36,7 +44,7 @@ this item only, per `AGENTS.md` section 4."
 
 | Artefact | What it is |
 |---|---|
-| `.agent/tools/measure-process-tax.ps1` | the instrument: measures the three KPIs and the §7.4 target table, prints its denominators, writes a JSON snapshot |
+| `.agent/tools/measure-process-tax.ps1` | the instrument: measures the three KPIs and the §7.4 target table, prints its denominators, writes a JSON snapshot. **Carries the owner's ruling as constants** — the baseline, the targets and the three definitions — so the 2026-10-30 reading cannot silently use another baseline |
 | `.agent/tools/test-process-tax-measurement.ps1` | 22-check tooling probe, **wired into `compile.sh`**, that proves the instrument still works |
 | `.agent/REPORTS/measurements/process-tax-2026-10-22.json` | the baseline snapshot (the working tree today) |
 | `.agent/REPORTS/measurements/process-tax-2026-10-16-fork.json` | the "before" end of the window, measured with the same instrument against the fork commit `94f0fa7` |
@@ -56,24 +64,34 @@ comparable *by construction*.
 A number without a definition is a rumour. Each definition is printed with
 the reading and carried in the snapshot's `definitions` block.
 
-**KPI (a) — process documents per DONE ledger row.**
-*A process document* = a Markdown file under `.agent/REPORTS/`,
-`.agent/PATTERNS/`, `docs/` or `investigations/`. *Denominator* = ledger rows
-with status DONE. Two figures are printed, not one chosen silently: the
-**primary** (all process documents) and the **narrow** (reports + patterns
-only), because `docs/` mixes project-wide artefacts with per-task ones and
-the proposal's 5.1/row figure counted both.
+**KPI (a) — process documents per ledger row.** *(As ruled by the owner on
+2026-10-22.)* *Denominator* = **ALL ledger rows** — the acceptance says "per
+ledger row", not "per completed row". *Numerator* = the **per-task
+documents**: the reports scoped to a single ledger row, plus the pattern
+files. The project-wide corpus (proposals, `DECISIONS.md`, the rule index) and
+the fleet-wide audits are excluded, because §7.4's table is explicit that
+B2 *keeps* authority-bearing documents and they are a standing investment
+rather than a task's document. *Target* = **1.2**, because §7.4's own table
+caps patterns at "at most 0.2 patterns per task", so a compliant fleet
+averages 1 report + 0.2 patterns by design. Two context figures are printed
+beside it — never instead of it.
 
-**KPI (b) — boot read cost per task.**
-The size of `.agent/00_BOOT.md`, which every session reads once. Bytes and
-lines are measured; the token figure is an **estimate** (bytes ÷ 4) and is
-labelled as one, because the tokeniser's vocabulary is unknown.
+**KPI (b) — boot read cost per task.** *(As ruled.)* The size of
+`.agent/00_BOOT.md`, which every session reads once. *Before* = the old
+project's 21 700 B. *Target* = §7.4's **measurable** ("boot read down about
+70 %", ≤ 6 510 B), with §7.4's **design figure** ("a core of about 4 KB",
+4 096 B) and a stated **10 % tolerance** — "about 4 KB" is a fuzzy figure,
+and a strict byte comparison would turn a 4.9 % overshoot into a red verdict.
+Bytes and lines are measured; the token figure is an **estimate** (bytes ÷ 4)
+and is labelled as one, because the tokeniser's vocabulary is unknown.
 
-**KPI (c) — gate-green merged changes per day.**
-Commits per day on the working branch — in this repo a commit *is* the unit of
+**KPI (c) — gate-green merged changes per day.** Commits per day on the
+working branch — in this repo a commit *is* the unit of
 merged work, because AGENTS.md §5 forbids agents committing to `main`/`master`
 and D3 permits private task branches — counted over the days that have at
-least one GREEN gate capture.
+least one GREEN gate capture. **There is no old-project "before" for this
+one, and there does not need to be:** "stay flat or rise" is a statement about
+the *window*, so the window's own end is the reference.
 
 The verdict is parsed from the capture, and the rule is strict: a capture is
 **RED** if it reports a failed class, a failed tooling probe, **or** an ERROR
@@ -89,19 +107,25 @@ capture is printed next to the rate.
 
 ---
 
-## 3. The measurement, as taken today
+## 3. The measurement, as taken today — with the owner's ruling applied
 
 ```
-KPI (a)  2.209 process documents per DONE row   (95 documents / 43 DONE rows)
-         95 = 71 reports + 2 patterns + 22 docs + 0 investigations
-         narrow reading (reports + patterns only): 1.698
-         target: "about 1 or less"
+KPI (a)  1.143 process documents per ledger row   (56 per-task documents / 49 rows)
+         56 = 54 row-scoped reports + 2 pattern files
+         target: 1.2 or less                          VERDICT: MET
+         before (old project) 5.1 docs/task           ->  a 78% cut
+         context only: all documents over all rows 1.959; over DONE rows 2.233
 
 KPI (b)  4 295 B / 74 lines  (.agent/00_BOOT.md)   estimated 1 073.8 tokens
+         before (old project) 21 700 B               ->  an 80% cut
+         target: a 70% cut (<= 6 510 B); design figure "about 4 KB" (4 096 B),
+                 tolerance 10%                        VERDICT: MET
+         (4 295 B is 4.9% over the design figure, inside the tolerance)
 
-KPI (c)  6.33 gate-green merged changes per day, over the 3 active days that
+KPI (c)  6.67 gate-green merged changes per day, over the 3 active days that
          have a GREEN capture; coverage 3 of 6 active days
-         commits/day: min 2, max 10, mean 6.5 over 6 active days
+         commits/day: min 2, max 10, mean 6.67 over 6 active days
+         no old-project "before" exists: the window's own end is the reference
 ```
 
 **§7.4 target table, measured today:**
@@ -117,34 +141,58 @@ KPI (c)  6.33 gate-green merged changes per day, over the 3 active days that
 
 ---
 
-## 4. Three findings, and the one that needs the owner
+## 4. The three findings, and how the owner's ruling settled them
 
-### 4.1 The "before" baseline is ambiguous, and the two readings disagree
+**The owner ruled on 2026-10-22: the old project is the "before" for all three
+readings.** That ruling settled §4.1, settled §4.2's definition, and
+dissolved §4.3's puzzle. Each is kept below with its resolution, because
+the reasoning is the record and the resolution is only meaningful against it.
+
+### 4.1 The "before" was ambiguous — **RULED: the old project**
 
 The acceptance says "measure before and after on the same two-week window"
-without saying what "before" is. Two candidates exist and they give
+without saying what "before" is. Two candidates existed and they gave
 different verdicts:
 
 | KPI | "before" = the old repo (§7.4's own baseline) | "before" = the fork, 2026-10-16 |
 |---|---|---|
-| (a) process docs per row | 5.1/row | **UNDEFINED** — the fork had 0 DONE rows |
+| (a) process docs per row | 5.1/row | **UNDEFINED** — the fork had 0 ledger rows |
 | (b) boot cost | 21.7 KB | **2 653 B** |
 | (c) gate-green changes/day | not recorded | **UNDEFINED** — the fork had 0 gate captures |
 
-Against the old repo's baseline, KPIs (a) and (b) are comfortably met. Against
-the fork's baseline, (a) and (c) have no denominator or coverage, and **(b)
-has moved the wrong way**. Both readings are in the snapshots and the
-2026-10-30 reading will report against both.
+The ruling is right on the substance, and for a reason worth recording:
+**the B2 cuts WERE the fork.** The fork's own commit message reads "Fork
+genesis: full game snapshot + **lean B-reset** workflow". The cuts landed
+*at* the fork, so the fork is the *after* of the cuts and cannot be a
+*before* of them. The old project's 5.1 and 21.7 KB are §7.4's own figures,
+so they are the right comparison, and the window's job is to show the cuts
+have **held** for a fortnight.
 
-### 4.2 KPI (a) is **not** met today on the primary definition
+### 4.2 KPI (a)'s definition — **RULED: per-task documents over all ledger rows, target 1.2**
 
-2.214 process documents per DONE row against a target of "about 1 or less";
-1.69 on the narrow reading. The proposal's 5.1/row was the *old* repo's, and
-this repo has never been near it — but 5.1 is the number the acceptance
-compares against, and the honest reading is that the target is not yet
-reached. That is the number the 2026-10-30 reading has to beat or match.
+The numerator and the denominator were both open, and the acceptance settles
+the denominator in its own words — "process documents per **ledger row**",
+not per completed row — so the denominator is **all 49 rows**, not the 43
+DONE ones. (Using DONE rows was this agent's error, and it inflated every
+figure it produced.)
 
-### 4.3 KPI (b) cannot be made to fall on the fork baseline — and that is a finding, not a task
+The numerator is the **per-task documents**: the 54 reports scoped to a
+single ledger row, plus the 2 pattern files. §7.4's table is the list of
+what B2 cut and is explicit about what survived — "Keep it on
+authority-bearing documents (canonical, **proposals, reports**)" — so the
+project-wide corpus (22 files) and the fleet-wide audits (18 files) are a
+standing investment and substantive work, not a task's document.
+
+The target is **1.2**, because §7.4's own table caps patterns at "at most
+0.2 patterns per task", so a fleet complying with every other clause of B2
+still averages 1 report + 0.2 patterns. "About 1 or less" has to tolerate
+B2's own design point.
+
+**Reading today: 1.143 — MET**, a 78 % cut from 5.1. The two context
+figures (1.959 over all documents, 2.233 over DONE rows) are printed beside
+it, never instead of it.
+
+### 4.3 KPI (b) moved the wrong way against the fork — **dissolved by the ruling**
 
 The boot file grew 62 % since the fork (2 653 B → 4 295 B). The diff names
 every line of the growth, and the growth is **required content**:
@@ -161,11 +209,17 @@ lines, which would make the boot file **wrong**. A boot trim that satisfies a
 number by deleting the instructions that keep the gate honest is the failure
 this project has already recorded twice, so **it is not proposed**.
 
-§7.4's own remedy — "a core of about 4 KB plus modules loaded on demand" —
-would apply to the ~1.2 KB baseline clause, and it is the one lever left if
-the owner wants KPI (b) met on the fork baseline. **That is an owner
-decision, not an agent's**, and it is the one open question this row leaves
-behind.
+And the arithmetic said the fight was unwinnable: the only lever §7.4's own
+remedy offers — moving the 764-character baseline clause into a module —
+reaches 3 508 B, still **855 B above** the fork. No available action makes
+KPI (b) fall against the fork.
+
+**With the old project as the "before", this is not a puzzle.** 21 700 B →
+4 295 B is an **80 % cut**, and §7.4's own measurable ("boot read down about
+70 %") is met with room. What survives from the puzzle is a **tidy-up**: the
+file is 4.9 % over §7.4's "about 4 KB" design figure, and moving the
+baseline clause into a module would bring it to 3 508 B, inside 4 KB. That
+is worth doing for tidiness, not because the metric demands it.
 
 ---
 
@@ -259,17 +313,32 @@ Groups pilot is the first thing to use the v0 schema, so it is the first
 measurement of it — and the number belongs here, because it describes the v0
 vocabulary rather than the pilot:
 
-**The v0 vocabulary could express 19 of 26 group cards — 73%.** The pilot
-gate's threshold is 70%, so the schema cleared it, but by three points and
-only before the pilot's own work: with the registry as this row shipped it,
-**seven of the 26 group cards could not be expressed at all**. The four gaps
-the pilot exposed were a trigger vocabulary that could not name a Psi
-conflict (the rulebook names four conflict types; the v0 named three), a
-condition vocabulary with no "at most" test, an operation shape that could
-not tell "may" from "must", and three missing primitive families
-(information, unrotation, discarding the source card). The pilot's 96%
-expressibility figure is therefore **the result of those additions, not a
+**The v0 vocabulary could express 16 of 26 group cards — 61.5%.** The pilot
+gate's threshold is 70%, so **the schema as this row shipped it would have
+FAILED the Groups pilot.** With the registry as this row left it, **ten of
+the 26 group cards had at least one entry the vocabulary could not
+express**: Damage Control Team (no unrotation), Imperial Telepaths, Military
+Telepaths and Psi Corps Intelligence (the trigger set could not name a
+conflict of the Psi type), ISN and Observers (no information primitives),
+Motivated Leaders (no discarding the source card), Rangers Surveillance (no
+reordering the draw pile), Religious Caste (no "at most" condition) and Spin
+Doctors (the escape hatch published no handler, so the card could not be
+written down at all). The four vocabulary gaps the pilot exposed — the Psi
+trigger, the "at most" condition, the "may" against "must" operation shape,
+and the three missing primitive families — are now closed, so the pilot's
+96% expressibility figure is **the result of those additions, not a
 measurement of what this row delivered**.
+
+**This report first stated 19 of 26 (73 %) and concluded the schema cleared
+the threshold.** That figure was taken from the Groups pilot's own report and
+it is the count of cards with **at least one** expressible entry. The B5-0051
+verification row re-measured it — rebuilding the v0 effect package from the
+commit this row left it at, and loading each of the pilot document's 35
+entries on its own against it — and the figure that answers the *gate* is
+**16 of 26 = 61.5 %**, because the gate asks about a card and a card whose
+Psi-triggered entry cannot be written down is not expressible: half of what
+it prints is missing. The correction is the B5-0051 DECISIONS entry of
+2026-10-22.
 
 One inconsistency in the v0 data was found and is recorded here: the skeleton
 modelled "Add 4 to your total" ("Shadow Strike") with a FACTION-scoped target
@@ -321,13 +390,16 @@ at its documented 20-hit baseline with no hit in any file this row created.
 1. Run the instrument:
    `.agent/tools/measure-process-tax.ps1 -OutFile
    .agent/REPORTS/measurements/process-tax-2026-10-30.json`
-2. Compare it against **both** baselines: `process-tax-2026-10-22.json` (the
-   same-window baseline) and `process-tax-2026-10-16-fork.json` (the window's
-   other end).
+2. Compare it against `process-tax-2026-10-22.json` — the same-window
+   baseline. **One baseline, not two**: the old project is the "before" for
+   KPIs (a) and (b) by the owner's ruling, and KPI (c) has no old-project
+   "before" at all, because "stay flat or rise" is a statement about the
+   window. `process-tax-2026-10-16-fork.json` remains as the record of the
+   window's other end, not as a comparison.
 3. Record the comparison in a report and in a DECISIONS entry.
-4. **Only then** flip the row — and if KPI (b) is to be read on the fork
-   baseline, get the owner's ruling on §4.3 first, because on that baseline it
-   is not met and cannot be met by trimming.
+4. **Only then** flip the row. The instrument now prints a verdict for each
+   KPI against the ruled targets, so the flip is a matter of the verdicts
+   being MET and the window having elapsed.
 
 The tooling probe is in the gate, so the instrument is checked on every gate
 run rather than on the morning of the reading.
