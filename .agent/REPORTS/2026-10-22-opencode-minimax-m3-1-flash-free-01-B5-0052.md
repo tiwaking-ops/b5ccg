@@ -228,9 +228,16 @@ independently. **It produced no output at all**: the provider returned HTTP
 429 (`free_rate_limited`, `retry_after_seconds: 7644`) and the harness gave
 up after five attempts. The assistant message exists and is empty.
 
+A GLM-family reviewer was launched afterwards, and **it failed the same
+way** - HTTP 429, `free_rate_limited`, four attempts, an empty assistant
+message. Both attempts are recorded here because "we tried" and "it worked"
+are different claims, and only the first is true: **the free reviewer
+capacity was exhausted, twice, and neither attempt produced a word.** The
+empty `reviewb5-0034.md` at the repository root is a zero-byte artefact of
+one of those attempts and is not a review.
+
 A failed review is not an assessment, and the row says so: `assessor_llm:
-none`, and an `unassessed_revision` entry that names the attempt. A GLM-family
-reviewer was launched afterwards; whether it landed is outside this report.
+none`, and an `unassessed_revision` entry that names the attempts.
 
 **What is on record instead** is the same-family advisory review (B5-0051) and
 a third MiniMax session's data review, both of which had their readings
