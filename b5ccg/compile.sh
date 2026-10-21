@@ -175,6 +175,7 @@ b5ccg.engine.CardSetManifestChecker
 b5ccg.engine.CardSetManifestCrossCheck
 b5ccg.engine.HeadlessCanonicalParityProbe
 b5ccg.engine.HeadlessSortedOutputProbe
+b5ccg.engine.HeadlessUnimplementedTextTripwire
 b5ccg.engine.HeadlessPrintingDiffTriageProbe
 b5ccg.model.EffectCensusChecker
 b5ccg.engine.HeadlessRulebookPinProbe

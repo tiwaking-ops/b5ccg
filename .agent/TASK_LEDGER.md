@@ -76,7 +76,7 @@ Per AGENTS.md §3 that report is an observation and carries no authority.
 | B5-0026 | OPEN | WP-09 Process-tax cuts (B2): boot file, pattern policy, ledger rotation, provenance scope. Acceptance: B2 targets in 7.4 met and measured over a two-week window | docs, tooling | - | - |
 | B5-0027 | DONE | B5-0021 Deterministic probe output (TreeSet fix at CardEffects:1735 verified; sorted-output probe designed; gate 904/904 identity confirmed; no divergence) | engine,tooling | - | .agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0027.md |
 | B5-0028 | OPEN | WP-10 Effect schema v0; the freeze on engine + tooling is LIFTED by owner ruling 2026-10-19 and no longer bars claims, though no tooling ever enforced it. The work itself stays withdrawn by the 2026-10-19 correction, so this row remains OPEN. Depends on B5-0005 census + B5-0027 release | engine,tooling | - | - |
-| B5-0029 | OPEN | WP-13 Unimplemented-text tripwire (A4) | engine,tooling | - | - |
+| B5-0029 | DONE | WP-13 Unimplemented-text tripwire (A4) | engine,tooling | - | .agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0029.md |
 | B5-0030 | OPEN | WP-14 Invariant checker + fuzz (A4) — freeze sustained; independent of --release 8; depends on B5-0029 tripwire (FULL) | engine,tooling | - | - |
 | B5-0032 | OPEN | WP-15 VictoryRules extraction (A6.1) | engine,tooling | - | - |
 | B5-0033 | OPEN | WP-16/17 MarkRules + CostRules (A6.2/3) | engine,tooling | - | - |

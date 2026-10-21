@@ -1439,3 +1439,64 @@ after this change: the same 904 checks, the same check names, the same order.
 
 **Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0027.md`.
 Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0027.txt`.
+## 2026-10-21 - The unimplemented-text tripwire, and the gap it found (B5-0029)
+
+WP-13 (A4.1) asked for an instrument that emits `UNIMPLEMENTED(cardKey)` when
+a behaviour-bearing card has no matching effect entry, fatal in test mode for
+the Playable Slice decks and a counter elsewhere. The previous version of the
+class was a seven-line stub that checked a card's *text* for the word
+"unimplemented" and was never called from anywhere. It is now a real
+instrument, and it has been wired into the verification gate as the 33rd
+class.
+
+**The join, which is the part that is easy to get wrong.** The census holds
+446 card **titles**; the engine's registry (`CardEffects.behaviourReferences()`)
+holds 93 card **ids**; only the card pool maps one to the other. The
+instrument therefore loads both printings of the pool, resolves every registry
+id through it, and compares titles to the census. Three bugs were caught while
+building it, each by a measurement rather than by reading: comparing ids to
+titles (137 findings against a census saying 56 were covered), loading
+`premiere.json` only (35 Deluxe-only registry ids unresolvable), and not
+exempting the three synthetic fixture ids.
+
+**What it found.** 384 titles are behaviour-bearing. 56 are covered by the
+census and 58 are implemented by the engine - the two extra are `Delenn` and
+`Londo Mollari`, whose census class is `TRAIT_ONLY`. **328 titles are
+unimplemented, and 81 of them are in the starter decks.** Spot-checked by id:
+`conf_affirmation_of_power`, `conf_border_raid` and `agenda_alliance_of_races`
+are all in `premiere-starter-decks.json`, and none of their ids appears in
+`CardEffects`. The census and the engine agree exactly (0 drift).
+
+**So Playable Slice criterion 3 - "Zero UNIMPLEMENTED hits for any
+behaviour-bearing card in those decks" - is not met, by 81 cards.** This is
+the first instrument in the repository that reports that as a number, and it
+is a finding about the game, not about the instrument.
+
+**The baseline contract, and why the number is the contract.** A gate class
+that is red for a known-and-accepted gap stops being a signal for anything.
+The gap is real, but it is a milestone target rather than a regression - the
+same shape as `rule-coverage.ps1` reporting 22.8% against a 90% target and
+exiting 0. So the tripwire asserts the **number**: total unimplemented `<=`
+328 and starter-deck unimplemented `<=` 81, the measured baselines.
+Implementing a card lowers the count and is accepted; **leaving a new card
+unimplemented raises the count and turns the gate red**. A regression cannot
+pass silently, and the known gap does not make the gate permanently red. The
+assertion is `<=` rather than `==` so the baseline is only re-pinned when the
+gap *grows*.
+
+**Red-then-green, measured.** Current tree: exit 0, 12 checks, 0 failures.
+Removing a covered id from the registry: exit 1, "the census's covered flag
+agrees with the engine registry" fails, drift = 1. Flipping a census record's
+`covered` flag to true for an unimplemented card: exit 1, same check fails.
+Both red states were produced by editing the real files and re-running; both
+were restored byte-exactly afterwards.
+
+**The instrument is guarded against being vacuous.** Two checks assert the
+join found a non-trivial set of behaviour-bearing titles (384 > 100) and that
+the tripwire found a non-trivial number of unimplemented cards (328 > 50). The
+registry is also checked for sorted order, so "is it implemented" has a stable
+answer - the B5-0027 contract, applied here because this instrument reads the
+same registry.
+
+**Reports.** `.agent/REPORTS/2026-10-21-opencode-space-bunny-free-01-B5-0029.md`.
+Gate evidence in `.agent/REPORTS/evidence/GATE-B5-0029.txt`.
