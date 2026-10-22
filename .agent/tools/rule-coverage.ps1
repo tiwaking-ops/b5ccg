@@ -52,10 +52,51 @@
 param(
     [string] $Index,
     [string] $Map,
-    [string] $GateLog
+    [string] $GateLog,
+    [string] $GateLogDir,
+    [switch] $StrictConflicts
 )
 
+function Normalize-CheckName {
+    param([string] $Name)
+    # Strip the tag prefix: [TAG] description -> [description
+    $normalized = $Name -replace '^\s*\[[^\]]+\]\s+', '['
+    # Strip section prefixes (S1:, S2:, D1:, D3:, etc.) that gate logs embed
+    # in check descriptions but map entries do not carry: [S1: foo -> [foo
+    $normalized = $normalized -replace '^\[(S|D)\d+:\s*', '['
+    return $normalized
+}
+
 Set-StrictMode -Version Latest
+# ----------------------------------------------------------- the gate log ---
+$logChecks = @{}
+$logChecksRaw = @{}
+foreach ($line in [System.IO.File]::ReadAllLines($GateLog)) {
+    # Handle [PASS] name: verdict or [FAIL] name: verdict format
+    if ($line -match '^\s*\[(PASS|FAIL)\]\s+(.+?):\s*(PASS|FAIL)\s*$') {
+        $verdict = $Matches[3]
+        $nameRaw = $Matches[2].Trim()
+        $logChecksRaw[$nameRaw] = $verdict
+    }
+    # Handle PASS name or FAIL name format (plain, no brackets)
+    if ($line -match '^\s*(PASS|FAIL)\s+(.+?)\s*$') {
+        $verdict = $Matches[1]
+        $name = $Matches[2].Trim()
+        # Only add if not already set (first source wins for plain format)
+        if (-not $logChecksRaw.ContainsKey($name)) {
+            $logChecksRaw[$name] = $verdict
+        }
+    }
+}
+# Normalize check names for matching against the map
+foreach ($name in $logChecksRaw.Keys) {
+    $normName = Normalize-CheckName $name
+    $logChecks[$normName] = $logChecksRaw[$name]
+}
+if ($logChecks.Count -eq 0) {
+    Write-Output ("[WP-18c] EXIT 2: {0} carries no check lines of the form '  [TAG] name: PASS|FAIL'\" -f $GateLog)
+    exit 2
+}
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -187,7 +228,7 @@ foreach ($entry in $denominator) {
         continue
     }
 
-    $failing = @($good | Where-Object { $logChecks[[string]$_.CheckName] -eq 'FAIL' })
+    $failing = @($good | Where-Object { $logChecks[Normalize-CheckName $_.CheckName] -eq 'FAIL' })
     $covered.Add([pscustomobject]@{
         Entry = $entry; Verified = $good.Count; Failing = @($failing).Count
         Checks = (($good | ForEach-Object { $_.CheckName }) -join '; ')
