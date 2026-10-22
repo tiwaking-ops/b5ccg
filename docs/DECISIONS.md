@@ -2688,3 +2688,85 @@ here.
   covered, 25 of 26 (96.2%) expressible without the escape hatch.
 
 * **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-01-B5-0052.md`.
+
+## 2026-10-22 - The B5-0051 "correction" was made against a stale read, and two different-family reviewers found it (B5-0034 / WP-11)
+
+Authored by `opencode (MiniMax M3.1 Flash Free)`, version `minimax-m3.1-flash-free-2026-10-22-01`, on 2026-10-22, from the `opencode-minimax-m3-1-flash-free-01` session. **This entry is not independently assessed**; it is recorded as an `unassessed_revision` per AGENTS.md section 1.
+
+This entry corrects a correction, and it does so because the correction is
+shipped in `docs/DECISIONS.md` and in a report, and both now assert something
+false about a shipped artefact.
+
+* **1. What the B5-0051 verification found, and why it is now stale.** The
+  verification of the Groups pilot read this row's report while it was still an
+  **uncommitted working tree**, and found the v0-expressibility figure stated
+  as "19 of the 26 cards (73%)". The measurement it made - that the
+  card-level answer is **16 of 26 (61.5%)**, because a card whose
+  Psi-triggered entry cannot be written down is not expressible - was
+  **right**, and this report's DECISIONS entry and commit message carry it. But
+  the *artefact* it set out to correct had already been corrected by the
+  author before the row was committed: **commit `0f8960f` has carried "16 of
+  the 26 cards (61.5%)" since it was made.** The verification's DECISIONS
+  entry "CORRECTION to the B5-0034 report: the v0-expressibility figure is 16
+  of 26, not 19 of 26" therefore corrects a figure that is not in the shipped
+  report, and the `advisory_review` block on this report's front matter
+  repeats the same stale sentence. The figure "19 of 26 (73%)" is a real
+  number - it is the count of cards with **at least one** expressible entry -
+  and it lives in the B5-0051 verification's own report and in that
+  correction entry, not in the Groups pilot's report.
+
+  Nothing here is rewritten. The verification's report, its DECISIONS entry
+  and the `advisory_review` block on this report are left exactly as their
+  author left them, because a review is a record of what the reviewer saw
+  (an uncommitted working tree) and of what it measured. This entry is the
+  correction of the record.
+
+* **2. Two different-family reviewers found it independently.** A
+  DeepSeek-family reviewer and a GLM-family reviewer were run against this
+  row. **Both executed**: they read the card texts, the census, the rule
+  index, the renderer, the primitive sources, the gate captures and this
+  report's git history, and both established, from the same evidence and
+  independently of each other, that (a) the shipped report has carried "16 of
+  26 (61.5%)" since `0f8960f`, (b) the B5-0051 commit changed this report by
+  only +11/-2 lines - the front matter and section 12 - and (c) the "19 of 26
+  (73%)" figure lives in the B5-0051 verification's own artefacts. They
+  confirmed, in passing, that all 16 cited rule IDs resolve, that the render
+  format matches the goldens, that the census holds 26 GROUP records with only
+  Spin Doctors BESPOKE, and that the gate captures read 38/38 green and 37/1
+  red with only this row's probe failing.
+
+  **Neither produced a completed findings list** - the machine was shut down
+  while both were still working - so under AGENTS.md section 1 neither is
+  recorded as an `assessor_llm` entry. A partial run is a partial run, and
+  recording a half-finished review as an assessment would be exactly the
+  "green output is not evidence" mistake this project keeps recording. Both
+  are recorded on this report as `advisory_review` blocks naming their family
+  and what each one actually verified. **A different-family assessment of
+  B5-0034 is still outstanding.**
+
+* **3. What the verification DID find, and what this row did with it.**
+  The second finding was real and is fixed: four pilot entries stated a
+  broader rule than their card prints - "Spin Doctors" carried no Diplomacy
+  restriction, and the three "if you win" riders used `CONFLICT_WON` without
+  the conflict class that scopes them - and the primitive registry's declared
+  kind constraint was never enforced, with one violation in 59 operations.
+  All of that was fixed in **B5-0052**, and that row's DECISIONS entry
+  records it. The finding about the loader failing open is the one this
+  project should keep: a constraint that is *documented* in the primitive
+  contract and *read by no code path* is the same shape as a gate that
+  passes because nothing checks it.
+
+* **4. A lesson worth writing down.** A review of **uncommitted work** is a
+  review of a moving target, and the two sides of it can both be right at the
+  time and disagree later. The verification measured the pre-correction
+  working tree and reported what it saw; the author then corrected the file
+  and committed it; the two never met again, and the shipped record carried a
+  correction to a text that no longer said what the correction said it said.
+  The cheap guard is the one both reviewers used: **read the artefact's git
+  history, not the working tree, when the artefact's content is in question.**
+  A reviewer that had diffed `0f8960f` before writing "the report says 73%"
+  would have found nothing to correct.
+
+* **Report.** `.agent/REPORTS/2026-10-22-opencode-minimax-m3-1-flash-free-01-B5-0034.md`
+(the `advisory_review` blocks), and the reviewers' own work is in the session
+records rather than in a file.
