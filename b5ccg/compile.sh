@@ -153,6 +153,8 @@ if [ "${RUN_TESTS:-0}" = "1" ]; then
 
   GATE_CLASSES=$(cat <<'GATE_EOF'
 b5ccg.engine.HeadlessConformanceTest
+b5ccg.engine.HeadlessFixedSetupTest
+b5ccg.engine.HeadlessDrawCadenceTest
 b5ccg.engine.HeadlessSmokeTest
 b5ccg.engine.B52481HumanPassRoundProbe
 b5ccg.engine.HeadlessDoubleRunProbe
@@ -366,7 +368,7 @@ GATE_EOF
   # must still run on a machine that has only a JDK. When it IS present and a
   # probe fails, the gate exits non-zero - a tooling guard that cannot fail
   # the gate is not a guard.
-  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1 ../.agent/tools/test-effect-schema.ps1 ../.agent/tools/test-process-tax-measurement.ps1"
+  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1 ../.agent/tools/test-effect-schema.ps1 ../.agent/tools/test-process-tax-measurement.ps1 ../.agent/tools/test-boot-files.ps1"
   if command -v powershell > /dev/null 2>&1 && [ -f "../.agent/tools/test-param-guard.ps1" ]; then
     echo ""
     echo "=== Tooling probes (B5-0044) ==="

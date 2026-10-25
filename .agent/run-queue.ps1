@@ -16,7 +16,7 @@
     c) $MaxIterations reached -> stop (overseer re-invokes).
 
   Opt-in seed-on-drain (B5-0900). Condition (a) is the only state in which
-  .agent/AGENT_LOOP.md LOOP step 1 ("if none, seed ONE genuinely useful task")
+  AGENT_PROMPT.md STEP 0 / the seed branch ("if none, seed ONE genuinely useful task")
   can act, and until this branch existed that clause was unreachable: the runner
   only ever invoked an agent WITH a task id, so the procedure assigned a duty to
   a state the runner never produced. Measured, not assumed -- git log -G seed
@@ -86,13 +86,13 @@
 .EXAMPLE
   # Real run, default 10 iterations, custom CLI:
   powershell -NoProfile -ExecutionPolicy Bypass -File .agent/run-queue.ps1 `
-    -AgentCli 'freebuff' -AgentArgs '--yes'
+    -AgentCli 'opencode' -AgentArgs 'run --auto'
 #>
 param(
   [int]$MaxIterations = 10,
   [int]$BlockedStreakLimit = 3,
-  [string]$AgentCli = 'freebuff',
-  [string]$AgentArgs = '',
+  [string]$AgentCli = 'opencode',
+  [string]$AgentArgs = 'run --auto',
   [int]$CooldownSeconds = 5,
   [int]$MaxSeedInvocations = 0,
   [switch]$DryRun
@@ -104,6 +104,11 @@ $RepoRoot  = Split-Path -Parent $AgentDir
 $Ledger    = Join-Path $AgentDir 'TASK_LEDGER.md'
 $ClaimsDir = Join-Path $AgentDir 'CLAIMS'
 $hbDir     = Join-Path $AgentDir 'HEARTBEATS'
+
+# Ensure every launched agent runs in the repo root so its tool invocations
+# and relative paths resolve correctly. opencode `run` uses the working
+# directory as its context root.
+Set-Location -LiteralPath $RepoRoot
 
 $LedgerStatuses = @('OPEN','CLAIMED','DONE','BLOCKED','SUPERSEDED','VOID')
 
@@ -821,48 +826,37 @@ function Test-SeedableQueue {
 }
 
 $TaskPromptTemplate = @'
-Boot per .agent/00_BOOT.md, then read .agent/AGENT_LOOP.md and execute its
-IDENTITY AND FILENAMES rules and its close-out checklist for this one task:
-__TASK_ID__ only. (The claim file was already checked by the runner - re-verify
-.agent/CLAIMS/__TASK_ID__.json is absent before creating your own claim, and
-re-read the row to confirm it still reads OPEN.) Work ONLY inside the claimed
-scope, verify per the row's gate, then close out fully (.agent/TASK_LEDGER.md row,
-docs/DECISIONS.md entry, .agent/REPORTS/<date>-<sanitised-agent-id>-__TASK_ID__.md
-with one "Reusable lesson" line filed as a NEW file under
-.agent/PATTERNS/<agent-id>/, delete your claim file, refresh your heartbeat on the
-binding schema in .agent/HEARTBEATS/README.md). Single task, then exit. If the
-gate is red from out-of-scope in-flight edits, mark BLOCKED per .agent/00_BOOT.md step 8 and
-release - do not fix outside your scope. Use your name and version as agent_id.
-Seeding is NOT part of this prompt: do not create a new ledger row while working
-this task. The seed cycle is .agent/AGENT_LOOP.md LOOP step 1, and the runner
-invokes it through its own separate prompt when the queue drains.
-Do NOT read .agent/HANDOFF.md: it is superseded and its state section is stale.
+Read .agent/AGENT_PROMPT.md and follow it exactly. The runner has pre-selected
+task __TASK_ID__ for this session: .agent/CLAIMS/__TASK_ID__.json is absent and
+the row in .agent/TASK_LEDGER.md still reads OPEN. Re-verify both, then claim it,
+work ONLY inside the claimed scope, run the verification gate (RUN_TESTS=1 sh compile.sh)
+with the JDK 25 on PATH, write your report at .agent/REPORTS/<date>-<agent-id>-__TASK_ID__.md,
+flip the ledger row to DONE, delete your claim file, and refresh your heartbeat.
+ONE TASK PER SESSION, then exit. If the gate is red from out-of-scope in-flight
+edits, mark BLOCKED per STEP 8, release your claim, and stop — do not fix outside
+your scope. Do NOT create new ledger rows. Do NOT read .agent/HANDOFF.md: it is
+superseded and its state section is stale.
 '@
 
 $SeedPromptTemplate = @'
-Boot per .agent/00_BOOT.md, then read .agent/AGENT_LOOP.md and carry out its LOOP
-step 1 seeding duty and nothing else. You were invoked because the queue drained,
-NOT because a task was assigned to you: no claim exists for you and you must not
-create one. Ground ONE genuinely useful task in-tree before writing it - read
-.agent/TASK_LEDGER.md, the close-out reports under .agent/REPORTS/ and the newest
-records across every .agent/PATTERNS/ namespace, and prefer a defect, regression
-or gap that a report or a close-out already names over a speculative one. Do not
-re-seed anything the ledger already carries, in any status. Write it as exactly
-ONE new row in .agent/TASK_LEDGER.md: status OPEN, a single leading pipe, exactly
-7 pipes, and no pipe character inside any cell. Choose a task id that is
-non-adjacent to the highest id already in the ledger, so a concurrent seeder
-cannot land on the same number; renumbering into a slot another writer just
-vacated deadlocks, so if you collide, leave their row byte-identical and diverge
-further. Then, in this order: run the duplicate-id census with
-powershell -NoProfile -ExecutionPolicy Bypass -File .agent/tools/run-dup-census.ps1
-(0 duplicates is the pass condition), prove your own row with
-powershell -NoProfile -ExecutionPolicy Bypass -File .agent/tools/ledger-query.ps1
--Status OPEN, which must read pipeCount 7 and doubleLead no, and record an
-assessor_llm entry plus last_modified_by_llm and last_modified_date in the ledger
-frontmatter. Seed ONE row and exit. Do not claim it, do not work it, do not
-commit, and do not touch .agent/CLAIMS/ or .agent/HEARTBEATS/. If you cannot
-ground a genuinely useful task, seed nothing and say so in one line: an ungrounded
-row is worse than an empty queue. Do NOT read .agent/HANDOFF.md: it is superseded.
+Read .agent/AGENT_PROMPT.md and follow it exactly. ADDITIONALLY, the queue is
+drained, so your duty per STEP 0 is to ground ONE genuinely useful task: read
+.agent/TASK_LEDGER.md, the close-out reports under .agent/REPORTS/ and the
+newest records across every .agent/PATTERNS/ namespace, and prefer a defect,
+regression or gap that a report or a close-out already names over a speculative
+one. Do not re-seed anything the ledger already carries, in any status. Write it
+as exactly ONE new row in .agent/TASK_LEDGER.md: status OPEN, a single leading
+pipe, exactly 7 pipes, and no pipe character inside any cell. Choose a task id
+that is non-adjacent to the highest id, so a concurrent seeder cannot land on the
+same number. Then: run the duplicate-id census
+(powershell -NoProfile -ExecutionPolicy Bypass -File .agent/tools/run-dup-census.ps1,
+0 is the pass), prove your row with
+(powershell -NoProfile -ExecutionPolicy Bypass -File .agent/tools/ledger-query.ps1 -Status OPEN,
+must read pipeCount 7 and doubleLead no), and record last_modified_by_llm and
+last_modified_date in the ledger frontmatter. Seed ONE row and exit. Do not
+claim it, do not work it, do not commit, and do not touch .agent/CLAIMS/ or
+.agent/HEARTBEATS/. If you cannot ground a genuinely useful task, seed nothing
+and say so in one line. Do NOT read .agent/HANDOFF.md: it is superseded.
 '@
 
 # B5-1002: encoding receipt. Every text read in this runner is explicit
@@ -942,7 +936,7 @@ for ($i = 1; $i -le $MaxIterations; $i++) {
   $free = Get-ClaimableOpenTasks
   if (-not $free -or $free.Count -eq 0) {
     # B5-0900: the seed branch. It sits INSIDE the drain arm on purpose - this is
-    # the only state .agent/AGENT_LOOP.md LOOP step 1 can act in, so putting it
+    # the only state AGENT_PROMPT.md STEP 0 / seed branch can act in, so putting it
     # anywhere else would make it unreachable again. Opt-in via
     # -MaxSeedInvocations, default 0, so today's behaviour is unchanged until a
     # human decides the fleet may seed itself. `continue` (with the same cooldown
@@ -955,7 +949,7 @@ for ($i = 1; $i -le $MaxIterations; $i++) {
         (Test-SeedableQueue)) {
       $seedOrdinal = $seedInvocations + 1
       if ($DryRun) {
-        Write-Output ("[$i] Queue drained and seedable: DRY RUN would invoke '" + $AgentCli + " " + $AgentArgs + "' once with the seed prompt (AGENT_LOOP.md LOOP step 1, seed invocation " + $seedOrdinal + "/" + $MaxSeedInvocations + ").")
+        Write-Output ("[$i] Queue drained and seedable: DRY RUN would invoke '" + $AgentCli + " " + $AgentArgs + "' once with the seed prompt (AGENT_PROMPT.md STEP 0 seed duty, seed invocation " + $seedOrdinal + "/" + $MaxSeedInvocations + ").")
         Write-Output ("[$i] DRY RUN ends the run here. Nothing is invoked, so the queue stays drained and the next iteration would decide identically - printing that decision once is the honest answer, not once per iteration.")
         break
       }
@@ -967,13 +961,13 @@ for ($i = 1; $i -le $MaxIterations; $i++) {
       # executable, so the prompt is neutralised identically here rather than
       # trusted to be quote-free.
       $seedArgList = @()
-      if ($AgentArgs -ne '') { $seedArgList += $AgentArgs }
+      if ($AgentArgs -ne '') { $seedArgList += $AgentArgs.Split() }
       $seedArgList += ($SeedPromptTemplate -replace '"', "'")
       & $AgentCli @seedArgList
       Write-Output ("[$i] Seed agent exit code: " + $LASTEXITCODE + ".")
       $openAfter = @(Get-LedgerRows | Where-Object { $_.Status -eq 'OPEN' }).Count
       if ($openAfter -le $openBefore) {
-        Write-Output ("[$i] NOTE: the seed invocation added no new OPEN row (" + $openBefore + " before, " + $openAfter + " after). Seeding nothing is a legitimate outcome under AGENT_LOOP step 1 when nothing genuinely useful can be grounded; if that agent reported success, the report is false and the next iteration will hold the branch and stop.")
+        Write-Output ("[$i] NOTE: the seed invocation added no new OPEN row (" + $openBefore + " before, " + $openAfter + " after). Seeding nothing is a legitimate outcome under AGENT_PROMPT.md STEP 0 when nothing genuinely useful can be grounded; if that agent reported success, the report is false and the next iteration will hold the branch and stop.")
       }
       if ($i -ge $MaxIterations) {
         Write-Output ("[$i] The run ended on its seed iteration, so the row it just wrote is unworked. Raise -MaxIterations to have this run pick it up.")
@@ -1006,7 +1000,7 @@ for ($i = 1; $i -le $MaxIterations; $i++) {
   }
 
   $argList = @()
-  if ($AgentArgs -ne '') { $argList += $AgentArgs }
+  if ($AgentArgs -ne '') { $argList += $AgentArgs.Split() }
   # Native-argument safety (B5-0628). Windows PowerShell 5.1 does NOT escape
   # embedded double quotes when handing an argument to a native executable: the
   # quotes act as argument delimiters, so a prompt containing them is split into
