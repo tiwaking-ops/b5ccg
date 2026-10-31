@@ -25,6 +25,7 @@ out*.txt
 *.pem
 *.key
 .env
+LLAMA_CLOUD_API_KEY.txt
 b5ccg/scratch/
 b5ccg/scratch/**
 .agent/CLAIMS/
