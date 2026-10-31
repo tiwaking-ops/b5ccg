@@ -121,15 +121,17 @@ public class HeadlessCanonicalParityProbe {
         for (java.util.Iterator<String> it = poolRefs.iterator(); it.hasNext();) {
             String r = it.next();
             if (r.equals(CardIdNamespaceGuard.canonicalKey(r))) continue;
-            // Aftermath slug divergence (aftermath_X / de_am_X): both
-            // printings keep exact pool-id literals by design.
-            if (r.startsWith("de_am_")
-                    && poolIds.contains("aftermath_" + r.substring(6))) continue;
+            if (poolIds.contains(CardIdNamespaceGuard.canonicalKey(r))) continue;
             if (isDeluxeOnly(r)) continue;
             nonCanonical.add(r);
         }
         check("no unexplained non-canonical literal remains", nonCanonical.isEmpty(),
             nonCanonical.size() + ": " + firstFew(nonCanonical));
+
+        // B5-0104: canonicalKey now collapses aftermath twins (de_am_X -> aftermath_X).
+        check("canonicalKey collapses aftermath twins: de_am_x -> aftermath_x",
+            "aftermath_x".equals(CardIdNamespaceGuard.canonicalKey("de_am_x")),
+            "got " + CardIdNamespaceGuard.canonicalKey("de_am_x"));
 
         // ── 4. Canonical collisions are declared printings (same title). ──
         List<String> undeclared = undeclaredGroups(idToTitle);

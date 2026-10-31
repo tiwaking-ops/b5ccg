@@ -13,7 +13,7 @@ import java.util.Map;
  * B5-2576: card id namespace guard.
  *
  * <p>Implements the collision check of
- * {@code docs/proposals/2026-10-03-card-id-namespace-guard-proposal.md} §4,
+ * {@code (reference removed)} §4,
  * driven by the registry it proposed in §3 ({@code /cards/index.json}).</p>
  *
  * <p>The registry declares, per card file, the MANDATORY {@code idPrefix} every
@@ -210,9 +210,13 @@ public class CardIdNamespaceGuard {
         return new Result(v, filesRead, idsSeen);
     }
 
-    /** Strips the registered "de_" prefix from an id; bare ids pass through. Null maps to null. */
+    /** Strips the registered "de_" prefix from an id; bare ids pass through. Null maps to null.
+     *  Aftermath ids carry a divergent stem: premiere is `aftermath_X`, deluxe is `de_am_X`.
+     *  After stripping `de_`, a leading `am_` is mapped back to `aftermath_` so both printings
+     *  share one canonical key (fix for B5-0104). */
     public static String canonicalKey(String id) {
         if (id == null) return null;
+        if (id.startsWith("de_am_")) return "aftermath_" + id.substring(6);
         if (id.startsWith("de_")) return id.substring(3);
         return id;
     }

@@ -69,13 +69,45 @@ function Normalize-CheckName {
 
 Set-StrictMode -Version Latest
 # ----------------------------------------------------------- the gate log ---
+# Resolve a gate log before reading it: if none was passed, auto-discover the
+# newest *_gate.log in the repo root. Reading before resolving crashes on a
+# null path (WP-18c defect B5-0049).
+if (-not $GateLog) {
+    $repoRootForLog = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    $newest = Get-ChildItem -LiteralPath $repoRootForLog -Filter '*_gate.log' -File -ErrorAction SilentlyContinue |
+              Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($newest) { $GateLog = $newest.FullName }
+}
+if (-not $GateLog -or -not (Test-Path -LiteralPath $GateLog)) {
+    Write-Output "[WP-18c] EXIT 2: gate log not found: <unset>"
+    Write-Output "[WP-18c] capture one with: RUN_TESTS=1 sh b5ccg/compile.sh > <name>_gate.log 2>&1"
+    exit 2
+}
+
 $logChecks = @{}
 $logChecksRaw = @{}
 foreach ($line in [System.IO.File]::ReadAllLines($GateLog)) {
+    # Handle CODE TIME RESULT CLASS format (the standard gate output)
+    if ($line -match '^\s*\d+\s+\d+ms\s+(PASS|FAIL)\s+(.+?)\s*$') {
+        $verdict = $Matches[1]
+        $name = $Matches[2].Trim()
+        if (-not $logChecksRaw.ContainsKey($name)) {
+            $logChecksRaw[$name] = $verdict
+        }
+    }
     # Handle [PASS] name: verdict or [FAIL] name: verdict format
     if ($line -match '^\s*\[(PASS|FAIL)\]\s+(.+?):\s*(PASS|FAIL)\s*$') {
         $verdict = $Matches[3]
         $nameRaw = $Matches[2].Trim()
+        $logChecksRaw[$nameRaw] = $verdict
+    }
+    # Handle [TAG] description: PASS/FAIL format (rulebook-conformance suite output)
+    # e.g. "  [D1] losing initiator cannot play WON aftermath: PASS"
+    # Capture the full [TAG] description part so Normalize-CheckName can apply the
+    # same [TAG]->[ transformation it applies to map entries.
+    if ($line -match '^\s*(\[[^\]]+\]\s+.+?):\s*(PASS|FAIL)\s*$') {
+        $verdict = $Matches[2]
+        $nameRaw = $Matches[1].Trim()
         $logChecksRaw[$nameRaw] = $verdict
     }
     # Handle PASS name or FAIL name format (plain, no brackets)
@@ -102,12 +134,6 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if (-not $Index)   { $Index   = Join-Path $repoRoot 'docs/RULE_INDEX.md' }
 if (-not $Map)     { $Map     = Join-Path $repoRoot 'docs/RULE_COVERAGE_MAP.md' }
-if (-not $GateLog) {
-    $newest = Get-ChildItem -LiteralPath $repoRoot -Filter '*_gate.log' -File -ErrorAction SilentlyContinue |
-              Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($newest) { $GateLog = $newest.FullName }
-}
-
 foreach ($pair in @(@('rule index', $Index), @('coverage map', $Map), @('gate log', $GateLog))) {
     if (-not $pair[1] -or -not (Test-Path -LiteralPath $pair[1])) {
         Write-Output ("[WP-18c] EXIT 2: {0} not found: {1}" -f $pair[0], $(if ($pair[1]) { $pair[1] } else { '<unset>' }))
@@ -170,16 +196,7 @@ if ($mapRows.Count -eq 0) {
 }
 
 # ----------------------------------------------------------- the gate log ----
-$logChecks = @{}
-foreach ($line in [System.IO.File]::ReadAllLines($GateLog)) {
-    if ($line -match '^\s*(\[[^\]]+\]\s+.*?):\s*(PASS|FAIL)\s*$') {
-        $logChecks[$Matches[1].Trim()] = $Matches[2]
-    }
-}
-if ($logChecks.Count -eq 0) {
-    Write-Output ("[WP-18c] EXIT 2: {0} carries no check lines of the form '  [TAG] name: PASS|FAIL'" -f $GateLog)
-    exit 2
-}
+# (Normalized checks already populated above)
 
 # ------------------------------------------------------------ validation ----
 $failures = New-Object System.Collections.Generic.List[object]
@@ -191,7 +208,8 @@ foreach ($r in $mapRows) {
             Text = ('map line {0}: ID {1} is not in {2}' -f $r.Line, $r.Id, (Split-Path $Index -Leaf))
         })
     }
-    if (-not $logChecks.ContainsKey($r.CheckName)) {
+    $normCheck = Normalize-CheckName $r.CheckName
+    if (-not $logChecks.ContainsKey($normCheck)) {
         $failures.Add([pscustomobject]@{
             Kind = 'stale'
             Text = ('map line {0}: check not in the gate log: {1}' -f $r.Line, $r.CheckName)
@@ -228,7 +246,10 @@ foreach ($entry in $denominator) {
         continue
     }
 
-    $failing = @($good | Where-Object { $logChecks[Normalize-CheckName $_.CheckName] -eq 'FAIL' })
+    $failing = @($good | Where-Object {
+        $normName = Normalize-CheckName $_.CheckName
+        $logChecks.ContainsKey($normName) -and $logChecks[$normName] -eq 'FAIL'
+    })
     $covered.Add([pscustomobject]@{
         Entry = $entry; Verified = $good.Count; Failing = @($failing).Count
         Checks = (($good | ForEach-Object { $_.CheckName }) -join '; ')

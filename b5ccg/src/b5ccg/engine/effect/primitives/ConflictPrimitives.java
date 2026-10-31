@@ -12,7 +12,8 @@ import java.util.List;
 /**
  * WP-10 / B5-0028 (A3): the conflict family.
  *
- * <p>Two primitives: {@code CONFLICT_BONUS} and {@code PARTICIPATION_GRANT}.</p>
+ * <p>Four primitives: {@code CONFLICT_BONUS}, {@code PARTICIPATION_GRANT},
+ * {@code GRANT_EXTRA_CONFLICT}, {@code RECONQUER_LOCATION}.</p>
  *
  * <p>{@code CONFLICT_BONUS} is the "add N to your total" operation - "Secret
  * Police" adds 2 to your Intrigue total, "Shadow Strike" adds 4 to your
@@ -60,10 +61,9 @@ public final class ConflictPrimitives {
      * the ability to participate in any conflict type</em>." That is a
      * permission, not a bonus and not a prohibition, so it does not fit
      * CONFLICT_BONUS (a total) and it is not a RESTRICT (which forbids). It
-     * gets its own primitive rather than a direction flag on RESTRICT,
-     * because a permission and a prohibition are different rules and the
-     * rulebook's precedence rules treat them differently
-     * ({@code RB:VI/rules-of-precedence}).</p>
+     * gets its own primitive rather than a direction flag on RESTRICT, because
+     * a permission and a prohibition are different rules and the rulebook's
+     * precedence rules treat them differently ({@code RB:VI/rules-of-precedence}).</p>
      */
     public static final EffectPrimitive PARTICIPATION_GRANT = new SimplePrimitive(
             "PARTICIPATION_GRANT", FAMILY,

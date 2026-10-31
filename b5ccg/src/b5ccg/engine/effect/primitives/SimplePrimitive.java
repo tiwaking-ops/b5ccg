@@ -64,6 +64,12 @@ abstract class SimplePrimitive implements EffectPrimitive {
         return op.getInt(key, location);
     }
 
+    /** A required integer parameter, returned as its string form. */
+    protected static String requiredIntAsString(EffectOperation op, String key, String location)
+            throws EffectLoadException {
+        return String.valueOf(requiredInt(op, key, location));
+    }
+
     /**
      * A required parameter whose value must be one of a closed set.
      *

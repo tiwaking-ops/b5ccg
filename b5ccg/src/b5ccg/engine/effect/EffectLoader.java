@@ -2,6 +2,7 @@ package b5ccg.engine.effect;
 
 import b5ccg.engine.MiniJson;
 import b5ccg.model.enums.CardType;
+import b5ccg.model.enums.MarkType;
 import b5ccg.model.enums.Race;
 
 import java.io.ByteArrayOutputStream;
@@ -66,18 +67,19 @@ public final class EffectLoader {
 
     /** The keys a target may carry. */
     private static final String[] TARGET_KEYS = {
-        "scope", "controllerRelation", "cardTypes", "races", "status", "traits",
-        "innerCircleOnly", "supportingOnly", "ambassadorOnly"
+        "scope", "controllerRelation", "cardTypes", "races", "racesNot", "status", "traits",
+        "innerCircleOnly", "supportingOnly", "ambassadorOnly", "notAmbassador",
+        "relationToTarget", "condition", "protectedCharacter"
     };
 
     /** The keys an operation may carry. */
     private static final String[] OPERATION_KEYS = { "primitive", "params", "optional" };
 
     /** The keys a requirement may carry. */
-    private static final String[] REQUIREMENT_KEYS = { "type", "amount" };
+    private static final String[] REQUIREMENT_KEYS = { "type", "amount", "markType", "sponsor" };
 
     /** The keys a condition may carry. */
-    private static final String[] CONDITION_KEYS = { "type", "amount", "subject" };
+    private static final String[] CONDITION_KEYS = { "type", "amount", "subject", "invert" };
 
     /** The keys a provenance block may carry. */
     private static final String[] PROVENANCE_KEYS = { "ruleIds", "textSha256", "printingScope" };
@@ -237,7 +239,13 @@ public final class EffectLoader {
                 EffectRequirementType t = EffectRequirementType.parse(
                         requireString(rMap.get("type"), rl + ".type"), rl + ".type");
                 int amount = requireInt(rMap.get("amount"), rl + ".amount");
-                requirements.add(new EffectRequirement(t, amount));
+                MarkType markType = null;
+                Object markTypeRaw = rMap.get("markType");
+                if (markTypeRaw != null) {
+                    markType = parseMarkType(requireString(markTypeRaw, rl + ".markType"), rl + ".markType");
+                }
+                String sponsor = optionalString(rMap.get("sponsor"));
+                requirements.add(new EffectRequirement(t, amount, markType, sponsor));
             }
         }
 
@@ -264,7 +272,14 @@ public final class EffectLoader {
                     amount = requireInt(cMap.get("amount"), cl + ".amount");
                 }
                 String subject = optionalString(cMap.get("subject"));
-                conditions.add(new EffectCondition(t, amount, subject));
+                boolean invert = false;
+                Object invertRaw = cMap.get("invert");
+                if (invertRaw instanceof Boolean) {
+                    invert = ((Boolean) invertRaw).booleanValue();
+                } else if (invertRaw instanceof String) {
+                    invert = "true".equalsIgnoreCase(((String) invertRaw).trim());
+                }
+                conditions.add(new EffectCondition(t, amount, subject, invert));
             }
         }
 
@@ -382,6 +397,10 @@ public final class EffectLoader {
         for (String s : stringList(raw.get("races"), location + ".races")) {
             races.add(parseRace(s, location + ".races"));
         }
+        Set<Race> racesNot = new LinkedHashSet<Race>();
+        for (String s : stringList(raw.get("racesNot"), location + ".racesNot")) {
+            racesNot.add(parseRace(s, location + ".racesNot"));
+        }
         Set<EffectCardStatus> status = new LinkedHashSet<EffectCardStatus>();
         for (String s : stringList(raw.get("status"), location + ".status")) {
             status.add(EffectCardStatus.parse(s, location + ".status"));
@@ -393,9 +412,24 @@ public final class EffectLoader {
         boolean innerCircle = optionalBoolean(raw.get("innerCircleOnly"), location + ".innerCircleOnly");
         boolean supporting = optionalBoolean(raw.get("supportingOnly"), location + ".supportingOnly");
         boolean ambassador = optionalBoolean(raw.get("ambassadorOnly"), location + ".ambassadorOnly");
+        boolean notAmbassador = optionalBoolean(raw.get("notAmbassador"), location + ".notAmbassador");
+        Set<String> relationToTarget = new LinkedHashSet<String>();
+        for (String s : stringList(raw.get("relationToTarget"), location + ".relationToTarget")) {
+            relationToTarget.add(s.trim());
+        }
+        String condition = optionalString(raw.get("condition"));
 
-        return new EffectTarget(scope, relation, cardTypes, races, status, traits,
-                                innerCircle, supporting, ambassador);
+        EffectTarget protectedCharacter = null;
+        Object protRaw = raw.get("protectedCharacter");
+        if (protRaw instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> protMap = (Map<String, Object>) protRaw;
+            protectedCharacter = parseTarget(protMap, location + ".protectedCharacter");
+        }
+
+        return new EffectTarget(scope, relation, cardTypes, races, racesNot, status, traits,
+                                innerCircle, supporting, ambassador, notAmbassador,
+                                relationToTarget, condition, protectedCharacter);
     }
 
     private static CardType parseCardType(String raw, String location) throws EffectLoadException {
@@ -414,6 +448,24 @@ public final class EffectLoader {
             throw new EffectLoadException(location,
                     "unknown race '" + raw + "'; known races are " + raceNames());
         }
+    }
+
+    private static MarkType parseMarkType(String raw, String location) throws EffectLoadException {
+        try {
+            return MarkType.valueOf(raw.trim());
+        } catch (IllegalArgumentException iae) {
+            throw new EffectLoadException(location,
+                    "unknown mark type '" + raw + "'; known mark types are " + markTypeNames());
+        }
+    }
+
+    private static String markTypeNames() {
+        StringBuilder sb = new StringBuilder();
+        for (MarkType m : MarkType.values()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(m.name());
+        }
+        return sb.toString();
     }
 
     private static String cardTypeNames() {

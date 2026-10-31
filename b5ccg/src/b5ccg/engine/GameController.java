@@ -225,10 +225,18 @@ public class GameController {
             resolveQueuedConflicts();
             if (state.isGameOver()) break;
 
-            // B5-1982: AFTERMATH phase — draw 2, discard to 7 with reshuffle
+            // AFTERMATH round (RB:IV turn order: READY / CONFLICT / ACTION /
+            // AFTERMATH / DRAW). Nothing is drawn here. The only draw in a turn
+            // is the Draw round's one free card (RB:IV/the-draw-round step 3,
+            // "All players draw one free card"). This phase previously drew 2
+            // and discarded down to 7 (engine-local "B5-1982"); that invented
+            // +2 was why a turn added 3 cards. The rulebook grants no draw and
+            // no hand limit in this round, and docs/DECISIONS.md carried no
+            // ruling for it. Aftermath CARD PLAY still happens below, per
+            // conflict, in the Resolution round (RB:IV/the-resolution-round
+            // step 2) via resolveQueuedConflicts().
             state.setPhase(GamePhase.AFTERMATH);
             notifyUI();
-            rules.aftermathPhase(state);
             if (state.isGameOver()) break;
 
             runDrawPhase();
@@ -246,244 +254,23 @@ public class GameController {
 
     private void setupGame() {
         state.setPhase(GamePhase.SETUP);
-        List<Card> pool = null;
+        // Each seat is built once, from its own printed 50-card starter deck:
+        // four named cards are lifted out, the remaining 46 are shuffled into
+        // the draw deck, the Starting Ambassador is placed in the Inner Circle
+        // face up and ready, and the other three stay in hand. Nothing else is
+        // put into play and nothing further is drawn. Every seat runs the same
+        // routine whichever seat it is, and the resulting position is asserted
+        // for every seat before the first round begins.
+        List<Card> pool;
         try {
             pool = DeckLoader.loadBothSets();
         } catch (IOException e) {
-            state.log("Failed to load card pool for starting setup: " + e.getMessage());
+            throw new IllegalStateException(
+                "Starting setup cannot run: the card pool failed to load ("
+                + e.getMessage() + ")");
         }
-        for (Player p : state.getPlayers()) {
-            CharacterCard amb = findAmbassador(p);
-            if (amb != null) {
-                p.getHand().remove(amb);
-                p.setAmbassador(amb);
-                // B5-0321: the ambassador IS an Inner Circle member
-                // (rulebook: "your ambassador is always considered a member
-                // of your faction's Inner Circle"). Without this seat,
-                // canBuildInfluence and canPromote see an empty Inner Circle
-                // and those actions are never legal — the root cause of
-                // B5-0202 Finding 7's unreachable Build Influence.
-                p.getInnerCircle().add(amb);
-                // B5-2412: seating ONE copy is not the same as there being one.
-                // Rulebook :230 names exactly one Starting Ambassador card per
-                // race and :199 makes "must contain one Starting Ambassador" a
-                // deck-construction rule, so a second copy of that card is a
-                // card the game should not contain at all. findAmbassador
-                // returned on the FIRST match, so every further copy stayed in
-                // the hand (playable) or in the draw pile (drawable later), and
-                // the reported symptom was a second Jeffrey Sinclair sitting in
-                // the human hand. Sweep them here, once, at setup.
-                int swept = sweepDuplicateStartingAmbassadors(p, amb);
-                if (swept > 0) {
-                    state.log(p.getName() + " removes " + swept + " duplicate "
-                              + amb.getTitle() + " (rulebook :230 -- one Starting "
-                              + "Ambassador per race).");
-                }
-            }
-            // B5-1973: Race-specific starting setup (homeworld, starting fleet, starting agenda)
-            if (pool != null) {
-                StarterDeckBuilder.StartingSetup setup = StarterDeckBuilder.getStartingSetup(p.getRace(), pool);
-                if (setup != null) {
-                    List<Card> seatedSetup = new ArrayList<Card>();
-                    if (setup.homeworld != null) {
-                        p.getLocations().add(setup.homeworld);
-                        state.log(p.getName() + " starts with homeworld: " + setup.homeworld.getTitle());
-                        seatedSetup.add(setup.homeworld);
-                    }
-                    if (setup.startingFleet != null) {
-                        p.getFleets().add(setup.startingFleet);
-                        state.log(p.getName() + " starts with fleet: " + setup.startingFleet.getTitle());
-                        seatedSetup.add(setup.startingFleet);
-                    }
-                    if (setup.startingAgenda != null) {
-                        p.setAgenda(setup.startingAgenda);
-                        state.log(p.getName() + " starts with agenda: " + setup.startingAgenda.getTitle());
-                        seatedSetup.add(setup.startingAgenda);
-                    }
-                    // B5-4242: the printed starter deck's fixed 50 contains the
-                    // homeworld, starting fleet and starting agenda, but rulebook
-                    // "Preparing the Playing Field" seats those from the card
-                    // pool, so each copy also remained in the draw pile and could
-                    // be drawn later as a duplicate of a card already in play.
-                    int setupSwept = sweepDuplicateSetupCards(p, seatedSetup);
-                    if (setupSwept > 0) {
-                        state.log(p.getName() + " removes " + setupSwept
-                                + " starting-setup card(s) already in play"
-                                + " (rulebook -- one homeworld, one starting fleet"
-                                + " and one starting agenda per faction at setup).");
-                    }
-                }
-            }
-            p.drawCards(3);
-        }
+        FixedGameSetup.setupPlayers(state, pool);
         state.log("Game setup complete.");
-    }
-
-    private CharacterCard findAmbassador(Player p) {
-        for (Card c : p.getHand()) {
-            if (c instanceof CharacterCard) {
-                CharacterCard ch = (CharacterCard) c;
-                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(p.getRace())) return ch;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * B5-2412 — remove every FURTHER copy of the player's printed Starting
-     * Ambassador, from the hand and from the draw pile, keeping the one
-     * {@code keep} that {@link #findAmbassador} already seated.
-     *
-     * <p><b>What counts as a duplicate.</b> Rulebook :230 names ONE Starting
-     * Ambassador card per race (Jeffrey Sinclair / Londo Mollari / Delenn /
-     * G'kar), so the identity of the starting ambassador is the printed card,
-     * not "a card flagged isAmbassador". The predicate is therefore
-     * same-faction + isAmbassador + same TITLE as the seated card. Title, not
-     * id, because the pool is deduped by set and the Deluxe reprint carries a
-     * different id for the same card, and the same title match is the strategy
-     * StarterDeckBuilder already uses to find a fixed-list card under a reprint.
-     *
-     * <p>The title clause is load-bearing, not defensive. Shipped data contains
-     * {@code char_delenn_transformed} ("Delenn Transformed", MINBARI, RARE)
-     * with {@code isAmbassador} true — it is a legal Minbari character, not the
-     * :230 starting ambassador. Matching on {@code isAmbassador()} alone would
-     * delete a card the rulebook never removes, so the predicate is pinned by
-     * the SETUP-AMB conformance checks in both directions.
-     *
-     * <p><b>Where the copies go.</b> Out of the game, NOT the discard pile. The
-     * rulebook has no opening discard, and {@link Deck#recycleDiscard()} shuffles
-     * the discard pile back into the draw pile, so a discarded duplicate would
-     * re-enter the deck later and the defect would return on a later round
-     * instead of being closed at setup.
-     *
-     * <p><b>Why the draw pile is drained and rebuilt.</b> {@link Deck} exposes no
-     * draw-pile enumeration or removal, and Deck lives in {@code model/}, outside
-     * this row's engine-only claim. Draining with {@code draw(size())} and
-     * rebuilding with {@code addToBottom} in the same order is exactly order
-     * preserving — both operations work the same single list from opposite ends —
-     * and costs one pass over a 60-card pile at setup. The conformance section
-     * pins the order preservation, so a future Deck API change cannot make this
-     * silently shuffle a player's deck.
-     *
-     * @return how many duplicate copies were removed (hand + draw pile)
-     */
-    private int sweepDuplicateStartingAmbassadors(Player p, CharacterCard keep) {
-        if (p == null || keep == null) return 0;
-        int removed = 0;
-
-        List<Card> hand = p.getHand();
-        for (int i = hand.size() - 1; i >= 0; i--) {
-            Card c = hand.get(i);
-            if (c != keep && isSameStartingAmbassador(c, keep)) {
-                hand.remove(i);
-                removed++;
-            }
-        }
-
-        Deck deck = p.getDeck();
-        if (deck == null) return removed;
-        int before = deck.size();
-        if (before == 0) return removed;
-        List<Card> drained = deck.draw(before);   // top -> bottom, order preserved
-        List<Card> survivors = new ArrayList<Card>(drained.size());
-        for (int i = 0; i < drained.size(); i++) {
-            Card c = drained.get(i);
-            if (isSameStartingAmbassador(c, keep)) {
-                removed++;                       // dropped: out of the game
-            } else {
-                survivors.add(c);
-            }
-        }
-        for (int i = 0; i < survivors.size(); i++) deck.addToBottom(survivors.get(i));
-        return removed;
-    }
-
-    /**
-     * B5-2412 — is {@code c} another copy of the printed Starting Ambassador
-     * card {@code seated}? Same faction, flagged ambassador, same card TITLE.
-     * See {@link #sweepDuplicateStartingAmbassadors} for why title and not id,
-     * and why the flag alone is not the predicate.
-     */
-    private static boolean isSameStartingAmbassador(Card c, CharacterCard seated) {
-        if (c == null || !(c instanceof CharacterCard)) return false;
-        CharacterCard ch = (CharacterCard) c;
-        if (!ch.isAmbassador()) return false;
-        if (ch.getLoyalty() != seated.getLoyalty()) return false;
-        String seatedTitle = seated.getTitle();
-        String thisTitle   = ch.getTitle();
-        return seatedTitle != null && seatedTitle.equals(thisTitle);
-    }
-
-    /**
-     * B5-4242 -- remove every copy of a seated starting-setup card (homeworld,
-     * starting fleet, starting agenda) left in hand or draw pile, keeping the
-     * copies already in play. Mirrors {@link #sweepDuplicateStartingAmbassadors}.
-     *
-     * <p><b>What counts as a duplicate.</b> The printed starter deck's fixed 50
-     * contains the homeworld, starting fleet and starting agenda, but rulebook
-     * "Preparing the Playing Field" seats those from the card pool instead, so a
-     * card that begins in play also sits in the draw pile and can be drawn later
-     * (the reported "Earth duplicate in hand plus in play"). The identity of a
-     * setup card is its printed TITLE, matched against the same card category
-     * (LocationCard / FleetCard / AgendaCard) -- the class gate stops a stray
-     * different-typed card of the same title (none exists today) from being
-     * mistaken for a setup card.
-     *
-     * <p><b>Where the copies go.</b> Out of the game, NOT the discard pile, for
-     * the same reason as the ambassador sweep: rulebook has no opening discard and
-     * {@link Deck#recycleDiscard()} would re-enter the removed card later.
-     *
-     * @return how many duplicate setup cards were removed (hand + draw pile)
-     */
-    private int sweepDuplicateSetupCards(Player p, List<Card> keep) {
-        if (p == null || keep == null || keep.isEmpty()) return 0;
-        int removed = 0;
-
-        List<Card> hand = p.getHand();
-        for (int i = hand.size() - 1; i >= 0; i--) {
-            Card c = hand.get(i);
-            if (isSameSetupCard(c, keep)) {
-                hand.remove(i);
-                removed++;
-            }
-        }
-
-        Deck deck = p.getDeck();
-        if (deck == null) return removed;
-        int before = deck.size();
-        if (before == 0) return removed;
-        List<Card> drained = deck.draw(before);   // top -> bottom, order preserved
-        List<Card> survivors = new ArrayList<Card>(drained.size());
-        for (int i = 0; i < drained.size(); i++) {
-            Card c = drained.get(i);
-            if (isSameSetupCard(c, keep)) {
-                removed++;                       // dropped: out of the game
-            } else {
-                survivors.add(c);
-            }
-        }
-        for (int i = 0; i < survivors.size(); i++) deck.addToBottom(survivors.get(i));
-        return removed;
-    }
-
-    /**
-     * B5-4242 -- is {@code c} another copy of one of the in-play setup cards
-     * {@code keep}? Same card category (class) and same TITLE. See
-     * {@link #sweepDuplicateSetupCards} for the predicate rationale.
-     */
-    private static boolean isSameSetupCard(Card c, List<Card> keep) {
-        if (c == null || keep == null) return false;
-        String cTitle = c.getTitle();
-        if (cTitle == null) return false;
-        Class<?> cClass = c.getClass();
-        for (int i = 0; i < keep.size(); i++) {
-            Card k = keep.get(i);
-            if (k == null) continue;
-            if (cClass != k.getClass()) continue;
-            String kTitle = k.getTitle();
-            if (kTitle != null && kTitle.equals(cTitle)) return true;
-        }
-        return false;
     }
 
     private void runActionPhase() {
@@ -1001,7 +788,7 @@ public class GameController {
             case JOIN_CONFLICT_SUPPORT:
                 if (state.getActiveConflict() != null) {
                     if (rules.canJoinConflict(p, state.getActiveConflict())) {
-                        rules.executeJoinConflict(p, state.getActiveConflict(), true, state, true);
+                        rules.executeJoinConflict(p, state.getActiveConflict(), true, state, true, action.getCard());
                     } else {
                         state.log(p.getName() + " cannot support — join not allowed.");
                     }
@@ -1013,7 +800,7 @@ public class GameController {
             case JOIN_CONFLICT_OPPOSE:
                 if (state.getActiveConflict() != null) {
                     if (rules.canJoinConflict(p, state.getActiveConflict())) {
-                        rules.executeJoinConflict(p, state.getActiveConflict(), false, state, true);
+                        rules.executeJoinConflict(p, state.getActiveConflict(), false, state, true, action.getCard());
                     } else {
                         state.log(p.getName() + " cannot oppose — join not allowed.");
                     }
@@ -1314,10 +1101,10 @@ public class GameController {
             state.log(human.getName() + " may choose a side in the active conflict.");
             GameAction join = waitForHumanConflictJoin();
             if (join != null && join.getType() == GameAction.Type.JOIN_CONFLICT_SUPPORT) {
-                rules.executeJoinConflict(human, conflict, true, state, false);
+                rules.executeJoinConflict(human, conflict, true, state, false, join.getCard());
             } else if (join != null
                     && join.getType() == GameAction.Type.JOIN_CONFLICT_OPPOSE) {
-                rules.executeJoinConflict(human, conflict, false, state, false);
+                rules.executeJoinConflict(human, conflict, false, state, false, join.getCard());
             }
         }
 
@@ -1345,9 +1132,16 @@ public class GameController {
      * in the action round and resolveQueuedConflicts() resolves the queue after it;
      * this facade exists so those tests keep exercising the real wiring, not a
      * helper in isolation.
+     *
+     * <p>B5-0162: this facade does NOT open the participation window itself.
+     * {@link #resolveQueuedConflict} already does (B5-4172), so the extra call
+     * that used to sit here opened a SECOND join window for the same conflict:
+     * a human who declined the first one was asked again, and a seat that
+     * answered once (B52481JoinWindowPassProbe T1) saw resolution never return.
+     * One conflict, one participation window — the count production has, since
+     * resolveQueuedConflicts reaches the same single call site.
      */
     void resolveCurrentConflict() {
-        openConflictParticipation();
         Conflict conflict = state.getActiveConflict();
         if (conflict == null) return;
         resolveQueuedConflict(conflict);
@@ -1664,6 +1458,13 @@ public class GameController {
         Player human = state.getHumanPlayer();
         if (human != null && human.isHuman()
                 && !human.hasForfeited() && !human.hasSurrendered()) {
+            // B5-0147: "Always buy cards" opt-in (default on) auto-spends the
+            // remaining applied influence in 3-point increments before the human
+            // buy window opens. When disabled the manual button applies.
+            if (human.isAlwaysBuyCards()) {
+                rules.autoBuyCards(human, state);
+                notifyUI();
+            }
             waitForHumanDrawEnd();
             // A surrender/forfeit submitted during the window ends it and is
             // queued here so it still resolves (DRAW-phase surrender is legal,
@@ -1724,6 +1525,23 @@ public class GameController {
                 pendingHumanConflictJoin = action;
                 waitingForHumanConflictJoin = false;
                 notifyAll();
+            } else if (action == null || action.getType() == GameAction.Type.PASS) {
+                // B5-0162: PASS is a legal decline of the join window, not an
+                // action to swallow. Before this branch the window accepted
+                // only SUPPORT/OPPOSE, so a PASS fell to the return below,
+                // waitingForHumanConflictJoin stayed true and
+                // waitForHumanConflictJoin never returned -- the conflict was
+                // abandoned open (B52481JoinWindowPassProbe T1). The rulebook
+                // gives every player the pass instead of participating
+                // (RB:VI/sample-conflict, "a player may simply pass instead"),
+                // and ConflictJoinPickerPanel.submitPass already submits
+                // GameAction.pass() as the decline. Releasing the wait with the
+                // PASS action is enough: openConflictParticipation executes a
+                // join only for SUPPORT/OPPOSE, so the conflict then resolves
+                // with the human uncommitted.
+                pendingHumanConflictJoin = action;
+                waitingForHumanConflictJoin = false;
+                notifyAll();
             }
             return;
         }
@@ -1764,6 +1582,34 @@ public class GameController {
             }
             return;
         }
+        // B5-0161: the human's ACTION-round participation window. The AI seat
+        // joins a live conflict by ACTING — AIPlayer.decideJoinSide offers
+        // JOIN_CONFLICT_SUPPORT/OPPOSE in the ACTION phase (AIPlayer 631-635)
+        // and chooseAction executes them through the ordinary processAction
+        // pipeline (1165-1169) — but the human had no equivalent act: the only
+        // join window the controller opened was openConflictParticipation(),
+        // whose production caller is resolveQueuedConflict, i.e. AFTER the
+        // action round, and the stale-click guard below dropped every JOIN_*
+        // submitted outside it. Participation is an action-round act for every
+        // player, not for AI seats only: RB:IV/conflict-cards L574 (characters
+        // may rotate to support or oppose during the ACTION round), RB:V L685,
+        // and the owner ruling recorded in docs/DECISIONS.md under B5-0039,
+        // which also states that AIPlayer was always able to participate by
+        // acting. So a legal join submitted while the engine is asking this
+        // seat for its action IS that action.
+        //
+        // The predicates are exactly the ones processAction's JOIN_* cases
+        // apply (RulesEngine.canJoinConflict, requireAction = true), plus the
+        // wait flag and the seat check, so a stale or double click into another
+        // seat's turn is still dropped by the guard below. PASS is unaffected:
+        // declining to join is the ordinary action-round pass (B5-0162's decline
+        // path, one window earlier), and the conflict then resolves unjoined.
+        if (waitingForHuman && action != null && isActionRoundJoin(action)) {
+            pendingHumanAction = action;
+            waitingForHuman    = false;
+            notifyAll();
+            return;
+        }
         // Join actions are only valid in the explicit conflict decision window;
         // ignore stale/double clicks after the controller has collected a side.
         if (action != null && (action.getType() == GameAction.Type.JOIN_CONFLICT_SUPPORT
@@ -1772,6 +1618,27 @@ public class GameController {
         pendingHumanAction = action;
         waitingForHuman    = false;
         notifyAll();
+    }
+
+    /**
+     * B5-0161: true when {@code action} is a join the seat currently being
+     * asked may take AS its action-round action. Every term is one the engine
+     * will re-check when it applies the action, so acceptance here never
+     * promises something {@code processAction} then refuses: the phase, the
+     * seat, the action budget ({@code canJoinConflict} with requireAction), and
+     * the conflict's own participation gate.
+     */
+    private boolean isActionRoundJoin(GameAction action) {
+        if (action.getType() != GameAction.Type.JOIN_CONFLICT_SUPPORT
+                && action.getType() != GameAction.Type.JOIN_CONFLICT_OPPOSE) {
+            return false;
+        }
+        if (state.getPhase() != GamePhase.ACTION) return false;
+        Player active = state.getActivePlayer();
+        if (active == null || !active.isHuman()) return false;
+        Conflict conflict = state.getActiveConflict();
+        return rules.canJoinConflict(active, conflict, true)
+                && conflict.canJoinConflict(active);
     }
 
     /**

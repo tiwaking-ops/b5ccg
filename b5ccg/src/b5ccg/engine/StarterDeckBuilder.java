@@ -131,14 +131,14 @@ public final class StarterDeckBuilder {
             homeworldId = "loc_centauri_prime";
             fleetId = "fleet_homeworld_centauri";
             agendaId = "agenda_knowledge_is_power";
-        } else if (faction == Race.MINBARI) {
-            homeworldId = "loc_minbar";
-            fleetId = "fleet_homeworld_minbari";
-            agendaId = "agenda_finish_the_war";
-        } else if (faction == Race.NARN) {
-            homeworldId = "loc_narn_homeworld";
-            fleetId = "fleet_homeworld_narn";
-            agendaId = "agenda_never_again";
+        } else if (faction == Race.MINBARI) {
+            homeworldId = "loc_minbar";
+            fleetId = "fleet_homeworld_minbari";
+            agendaId = "agenda_servants_of_order";
+        } else if (faction == Race.NARN) {
+            homeworldId = "loc_narn_homeworld";
+            fleetId = "fleet_homeworld_narn";
+            agendaId = "agenda_revenge";
         } else {
             return null; // NON_ALIGNED not supported
         }
@@ -310,18 +310,89 @@ public final class StarterDeckBuilder {
         return picked;
     }
 
-    /** The race ambassador inside a deck list, or null (mirror of
-     *  {@code GameController.findAmbassador}). */
-    public static CharacterCard findAmbassador(List<Card> deckCards, Race faction) {
-        if (deckCards == null) return null;
-        for (int i = 0; i < deckCards.size(); i++) {
-            Card c = deckCards.get(i);
-            if (c instanceof CharacterCard) {
-                CharacterCard ch = (CharacterCard) c;
-                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(faction)) return ch;
-            }
-        }
-        return null;
+    /** The race ambassador inside a deck list, or null (mirror of
+     *  {@code GameController.findAmbassador}). */
+    public static CharacterCard findAmbassador(List<Card> deckCards, Race faction) {
+        if (deckCards == null) return null;
+        for (int i = 0; i < deckCards.size(); i++) {
+            Card c = deckCards.get(i);
+            if (c instanceof CharacterCard) {
+                CharacterCard ch = (CharacterCard) c;
+                if (ch.isAmbassador() && ch.getLoyalty() == Loyalty.fromRace(faction)) return ch;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The printed Premiere id of the Ambassador's Assistant for {@code faction},
+     * or null for races with no fixed assistant (NON_ALIGNED). This is the
+     * single table for assistant identity; FixedGameSetup reads it rather than
+     * restating the column. For Narn, where two cards carry the assistant
+     * trait, this column settles it on Ko'Dath.
+     */
+    public static String startingAssistantId(Race faction) {
+        if (faction == Race.HUMAN)    return "char_susan_ivanova";
+        if (faction == Race.CENTAURI) return "char_vir_cotto";
+        if (faction == Race.MINBARI)  return "char_lennier";
+        if (faction == Race.NARN)     return "char_kodath";
+        return null;
+    }
+
+    /**
+     * The printed Premiere ids of ALL Ambassador's Assistant cards for
+     * {@code faction}, including alternates that must be swept from the draw
+     * deck but are not the seated one. For Narn this returns both Ko'Dath
+     * (the seated assistant, per {@link #startingAssistantId}) and Na'Toth
+     * (the alternate "may replace Ko'Dath" that carries the same assistant
+     * trait). For all other factions the array has a single element. Returns
+     * null for races with no fixed assistant (NON_ALIGNED).
+     */
+    public static String[] allStartingAssistantIds(Race faction) {
+        if (faction == Race.HUMAN)    return new String[]{"char_susan_ivanova"};
+        if (faction == Race.CENTAURI) return new String[]{"char_vir_cotto"};
+        if (faction == Race.MINBARI)  return new String[]{"char_lennier"};
+        if (faction == Race.NARN)     return new String[]{"char_kodath", "char_natoth"};
+        return null;
+    }
+
+    /**
+     * Find the faction's Ambassador's Assistant in a card list by title (the
+     * trait that distinguishes an assistant from an ordinary character is not
+     * carried in the model, so the fixed id's printed title is used). Returns
+     * null if not found or if no fixed assistant id is defined for the faction.
+     * A Deluxe reprint under a different id but the same title answers too.
+     */
+    public static CharacterCard findStartingAssistant(List<Card> cards, Race faction) {
+        if (cards == null) return null;
+        String wantId = startingAssistantId(faction);
+        if (wantId == null) return null;
+        String wantTitle = premiereTitleFor(wantId);
+        if (wantTitle == null) return null;
+        for (int i = 0; i < cards.size(); i++) {
+            Card c = cards.get(i);
+            if (c instanceof CharacterCard && wantTitle.equals(c.getTitle())) {
+                return (CharacterCard) c;
+            }
+        }
+        return null;
+    }
+
+    /** Resolve a printed Premiere id to the title it prints under, cached. */
+    private static String premiereTitleFor(String premiereId) {
+        if (premiereTitles == null) {
+            premiereTitles = new HashMap<String, String>();
+            try {
+                List<Card> premiere = DeckLoader.loadFromResource("/cards/premiere.json");
+                for (int i = 0; i < premiere.size(); i++) {
+                    Card c = premiere.get(i);
+                    if (c != null) premiereTitles.put(c.getId(), c.getTitle());
+                }
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return premiereTitles.get(premiereId);
     }
 
     private static List<Map<String, String>> loadEntries() throws IOException {

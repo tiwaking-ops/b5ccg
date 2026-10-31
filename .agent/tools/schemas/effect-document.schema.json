@@ -67,7 +67,7 @@
     },
     "effectWindow": {
       "type": "string",
-      "enum": ["ANY", "READY", "SUSTAINED", "CONFLICT", "ACTION", "RESOLUTION", "AFTERMATH", "DRAW"]
+      "enum": ["ANY", "READY", "SUSTAINED", "CONFLICT", "ACTION", "RESOLUTION", "AFTERMATH", "DRAW", "VOTE", "COMBAT", "ROUND_START"]
     },
     "effectTrigger": {
       "type": "string",
@@ -75,7 +75,7 @@
         "ON_PLAY", "ON_RESOLUTION", "ROUND_START", "TURN_START",
         "CONFLICT_BEGINS", "CONFLICT_RESOLVED", "CONFLICT_WON",
         "CONFLICT_TYPE_INTRIGUE", "CONFLICT_TYPE_MILITARY", "CONFLICT_TYPE_DIPLOMACY",
-        "CONFLICT_TYPE_PSI", "CHARACTER_DAMAGED", "CARD_DISCARDED"
+        "CONFLICT_TYPE_PSI", "CHARACTER_DAMAGED", "CARD_DISCARDED", "ROTATE_CARD"
       ]
     },
     "effectDuration": {
@@ -107,11 +107,15 @@
           "type": "string",
           "enum": [
             "APPLY_INFLUENCE", "LOSE_INFLUENCE", "ROTATE_SPONSOR", "ROTATE_CARD",
-            "PURGE_MARKS", "DISCARD_CARD", "TAKE_DAMAGE", "CONTROL_MARKS",
+            "APPLY_INFLUENCE_COST", "PURGE_MARKS", "DISCARD_CARD", "TAKE_DAMAGE", "CONTROL_MARKS",
             "CONTROL_CHARACTERS"
           ]
         },
-        "amount": { "type": "integer", "minimum": 0 }
+        "amount": { "type": "integer", "minimum": 0 },
+        "markType": {
+          "type": "string",
+          "enum": ["SHADOW", "VORLON", "DOOM", "STRIFE", "CONSPIRACY", "DESTINY"]
+        }
       }
     },
     "condition": {
@@ -123,9 +127,10 @@
           "type": "string",
           "enum": [
             "TENSION_AT_LEAST", "UNREST_AT_LEAST", "POWER_AT_LEAST",
-            "INFLUENCE_AT_LEAST", "MARK_COUNT_AT_LEAST", "STATE_EXISTS",
-            "SOURCE_ROTATED", "SOURCE_IN_PLAY", "CONTROL_CHARACTERS", "CARD_IN_PLAY",
-            "DAMAGED_CHARACTERS_AT_MOST", "CONTROLLER_WON_CONFLICT"
+            "INFLUENCE_AT_LEAST", "MARK_COUNT_AT_LEAST", "PSI_AT_LEAST",
+            "STATE_EXISTS", "SOURCE_ROTATED", "SOURCE_IN_PLAY", "CONTROL_CHARACTERS",
+            "CARD_IN_PLAY", "DAMAGED_CHARACTERS_AT_MOST", "CONTROLLER_WON_CONFLICT",
+            "CONFLICT_TARGETS_LOCATION", "CONFLICT_TYPE_IS", "PSI_AT_MOST", "TARGET_IS_READY_AND_NOT_NEUTRALIZED"
           ]
         },
         "amount": { "type": "integer", "minimum": 0 },
@@ -137,7 +142,7 @@
       "additionalProperties": false,
       "required": ["scope", "controllerRelation"],
       "properties": {
-        "scope": { "type": "string", "enum": ["CARD", "FACTION", "RACE", "GLOBAL"] },
+        "scope": { "type": "string", "enum": ["CARD", "FACTION", "RACE", "GLOBAL", "PLAYER", "BABYLON5", "LOCATION"] },
         "controllerRelation": { "type": "string", "enum": ["ANY", "SELF", "OPPONENT"] },
         "cardTypes": {
           "type": "array",
@@ -147,6 +152,10 @@
           }
         },
         "races": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["HUMAN", "MINBARI", "CENTAURI", "NARN", "NON_ALIGNED", "VORLON"] }
+        },
+        "racesNot": {
           "type": "array",
           "items": { "type": "string", "enum": ["HUMAN", "MINBARI", "CENTAURI", "NARN", "NON_ALIGNED", "VORLON"] }
         },
@@ -167,7 +176,20 @@
         },
         "innerCircleOnly": { "type": "boolean" },
         "supportingOnly": { "type": "boolean" },
-        "ambassadorOnly": { "type": "boolean" }
+        "ambassadorOnly": { "type": "boolean" },
+        "notAmbassador": { "type": "boolean" },
+        "relationToTarget": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["ATTACKER", "DEFENDER"] }
+        },
+        "condition": { "type": "string" },
+        "dualTarget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protectedCharacter": { "$ref": "#/$defs/target" }
+          }
+        }
       }
     },
     "operation": {

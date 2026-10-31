@@ -10,7 +10,7 @@ import java.util.*;
  *
  * Harness / report layer ONLY: this file adds no game logic and never mutates
  * game state. Design source:
- * docs/proposals/tiebreak-agenda-victory-design-proposal.md (section 2,
+ * (reference removed) (section 2,
  * Option C).
  *
  * When a ROUND CAP is reached with no winner and 2 or more players at

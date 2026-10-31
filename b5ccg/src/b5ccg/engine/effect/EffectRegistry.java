@@ -1,20 +1,29 @@
 package b5ccg.engine.effect;
 
 import b5ccg.engine.effect.bespoke.SpinDoctorsPerceivedWinner;
+import b5ccg.engine.effect.primitives.AbilityAsPrimitives;
 import b5ccg.engine.effect.primitives.BespokePrimitives;
+import b5ccg.engine.effect.primitives.ConflictExtraPrimitives;
 import b5ccg.engine.effect.primitives.ConflictPrimitives;
+import b5ccg.engine.effect.primitives.ConvertInfluencePrimitives;
 import b5ccg.engine.effect.primitives.CostPrimitives;
+import b5ccg.engine.effect.primitives.DamageCombatPrimitives;
 import b5ccg.engine.effect.primitives.DamagePrimitives;
 import b5ccg.engine.effect.primitives.DiscardPrimitives;
 import b5ccg.engine.effect.primitives.DrawPrimitives;
-import b5ccg.engine.effect.primitives.InformationPrimitives;
+import b5ccg.engine.effect.primitives.GrantPrimitives;
 import b5ccg.engine.effect.primitives.InfluencePrimitives;
+import b5ccg.engine.effect.primitives.InfluenceRatingPrimitives;
+import b5ccg.engine.effect.primitives.InformationPrimitives;
 import b5ccg.engine.effect.primitives.MarkPrimitives;
 import b5ccg.engine.effect.primitives.RestrictionPrimitives;
 import b5ccg.engine.effect.primitives.RotationPrimitives;
+import b5ccg.engine.effect.primitives.StatDerivedPrimitives;
 import b5ccg.engine.effect.primitives.StatPrimitives;
 import b5ccg.engine.effect.primitives.StatePrimitives;
+import b5ccg.engine.effect.primitives.TensionControlPrimitives;
 import b5ccg.engine.effect.primitives.TensionPrimitives;
+import b5ccg.engine.effect.primitives.VotePrimitives;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,8 +56,15 @@ import java.util.TreeSet;
  * asked how its primitives are distributed, and the answer is part of the
  * gate rather than a claim in a comment.</p>
  *
- * <p><b>The bespoke table is empty in v0.</b> See
- * {@link BespokePrimitives}.</p>
+ * <p><b>The bespoke table is no longer empty.</b> In v0 it published zero
+ * handlers, which said the bespoke tail was empty without having measured
+ * it. WP-11 (B5-0034) measured it - the Groups pilot - and the tail is
+ * one card: "Spin Doctors", whose effect changes who a Diplomacy
+ * conflict's winner <em>is</em>, which no operation on a card or a player
+ * can express. The handler is published here, under a key, so a data file
+ * that names it loads; the class it names is a pure rule, and the engine
+ * does not yet execute effect entries, so the call site is still to
+ * come.</p>
  */
 public final class EffectRegistry {
 
@@ -83,19 +99,28 @@ public final class EffectRegistry {
         EffectRegistry reg = new EffectRegistry();
         try {
             reg.addAll(StatPrimitives.all());
+            reg.addAll(StatDerivedPrimitives.all());
             reg.addAll(InfluencePrimitives.all());
+            reg.addAll(InfluenceRatingPrimitives.all());
             reg.addAll(MarkPrimitives.all());
             reg.addAll(DrawPrimitives.all());
             reg.addAll(DiscardPrimitives.all());
             reg.addAll(DamagePrimitives.all());
+            reg.addAll(DamageCombatPrimitives.all());
             reg.addAll(TensionPrimitives.all());
+            reg.addAll(TensionControlPrimitives.all());
             reg.addAll(StatePrimitives.all());
             reg.addAll(CostPrimitives.all());
             reg.addAll(ConflictPrimitives.all());
+            reg.addAll(ConflictExtraPrimitives.all());
             reg.addAll(RestrictionPrimitives.all());
             reg.addAll(RotationPrimitives.all());
             reg.addAll(InformationPrimitives.all());
             reg.addAll(BespokePrimitives.all());
+            reg.addAll(AbilityAsPrimitives.all());
+            reg.addAll(GrantPrimitives.all());
+            reg.addAll(ConvertInfluencePrimitives.all());
+            reg.addAll(VotePrimitives.all());
         } catch (EffectLoadException ele) {
             // Unreachable in practice: the shipped families have distinct
             // names. If one day they do not, that is a defect in THIS file

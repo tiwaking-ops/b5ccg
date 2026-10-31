@@ -24,7 +24,16 @@ public enum EffectScope {
     RACE,
 
     /** Every player. */
-    GLOBAL;
+    GLOBAL,
+
+    /** A single player (not all players). */
+    PLAYER,
+
+    /** The Babylon 5 station itself (its influence pools, not a player's). */
+    BABYLON5,
+
+    /** A specific location card. */
+    LOCATION;
 
     /** Parses a scope, failing closed. */
     public static EffectScope parse(String raw, String location) throws EffectLoadException {

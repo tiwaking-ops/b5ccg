@@ -25,6 +25,9 @@ public enum EffectRequirementType {
     /** "Rotate an Inner Circle sponsor" - a sponsor must be spent. */
     ROTATE_SPONSOR,
 
+    /** "Apply Influence as a cost for an activated effect" - e.g., Crystal Cities, Pulling Strings. */
+    APPLY_INFLUENCE_COST,
+
     /**
      * "Rotate this card" - the source card itself must rotate to pay for the
      * effect.

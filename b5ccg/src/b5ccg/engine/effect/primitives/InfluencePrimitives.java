@@ -25,6 +25,10 @@ import java.util.List;
  * carries the scope and the controller relation. That separation is what
  * keeps the primitive list small, and A3's decision rule asks for about
  * twenty-five primitives across the whole pool.</p>
+ *
+ * <p>The rating-modification primitives ({@code INFLUENCE_RATING_MODIFY},
+ * {@code INFLUENCE_CHANGE}) are in the {@link InfluenceRatingPrimitives} family
+ * to keep this family <= 3 (B5-0050).</p>
  */
 public final class InfluencePrimitives {
 

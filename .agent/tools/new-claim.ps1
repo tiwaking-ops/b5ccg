@@ -226,6 +226,115 @@ if ($rowLines.Count -eq 1) {
     Write-Output ("[B5-1722] REFUSED: no ledger row for {0} - a claim without a row is a claim the queue cannot see (seed the OPEN row first, then claim it; the B5-1645/B5-1677 orphan-claim class). No claim was created." -f $TaskId)
     exit 1
 }
+
+# B5-0048: scope-overlap guard - refuse a claim when ANOTHER LIVE claim holds any of
+# the named scopes.
+#
+# B5-0048 CORRECTION 2026-10-25. Two defects, each measured before the fix:
+#   1. It counted `.RELEASED.json` archives as live claims. A released claim is a
+#      record of a release, not a holder; ~20 archives carry
+#      engine/tooling/docs/resources, so the guard fired on nearly every claim and
+#      the fleet could not take a non-card-text row at all.
+#   2. It counted ORPHAN claims (a claim whose task row is not OPEN/CLAIMED). An
+#      orphan is not a live claim: no runner will ever offer it, and AGENTS.md
+#      section 5's rule is about a LIVE claim holding a scope.
+# The overlap test itself (`$Scope -contains $existingScope`) was already correct;
+# only the set of claims it tests was wrong.
+$scopeConflicts = @()
+if (Test-Path -LiteralPath $claimsDir) {
+    # Task id -> status, so a claim can be classified live or orphan.
+    $ledgerStatus = @{}
+    foreach ($ln in [System.IO.File]::ReadAllLines($ledgerPath, [System.Text.Encoding]::UTF8)) {
+        if ($ln -match '^\|+\s*(B5-[0-9]{4}[a-z]?)\s*\|([^|]*)') {
+            $ledgerStatus[$matches[1]] = $matches[2].Trim()
+        }
+    }
+
+    $existingClaims = @(Get-ChildItem -LiteralPath $claimsDir -Filter "*.json" -ErrorAction SilentlyContinue |
+                      Where-Object { $_.Name -ne ($TaskId + '.json') -and $_.Name -notmatch '\.RELEASED\.json$' })
+    foreach ($claimFile in $existingClaims) {
+        try {
+            $claim = [System.IO.File]::ReadAllText($claimFile.FullName) | ConvertFrom-Json
+            if (-not $claim.scope -or $claim.agent_id -eq $AgentId) { continue }
+            # Only a LIVE claim holds a scope: its task row must be OPEN or CLAIMED.
+            $taskStatus = ''
+            if ($ledgerStatus.ContainsKey([string]$claim.task)) { $taskStatus = $ledgerStatus[[string]$claim.task] }
+            if ($taskStatus -ne 'OPEN' -and $taskStatus -ne 'CLAIMED') { continue }
+            foreach ($existingScope in $claim.scope) {
+                if ($Scope -contains $existingScope) {
+                    $scopeConflicts += @{
+                        ClaimFile = $claimFile.Name
+                        ConflictingAgent = $claim.agent_id
+                        ConflictingScope = $existingScope
+                        ConflictingTask = $claim.task
+                    }
+                }
+            }
+        } catch {
+            # If we can't read the claim file, treat it as a potential conflict to be safe
+            $scopeConflicts += @{
+                ClaimFile = $claimFile.Name
+                ConflictingAgent = "<unreadable>"
+                ConflictingScope = "<unreadable>"
+                ConflictingTask = "<unreadable>"
+            }
+        }
+    }
+}
+
+if ($scopeConflicts.Count -gt 0) {
+    # B5-0048 acceptance: "the refusal names the conflicting claim". The fields were
+    # referenced as bare variables inside the ForEach-Object script block, where $_
+    # is the hashtable and the bare names are $null - so every refusal printed
+    # "     by  (scope: )". Reference them through $_ and join on a real newline:
+    # "\n" is a LITERAL backslash-n in PowerShell (the escape is `n), which is why
+    # the old message printed one long line of "\n" separators.
+    $conflictList = @($scopeConflicts | ForEach-Object {
+        "    $($_.ConflictingTask) by $($_.ConflictingAgent) (scope: $($_.ConflictingScope))"
+    }) -join [Environment]::Newline
+    Write-Output ("[B5-0048] REFUSED: scope overlap detected for task {0}. The following live claims hold conflicting scopes:{1}{2}" -f $TaskId, [Environment]::Newline, $conflictList)
+    exit 1
+}
+
+# B5-0048: freeze refusal (CLAIMS/README.md refusal #6). An OPEN ledger row
+# whose Task text contains "freeze window" freezes the scope named in its
+# Scope cell: no claim touching a frozen scope may be created until that row
+# is DONE. Measured before this guard existed (2026-10-26): the scope-overlap
+# guard above honours a freeze only while the freeze row's own claim file is
+# LIVE, so a freeze whose holder released early - or one the planner marked
+# without any claim - froze nothing at claim time. That is the exact breach
+# shape recorded on B5-0025 (B5-0039/B5-0040/B5-0041 were claimed inside the
+# window with no tool refusing them). The freeze row ITSELF stays claimable:
+# its worker must be able to hold and close it, and closing it is what lifts
+# the freeze - a guard that cannot be cleared is not a guard.
+$frozenConflicts = @()
+foreach ($ln in [System.IO.File]::ReadAllLines($ledgerPath, [System.Text.Encoding]::UTF8)) {
+    if ($ln -match '^\|\s*(B5-[0-9]{4}[a-z]?)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|') {
+        # Snapshot the groups FIRST: any later -notmatch repopulates $Matches
+        # (a matching -notmatch sets it, and that pattern has no groups), which
+        # would turn $matches[4] into $null - measured in the red-then-green
+        # run of case 14/16 before this snapshot was added.
+        $frozenId = $matches[1]
+        $frozenStatus = $matches[2].Trim()
+        $frozenTask = $matches[3]
+        $frozenScopeCell = $matches[4]
+        if ($frozenId -eq $TaskId) { continue }
+        if ($frozenStatus -ne 'OPEN') { continue }
+        if ($frozenTask -notmatch 'freeze window') { continue }
+        $frozenScopes = @([regex]::Matches($frozenScopeCell, '(engine|tooling|resources|docs|ai|ui|model|card-text/b[0-9]+)') |
+                          ForEach-Object { $_.Value } | Select-Object -Unique)
+        foreach ($s in $Scope) {
+            if ($frozenScopes -contains $s) {
+                $frozenConflicts += "    $frozenId (freeze window) freezes scope '$s'"
+            }
+        }
+    }
+}
+if ($frozenConflicts.Count -gt 0) {
+    Write-Output ("[B5-0048] REFUSED: scope is frozen. The following OPEN freeze-window rows freeze a requested scope; no claim may be created until each row is DONE:{0}{1}" -f [Environment]::Newline, ($frozenConflicts -join [Environment]::Newline))
+    exit 1
+}
+
 if (Test-Path -LiteralPath $path) {
     # Atomicity per CLAIMS/README: the file's existence IS the claim. Never
     # overwrite, never merge -- refuse and let the agent pick another task.

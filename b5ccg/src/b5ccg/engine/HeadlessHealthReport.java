@@ -16,7 +16,7 @@ import java.util.TimeZone;
 /**
  * B5-2614 - headless health report: a report-only reading of this tree, not a
  * release verdict. Implements the executable half of
- * {@code docs/proposals/b52614-headless-health-report-proposal.md}, scoped by
+ * {@code (reference removed)}, scoped by
  * this pass to four sections: RUNTIME, ARTIFACTS, CARDPOOL, DECKS.
  *
  * <p><b>Three rules the class is built around.</b>

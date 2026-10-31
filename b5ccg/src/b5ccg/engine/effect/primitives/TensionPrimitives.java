@@ -21,6 +21,10 @@ import java.util.List;
  * because the two trackers have different owners and different effects on
  * play, and a primitive that can move either one invites a caller to move
  * both.</p>
+ *
+ * <p>The control primitives ({@code TENSION_CAP}, {@code TENSION_CHANGE_ALL_OTHERS})
+ * are in the {@link TensionControlPrimitives} family to keep this family <= 3
+ * (B5-0050).</p>
  */
 public final class TensionPrimitives {
 

@@ -5,13 +5,14 @@ document:
 provenance:
   author_llm: {name: "Muse Spark", version: "muse-spark-1.3-contributor-free"}
   created_date: "2026-10-16"
-  last_modified_date: "2026-10-21"
-  last_modified_by_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-21-01"}
+  last_modified_date: "2026-10-30"
+  last_modified_by_llm: {name: "opencode (Nemotron 3 Ultra)", version: "nemotron-3-ultra-2026-10-30"}
   assessor_llm:
     - {name: "opencode (verifier)", version: "independent-verify-2026-10-16", passes: 1, date: "2026-10-16", note: "updated §2 build rule to reflect Hop-1 (--release 8 / JDK 25), owner-approved"}
   unassessed_revision:
     - {author_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-19-01"}, date: "2026-10-19", change: "section 2 rulebook pin re-pinned to the canonical LF bytes under B5-0043 and B5-0047", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass"}
     - {author_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-21-01"}, date: "2026-10-21", change: "section 1: added the reviewer-independence-by-model-family rule under B5-0045", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass. A same-family advisory review of the surrounding B5-0044 work was obtained and is recorded in the B5-0044 report's front matter under advisory_review, explicitly marked as not independent. A different-family assessment of this revision is outstanding."}
+    - {author_llm: {name: "opencode (Nemotron 3 Ultra)", version: "nemotron-3-ultra-2026-10-30"}, date: "2026-10-30", change: "Added Authority Designation Rule (§3), Proposal Self-Identification (§3), Data-Authority Gate (§4), created docs/AUTHORITY_INDEX.md, created .agent/tools/check-data-authority.py, added _proposal marker to proposal files, added source_of_truth to deployed premiere.json, fixed deployed premiere.json stats to match authoritative-character-data.json", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass"}
 ---
 
 # AGENTS.md — b5ccg (lean reset, Claude v1 §7 B1/B2)
@@ -108,6 +109,24 @@ reader can check the independence rather than take it on trust.
 * `.agent/REPORTS/` = observations, no authority.
 * Copying or summarising never confers authority.
 
+**Authority Designation Rule.** Exactly one file per data domain holds authoritative data. It must:
+- Live at repo root or `docs/` (never `.agent/`, never `docs/proposals/`)
+- Carry front matter or top-level field: `status: "Authoritative"` + `source: "HUMAN-SCANNED"` (or equivalent provenance)
+- Be **referenced by name** in `docs/DECISIONS.md` with a rule-ID
+- All other files in that domain must include a `source_of_truth` field pointing to it
+- Any document that names a different file as "authoritative" is itself erroneous and must be corrected.
+
+**Proposal Self-Identification.** Every file in `docs/proposals/` (JSON or Markdown) must carry a machine-readable marker:
+```json
+{
+  "_proposal": true,
+  "_status": "candidate",
+  "_authority": "<path-to-authoritative-file>",
+  ...
+}
+```
+Tooling (compile gate, linter) fails if any proposal lacks this, or if any non-proposal file references a proposal as authoritative.
+
 ## 4. Promotion
 
 A proposal becomes truth when: (1) claimed scope only; (2) the **verification
@@ -119,6 +138,11 @@ promotion; (3) change logged in `docs/DECISIONS.md`; (4) claim released. A task
 that adds behaviour must also add or extend a probe that fails without the
 change. External libraries and toolchain hops need a DECISIONS entry. If in
 doubt, log the ambiguity in the report and STOP that item only.
+
+**Data-Authority Gate.** The verification gate additionally runs a data-authority check:
+- For each data domain with an authoritative source (per `docs/AUTHORITY_INDEX.md`), the deployed file must match the authoritative source on all canonical fields.
+- Failure to match = gate fails with a diff report.
+- This check runs **before** promotion; a proposal that only updates the deployed file to match the authoritative source passes this check automatically.
 
 ## 5. Shared-files protocol (`.agent/`)
 

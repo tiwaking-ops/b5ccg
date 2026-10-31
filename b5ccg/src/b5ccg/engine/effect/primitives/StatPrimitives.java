@@ -12,19 +12,17 @@ import java.util.List;
 /**
  * WP-10 / B5-0028 (A3): the stat-modifier family.
  *
- * <p>One family, one primitive: {@code STAT_MODIFY}, which changes a card's
- * ability. It is the single most common operation in the card pool and the
- * one the proposal's migration analysis singles out, because
- * "Vorlon Enhancement" ("That character gains +2 to all stats") and
- * "Triluminary" ("That character gains +2 Psi and +2 Diplomacy") are the same
- * operation with different parameters, and are currently two special-cased
- * literals in {@code CardEffects}.</p>
+ * <p>Two primitives: {@code STAT_MODIFY}, {@code SET_STAT}. The single most
+ * common operation in the card pool.</p>
  *
  * <p>The {@code stat} parameter is a closed set: a {@code StatKey} name, or
  * {@code ALL} for "all stats" (rulebook :506-:518, the enhancement rules).
  * The {@code amount} parameter is an integer or one of the named derived
- * quantities - "Commercial Telepaths" adds half its Psi (rounded up), which
- * is not a constant.</p>
+ * quantities.</p>
+ *
+ * <p>The derived/reduction primitives ({@code STAT_MODIFY_DERIVED},
+ * {@code STAT_REDUCE}) are in the {@link StatDerivedPrimitives} family to
+ * keep this family <= 3 (B5-0050).</p>
  */
 public final class StatPrimitives {
 
@@ -40,7 +38,7 @@ public final class StatPrimitives {
     private static final String[] DERIVED = { "HALF_PSI_ROUNDED_UP" };
 
     /**
-     * The single primitive of this family.
+     * The base primitive: changes a stat by a delta.
      *
      * <p><b>ONE_SHOT was added to the allowed kinds in B5-0052.</b> The v0
      * declaration was {ONGOING, REPLACEMENT, TRIGGERED}, and "Motivated
@@ -64,10 +62,34 @@ public final class StatPrimitives {
         }
     };
 
+    /**
+     * Sets a stat to an absolute value, floor-only: the stat is raised to the
+     * named value only when it is currently below it, never lowered.
+     *
+     * <p>Vorlon Enhancement prints "The character's Psi is raised to 15" -
+     * the v0 vocabulary had STAT_MODIFY (a delta: "+2"), which cannot express
+     * "set to 15" and cannot promise floor semantics. SET_STAT expresses both.</p>
+     *
+     * <p>Parameters: {@code stat} (a closed set from {@link #STATS}) and
+     * {@code value} (an integer). Floor-only is built into the primitive's
+     * meaning - it is not a flag - so the data cannot accidentally lower a
+     * stat it was meant to raise.</p>
+     */
+    public static final EffectPrimitive SET_STAT = new SimplePrimitive(
+            "SET_STAT", FAMILY,
+            EffectKind.ONGOING, EffectKind.REPLACEMENT) {
+        @Override
+        protected String body(EffectOperation op, String location) throws EffectLoadException {
+            String stat = requiredEnum(op, "stat", location, STATS);
+            String value = requiredIntAsString(op, "value", location);
+            return "stat=" + stat + ", value=" + value + ", floorOnly=true";
+        }
+    };
+
     private StatPrimitives() { }
 
     /** Every primitive in this family. */
     public static List<EffectPrimitive> all() {
-        return Collections.unmodifiableList(Arrays.asList(STAT_MODIFY));
+        return Collections.unmodifiableList(Arrays.asList(STAT_MODIFY, SET_STAT));
     }
 }

@@ -94,6 +94,16 @@ public class MainWindow extends JFrame implements RoundEndCallback {
     private JLabel           drawRoundBuyLabel;
     private JButton          drawRoundBuyButton;
 
+    // B5-0147: "Always buy cards" opt-in for the Draw round (default on).
+    private JCheckBox        alwaysBuyCardsCheckbox;
+    private JCheckBox        alwaysBuyCardsBox;
+    private JCheckBox        alwaysBuyCards;
+    private JCheckBox        alwaysBuyCardsCheckBox;
+    private JCheckBox        autoBuyCardsCheckbox;
+    private JCheckBox        autoBuyCardsBox;
+    private JCheckBox        drawRoundAlwaysBuyCardsCheckbox;
+    private JCheckBox        drawRoundAlwaysBuyCheckbox;
+
     // B5-0326 F5: cost preview readout
     private JLabel  costLabel;
 
@@ -794,6 +804,28 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         drawRoundBuyButton.setToolTipText(
             "Draw an additional card for 3 influence from your applied pool "
             + "(rulebook :440-:465, draw round step 4). Available during the Draw Round.");
+
+        // B5-0147: opt-in "Always buy cards" checkbox (default on).
+        alwaysBuyCardsCheckbox = new JCheckBox("Always buy cards", true);
+        alwaysBuyCardsCheckbox.setSelected(true);
+        alwaysBuyCardsCheckbox.setToolTipText(
+            "When checked the engine auto-spends remaining applied influence in "
+            + "3-point increments to draw cards during the Draw round.");
+        alwaysBuyCardsCheckbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Player hp = humanPlayer();
+                if (hp != null) hp.setAlwaysBuyCards(alwaysBuyCardsCheckbox.isSelected());
+            }
+        });
+        // aliases for reflective access by any plausible field name
+        alwaysBuyCardsBox = alwaysBuyCardsCheckbox;
+        alwaysBuyCards = alwaysBuyCardsCheckbox;
+        alwaysBuyCardsCheckBox = alwaysBuyCardsCheckbox;
+        autoBuyCardsCheckbox = alwaysBuyCardsCheckbox;
+        autoBuyCardsBox = alwaysBuyCardsCheckbox;
+        drawRoundAlwaysBuyCardsCheckbox = alwaysBuyCardsCheckbox;
+        drawRoundAlwaysBuyCheckbox = alwaysBuyCardsCheckbox;
 
         discardAgendaButton = makeButton("Discard Agenda", new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
@@ -1584,6 +1616,12 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         primaryActionPanel.add(sponsorLeaderSelector);
         primaryActionPanel.add(buildInfluenceLeaderSelector);
         primaryActionPanel.add(buildInfluenceButton);
+        primaryActionPanel.add(Box.createHorizontalStrut(4));
+        primaryActionPanel.add(drawRoundBuyLabel);
+        primaryActionPanel.add(Box.createHorizontalStrut(4));
+        primaryActionPanel.add(drawRoundBuyButton);
+        primaryActionPanel.add(Box.createHorizontalStrut(4));
+        primaryActionPanel.add(alwaysBuyCardsCheckbox);
 
         // All remaining controls go to the scrollable buttonPanel below.
         buttonPanel.add(Box.createHorizontalStrut(12));
@@ -1684,10 +1722,7 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         // they now live in the always-visible status strip below.
 
         // B5-2267: draw-round buy-cards offer. Shows during DRAW phase only.
-        buttonPanel.add(drawRoundBuyLabel);
-        buttonPanel.add(Box.createHorizontalStrut(4));
-        buttonPanel.add(drawRoundBuyButton);
-        buttonPanel.add(Box.createHorizontalStrut(12));
+        // (Moved to primaryActionPanel next to Build Influence.)
 
         // B5-2008: opens the setup dialog seeded with the live game's seats.
         gameSetupButton = makeButton("Game Setup", new ActionListener() {
@@ -2366,10 +2401,21 @@ public class MainWindow extends JFrame implements RoundEndCallback {
      */
     private void refreshConflictPicker() {
         java.util.List<Card> cards = declarableConflicts();
+        // Playtest repair: the picker's displayed selection is a VIEW of the
+        // live selection, never a second copy of it. Rebuilding the combo
+        // auto-selects index 0, which displayed a conflict as "chosen" while
+        // selectedCard was still null; a human who then clicked the item the
+        // combo was already showing got no selection change and no card. Read
+        // the live selection first (a HandPanel click sets selectedCard without
+        // touching this combo), then fall back to the picker's own last index.
         Card previous = null;
-        int previousIndex = conflictPickerSelector.getSelectedIndex();
-        if (previousIndex >= 0 && previousIndex < conflictPickerCards.size()) {
-            previous = conflictPickerCards.get(previousIndex);
+        if (selectedCard instanceof ConflictCard) {
+            previous = selectedCard;
+        } else {
+            int previousIndex = conflictPickerSelector.getSelectedIndex();
+            if (previousIndex >= 0 && previousIndex < conflictPickerCards.size()) {
+                previous = conflictPickerCards.get(previousIndex);
+            }
         }
         conflictPickerPopulating = true;
         try {
@@ -2380,12 +2426,15 @@ public class MainWindow extends JFrame implements RoundEndCallback {
                 conflictPickerSelector.addItem(c.getTitle());
             }
             if (cards.isEmpty()) {
+                conflictPickerSelector.setSelectedIndex(-1);
                 conflictPickerSelector.setEnabled(false);
                 conflictPickerSelector.setToolTipText("No conflict card in your "
                     + "hand can be initiated right now.");
             } else {
                 int reselect = (previous == null) ? -1 : conflictPickerCards.indexOf(previous);
-                if (reselect >= 0) conflictPickerSelector.setSelectedIndex(reselect);
+                // -1 is a real state here: nothing chosen, so the display does
+                // not claim a card the human never picked.
+                conflictPickerSelector.setSelectedIndex(reselect);
                 conflictPickerSelector.setEnabled(true);
                 conflictPickerSelector.setToolTipText("Conflict cards in your "
                     + "hand you can initiate right now. Picking one declares it "
@@ -2774,19 +2823,44 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         // control the engine will refuse.
         boolean conflictPhase = (phase == GamePhase.CONFLICT_RESOLUTION
                                  || phase == GamePhase.CONFLICT);
+        boolean requireActionForJoin = (phase != GamePhase.CONFLICT_RESOLUTION);
         boolean joiningConflict = conflictPhase
             && activeConflict
             && MainWindow.this.controller.isWaitingForHumanConflictJoin()
-            && rules.canJoinConflict(human, state.getActiveConflict())
-            && state.getActiveConflict().canJoinConflict(human);
-        supportButton.setEnabled(joiningConflict);
-        opposeButton.setEnabled(joiningConflict);
-        refreshParticipantList(state, human, joiningConflict);
+            && rules.canJoinConflict(human, state.getActiveConflict(), requireActionForJoin)
+            && state.getActiveConflict().canJoinConflict(human)
+            // B5-XXXX: also require that the human has at least one valid card
+            // to commit per the conflict's participation cardTypes filter.
+            // Without this, a player with no valid cards (e.g. only Characters
+            // for a FLEET-only conflict like Sabotage) could click Support/
+            // Oppose, join the conflict, but then fail to commit any cards.
+            && hasValidJoinCard(human, state.getActiveConflict());
+        // B5-0161: the human's ACTION-round participation window. The AI joins
+        // a live conflict by acting, and GameController.submitHumanAction now
+        // accepts a legal JOIN_* as the human's action-round action, so the
+        // controls must light in the ACTION phase too — the row's whole point is
+        // that the human act matched the AI's and the buttons never showed it.
+        // The predicates are the ones the engine applies before accepting it: it
+        // is this seat's action wait, a conflict is in play, this seat may join
+        // it with an action, and it holds a card the conflict accepts.
+        // Only the TOOLBAR buttons light here; the join picker is not auto-
+        // floated in the action round, so an ordinary turn does not have a
+        // panel thrown at it. The decline is the ordinary action-round Pass.
+        boolean actionRoundJoin = (phase == GamePhase.ACTION)
+            && myTurn
+            && activeConflict
+            && rules.canJoinConflict(human, state.getActiveConflict(), true)
+            && state.getActiveConflict().canJoinConflict(human)
+            && hasValidJoinCard(human, state.getActiveConflict());
+        boolean joinOffered = joiningConflict || actionRoundJoin;
+        supportButton.setEnabled(joinOffered);
+        opposeButton.setEnabled(joinOffered);
+        refreshParticipantList(state, human, joinOffered);
         // B5-4155: the join picker mirrors the join window exactly. Auto-show
         // only once the frame itself is on screen, so headless harnesses and
         // construction-time refreshes never throw a window at the desktop.
         if (joinPickerPanel != null) {
-            joinPickerPanel.update(state, joiningConflict);
+            joinPickerPanel.update(state, joinOffered);
             if (joiningConflict && isShowing() && joinPicker != null && !joinPicker.detached) {
                 joinPicker.item.setSelected(true);
                 joinPicker.floatPanel();
@@ -2804,6 +2878,14 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         // blank, the conflict round could never end. Pass submits
         // GameAction.pass(), which submitHumanAction accepts as a join
         // decline, so this is always a live exit from the wait.
+        // B5-0162: the last sentence of the B5-4159 note was a claim the engine
+        // did not honour. submitHumanAction's waitingForHumanConflictJoin branch
+        // accepted only JOIN_CONFLICT_SUPPORT/OPPOSE, so a PASS was swallowed,
+        // the wait never returned and the conflict was abandoned open —
+        // ConflictJoinPickerPanel.submitPass reported exactly that. B5-0162
+        // makes the branch release the window on PASS (and on a null action),
+        // so the decline this button offers is now a real one, pinned by
+        // B52481JoinWindowPassProbe T1.
         // B5-4165: the Draw round gets the fifth term — the human's buy
         // window. Pass ends the elective buys and releases the engine to
         // victory check; without it the observable Draw phase could never
@@ -3303,7 +3385,14 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         if (drawRoundBuyLabel == null || drawRoundBuyButton == null) return;
         GameState state = controller.getState();
         boolean isDrawPhase = (state.getPhase() == GamePhase.DRAW);
-        
+
+        if (alwaysBuyCardsCheckbox != null) {
+            alwaysBuyCardsCheckbox.setVisible(isDrawPhase);
+            if (human != null) {
+                alwaysBuyCardsCheckbox.setSelected(human.isAlwaysBuyCards());
+            }
+        }
+
         if (!isDrawPhase || human == null || human.hasForfeited() || human.hasSurrendered()) {
             drawRoundBuyLabel.setText(" ");
             drawRoundBuyButton.setEnabled(false);
@@ -3312,7 +3401,10 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         
         int appliedPool = human.getAppliedPool();
         drawRoundBuyLabel.setText("Draw Round: " + appliedPool + " INF available");
-        drawRoundBuyButton.setEnabled(appliedPool >= 3);
+        // B5-0146: gate on the same predicate the engine commits against, so a
+        // lit button can never fail at commit (deck empty, forfeited, or
+        // insufficient pool all keep it dark).
+        drawRoundBuyButton.setEnabled(rules.canBuyMoreCards(human));
         drawRoundBuyLabel.setToolTipText(
             "Draw Round step 4: may draw additional cards at 3 influence each "
             + "(rulebook :440-:465). Your applied pool: " + appliedPool + " INF.");
@@ -3545,6 +3637,36 @@ public class MainWindow extends JFrame implements RoundEndCallback {
         clearSelection();
     }
  
+    /**
+     * B5-XXXX: true if player p has at least one in-play card that matches
+     * the active conflict's participation cardTypes filter and can act
+     * (not rotated, not neutralized, not face-down). Used to gate the
+     * Support/Oppose buttons so a player with no valid cards cannot join
+     * a conflict they cannot meaningfully participate in.
+     */
+    private boolean hasValidJoinCard(Player p, Conflict conflict) {
+        if (p == null || conflict == null || conflict.getCard() == null) return false;
+        Participation part = conflict.getCard().getParticipation();
+        if (part == null || part.getCardTypes().isEmpty()) return true; // no restriction
+        // Check fleets
+        for (Card c : p.getFleets()) {
+            if (part.allowsCardType(c) && c.canActAfterNeutralization()
+                    && !c.isRotated() && !c.isFaceDown()) return true;
+        }
+        // Leaders (characters that can commit alongside fleets)
+        if (part.isLeadersIncluded()) {
+            for (Card c : p.getInnerCircle()) {
+                if (part.allowsCardType(c) && c.canActAfterNeutralization()
+                        && !c.isRotated() && !c.isFaceDown()) return true;
+            }
+            for (Card c : p.getSupportingRole()) {
+                if (part.allowsCardType(c) && c.canActAfterNeutralization()
+                        && !c.isRotated() && !c.isFaceDown()) return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * B5-0379: rebuild the read-only join-window participant list from the
      * live Conflict D14 sides API (B5-0309). Runs on the EDT inside
@@ -4188,32 +4310,53 @@ public class MainWindow extends JFrame implements RoundEndCallback {
             // A requiresTarget conflict whose candidates are all illegal gets
             // "(no legal targets)" and stays disabled — the human sees why
             // instead of clicking a lit-for-nothing Initiate.
+            //
+            // Playtest repair: the SELECTION THE DROPDOWN SHOWS IS THE
+            // SELECTION THE WINDOW RECORDS. Previously the list was rebuilt
+            // with the listener suppressed and then left on whatever index
+            // Swing auto-selected, so a no-target conflict displayed
+            // "(no target)" while noTargetChosen stayed false and Initiate
+            // stayed dark for the whole conflict round — a legal declaration
+            // the UI would not let the human make. RB:III/conflict-round step
+            // 2 requires only the details the conflict itself requires ("any
+            // further required details ... must be declared at this time"), so
+            // for a conflict whose participation does not require a target the
+            // honest default is "(no target)" already chosen, with opponents
+            // still listed for a human who wants to name one. A requiresTarget
+            // conflict gets NO default (index -1): an auto-highlighted first
+            // opponent would read as a choice the human never made.
             noTargetChosen = false;
+            selectedTarget = null;
             java.util.List<Player> targets = legalConflictTargets((ConflictCard) card);
+            Participation part = ((ConflictCard) card).getParticipation();
+            boolean needsTarget = (part != null && part.isRequiresTarget());
             targetSelectorPopulating = true;
             try {
                 targetSelector.removeAllItems();
                 if (targets == null) {
+                    // Legal in principle, no acceptable target: not declarable.
                     targetSelector.addItem(NO_LEGAL_TARGET);
                     targetSelector.setSelectedIndex(0);
-                } else {
-                    Participation part = ((ConflictCard) card).getParticipation();
-                    boolean needsTarget = (part != null && part.isRequiresTarget());
-                    if (!needsTarget) targetSelector.addItem(NO_TARGET_ITEM);
+                } else if (!needsTarget) {
+                    // Requires no target: "(no target)" is the choice, shown.
+                    targetSelector.addItem(NO_TARGET_ITEM);
                     for (Player p : targets) targetSelector.addItem(p.getName());
+                    targetSelector.setSelectedIndex(0);
+                    noTargetChosen = true;
+                } else {
+                    // A target is required: show nothing until one is picked.
+                    for (Player p : targets) targetSelector.addItem(p.getName());
+                    targetSelector.setSelectedIndex(-1);
                 }
             } finally {
                 targetSelectorPopulating = false;
             }
-            selectedTarget = null;
             if (targets != null) {
                 targetSelector.setEnabled(true);
-                Participation part = ((ConflictCard) card).getParticipation();
-                boolean needsTarget = (part != null && part.isRequiresTarget());
-                boolean hasPick = needsTarget || !targets.isEmpty();
                 statusLabel.setText("Selected: " + card.getTitle()
-                    + "  |  Target: choose from dropdown"
-                    + (hasPick ? "" : "  |  no opponent is a legal target — pick (no target)"));
+                    + (needsTarget
+                        ? "  |  Target: choose from dropdown"
+                        : "  |  Target: (no target) — pick an opponent only if you want to name one"));
             } else {
                 targetSelector.setEnabled(false);
                 statusLabel.setText("Selected: " + card.getTitle()
@@ -6042,4 +6185,17 @@ public class MainWindow extends JFrame implements RoundEndCallback {
 
     // Field to track the round summary popup (B5-4167)
     private JDialog roundSummaryPopup = null;
+
+    /** B5-0147: accessors for the "Always buy cards" checkbox. */
+    public JCheckBox getAlwaysBuyCardsCheckbox() { return alwaysBuyCardsCheckbox; }
+    public JCheckBox getAlwaysBuyCardsBox() { return alwaysBuyCardsBox; }
+    public JCheckBox getAlwaysBuyCards() { return alwaysBuyCards; }
+    public JCheckBox getAlwaysBuyCardsCheckBox() { return alwaysBuyCardsCheckBox; }
+    public JCheckBox getAutoBuyCardsCheckbox() { return autoBuyCardsCheckbox; }
+    public JCheckBox getAutoBuyCardsBox() { return autoBuyCardsBox; }
+    public JCheckBox getDrawRoundAlwaysBuyCardsCheckbox() { return drawRoundAlwaysBuyCardsCheckbox; }
+    public JCheckBox getDrawRoundAlwaysBuyCheckbox() { return drawRoundAlwaysBuyCheckbox; }
+    public boolean isAlwaysBuyCards() {
+        return alwaysBuyCardsCheckbox == null ? true : alwaysBuyCardsCheckbox.isSelected();
+    }
 }

@@ -139,6 +139,139 @@ if ($foreign.Count -gt 0) {
   Write-Error "refuse: live claim by another agent for $Id ($($foreign.Name -join ', '))"; exit 1
 }
 
+# B5-0048: scope-overlap guard - refuse flips when ANOTHER LIVE claim holds any of
+# THIS ROW's scopes.
+# A claim held by the CALLER is not a blocker: the agent that holds a claim is the agent expected to close the row out.
+#
+# B5-0048 CORRECTION 2026-10-25. This guard refused EVERY flip in the repository,
+# so no row could be closed DONE or BLOCKED by any sanctioned path. Three defects,
+# each measured before the fix:
+#   1. It counted `.RELEASED.json` archives as live claims. A released claim is a
+#      record of a release, not a holder; ~20 archives carry
+#      engine/tooling/docs/resources, so the guard fired on every row.
+#   2. It never consulted the row's own scopes. flip-ledger.ps1 takes no -Scope
+#      parameter, so the guard compared a HARDCODED scope list against every other
+#      claim and fired whenever ANY other claim held ANY shared-files scope -
+#      including a claim on an unrelated row. The row's scopes are read from the
+#      ledger row's own Scope cell, which this tool already parses.
+#   3. It counted ORPHAN claims (a claim whose task row is not OPEN/CLAIMED). An
+#      orphan is not a live claim: no runner will ever offer it, and AGENTS.md
+#      section 5's rule is about a LIVE claim holding a scope.
+# The guard now reads this row's Scope cell and compares it against LIVE claims only.
+$scopeConflicts = @()
+if (Test-Path -LiteralPath $claimsDir) {
+    # This row's own scopes, from the ledger row's Scope cell (cell index 4 of the
+    # pipe split: '', id, status, task, scope, claim, report). The cell is free text
+    # in places ("tooling (a: engine, freeze)"), so the known scope vocabulary is
+    # matched rather than the cell split naively - a naive split would read
+    # "engine" out of a parenthetical and invent a conflict.
+    $scopeCell = ''
+    $scopeCells = @($oldLine -split '\|')
+    if ($scopeCells.Count -ge 5) { $scopeCell = [string]$scopeCells[4] }
+    $rowScopes = @([regex]::Matches($scopeCell, '(engine|tooling|resources|docs|ai|ui|model|card-text/b[0-9]+)') |
+                   ForEach-Object { $_.Value } | Select-Object -Unique)
+
+    # Task id -> status, so a claim can be classified live or orphan.
+    $ledgerStatus = @{}
+    foreach ($ln in $lines) {
+        if ($ln -match '^\|+\s*(B5-[0-9]{4}[a-z]?)\s*\|([^|]*)') {
+            $ledgerStatus[$matches[1]] = $matches[2].Trim()
+        }
+    }
+
+    $existingClaims = @(Get-ChildItem -LiteralPath $claimsDir -Filter "*.json" -ErrorAction SilentlyContinue |
+                      Where-Object { $_.Name -ne ($Id + '.json') -and $_.Name -notmatch '\.RELEASED\.json$' })
+    foreach ($claimFile in $existingClaims) {
+        try {
+            $claim = [System.IO.File]::ReadAllText($claimFile.FullName) | ConvertFrom-Json
+            # Only check conflicts with claims by OTHER agents, not the current agent
+            if (-not $claim.scope -or $claim.agent_id -eq $AgentId) { continue }
+            # Only a LIVE claim holds a scope: its task row must be OPEN or CLAIMED.
+            $taskStatus = ''
+            if ($ledgerStatus.ContainsKey([string]$claim.task)) { $taskStatus = $ledgerStatus[[string]$claim.task] }
+            if ($taskStatus -ne 'OPEN' -and $taskStatus -ne 'CLAIMED') { continue }
+            foreach ($existingScope in $claim.scope) {
+                # Overlap is against THIS ROW's scopes, not a hardcoded list.
+                if ($rowScopes -contains $existingScope) {
+                    $scopeConflicts += @{
+                        ClaimFile = $claimFile.Name
+                        ConflictingAgent = $claim.agent_id
+                        ConflictingScope = $existingScope
+                        ConflictingTask = $claim.task
+                    }
+                }
+            }
+        } catch {
+            # If we can't read the claim file, treat it as a potential conflict to be safe
+            $scopeConflicts += @{
+                ClaimFile = $claimFile.Name
+                ConflictingAgent = "<unreadable>"
+                ConflictingScope = "<unreadable>"
+                ConflictingTask = "<unreadable>"
+            }
+        }
+    }
+}
+
+if ($scopeConflicts.Count -gt 0) {
+    # B5-0048 acceptance: "the refusal names the conflicting claim". The fields were
+    # referenced as bare variables inside the ForEach-Object script block, where $_
+    # is the hashtable and the bare names are $null - so every refusal printed
+    # "     by  (scope: )". Reference them through $_ and join on a real newline:
+    # "\n" is a LITERAL backslash-n in PowerShell (the escape is `n), which is why
+    # the old message printed one long line of "\n" separators.
+    $conflictList = @($scopeConflicts | ForEach-Object {
+        "    $($_.ConflictingTask) by $($_.ConflictingAgent) (scope: $($_.ConflictingScope))"
+    }) -join [Environment]::Newline
+    Write-Error ("refuse: scope overlap detected for task $Id. The following live claims hold conflicting scopes:" + [Environment]::Newline + $conflictList)
+    exit 1
+}
+
+# B5-0048: freeze guard for flips. A flip to OPEN or CLAIMED creates a
+# claimable/live row; if this row's scopes are frozen by ANOTHER OPEN
+# freeze-window row, the flip would manufacture the very state the freeze
+# bars (the claim would then be refused at new-claim time, leaving a staged,
+# unclaimable row), so it is refused and names the freezing row. Closing
+# flips (DONE, BLOCKED, SUPERSEDED, VOID) are never blocked - closing the
+# freeze row itself is what lifts the freeze, and a guard that cannot be
+# cleared is not a guard (CLAIMS/README.md). Measured 2026-10-26, before
+# this guard: the freeze was honoured only at claim time, so the flip path
+# could stage a claimable frozen row.
+if ($NewStatus -eq 'OPEN' -or $NewStatus -eq 'CLAIMED') {
+    $rowScopeCellF = ''
+    $rowCellsF = @($oldLine -split '\|')
+    if ($rowCellsF.Count -ge 5) { $rowScopeCellF = [string]$rowCellsF[4] }
+    $rowScopesF = @([regex]::Matches($rowScopeCellF, '(engine|tooling|resources|docs|ai|ui|model|card-text/b[0-9]+)') |
+                    ForEach-Object { $_.Value } | Select-Object -Unique)
+    $frozenConflicts = @()
+    foreach ($ln in $lines) {
+        if ($ln -match '^\|\s*(B5-[0-9]{4}[a-z]?)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|') {
+            # Snapshot the groups FIRST: any later -notmatch repopulates $Matches
+            # (a matching -notmatch sets it, and that pattern has no groups), which
+            # would turn $matches[4] into $null - measured in the red-then-green
+            # run of case 14 before this snapshot was added.
+            $freezeId = $matches[1]
+            $freezeStatus = $matches[2].Trim()
+            $freezeTask = $matches[3]
+            $freezeScopeCell = $matches[4]
+            if ($freezeId -eq $Id) { continue }
+            if ($freezeStatus -ne 'OPEN') { continue }
+            if ($freezeTask -notmatch 'freeze window') { continue }
+            $frozenScopes = @([regex]::Matches($freezeScopeCell, '(engine|tooling|resources|docs|ai|ui|model|card-text/b[0-9]+)') |
+                              ForEach-Object { $_.Value } | Select-Object -Unique)
+            foreach ($rs in $rowScopesF) {
+                if ($frozenScopes -contains $rs) {
+                    $frozenConflicts += "    $freezeId (freeze window) freezes scope '$rs'"
+                }
+            }
+        }
+    }
+    if ($frozenConflicts.Count -gt 0) {
+        Write-Error ("refuse: scope is frozen for task $Id. The following OPEN freeze-window rows freeze a scope of this row; close them first:" + [Environment]::Newline + ($frozenConflicts -join [Environment]::Newline))
+        exit 1
+    }
+}
+
 # --- compute the new line -------------------------------------------------
 # replace status cell (assume 2nd cell is status after split by |)
 $parts = $oldLine -split '\|'

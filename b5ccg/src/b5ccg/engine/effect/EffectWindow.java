@@ -39,7 +39,10 @@ public enum EffectWindow {
     ACTION,
     RESOLUTION,
     AFTERMATH,
-    DRAW;
+    DRAW,
+    VOTE,
+    COMBAT,
+    ROUND_START;
 
     /** Parses a window, failing closed. */
     public static EffectWindow parse(String raw, String location) throws EffectLoadException {

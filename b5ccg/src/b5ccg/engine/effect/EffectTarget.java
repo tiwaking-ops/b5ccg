@@ -34,12 +34,17 @@ public final class EffectTarget {
     private final EffectScope scope;
     private final Set<CardType> cardTypes;
     private final Set<Race> races;
+    private final Set<Race> racesNot;
     private final EffectControllerRelation controllerRelation;
     private final Set<EffectCardStatus> status;
     private final Set<EffectTrait> traits;
     private final boolean innerCircleOnly;
     private final boolean supportingOnly;
     private final boolean ambassadorOnly;
+    private final boolean notAmbassador;
+    private final Set<String> relationToTarget;
+    private final String condition;
+    private final EffectTarget protectedCharacter;
 
     /**
      * A target with no filters beyond the scope and the controller relation.
@@ -47,19 +52,26 @@ public final class EffectTarget {
     public EffectTarget(EffectScope scope, EffectControllerRelation controllerRelation) {
         this(scope, controllerRelation,
              Collections.<CardType>emptySet(), Collections.<Race>emptySet(),
-             Collections.<EffectCardStatus>emptySet(), Collections.<EffectTrait>emptySet(),
-             false, false, false);
+             Collections.<Race>emptySet(), Collections.<EffectCardStatus>emptySet(),
+             Collections.<EffectTrait>emptySet(),
+             false, false, false, false,
+             Collections.<String>emptySet(), null, null);
     }
 
     public EffectTarget(EffectScope scope,
                         EffectControllerRelation controllerRelation,
                         Set<CardType> cardTypes,
                         Set<Race> races,
+                        Set<Race> racesNot,
                         Set<EffectCardStatus> status,
                         Set<EffectTrait> traits,
                         boolean innerCircleOnly,
                         boolean supportingOnly,
-                        boolean ambassadorOnly) {
+                        boolean ambassadorOnly,
+                        boolean notAmbassador,
+                        Set<String> relationToTarget,
+                        String condition,
+                        EffectTarget protectedCharacter) {
         if (scope == null) {
             throw new IllegalArgumentException("target scope is null");
         }
@@ -70,11 +82,16 @@ public final class EffectTarget {
         this.controllerRelation = controllerRelation;
         this.cardTypes = copy(cardTypes);
         this.races = copy(races);
+        this.racesNot = copy(racesNot);
         this.status = copy(status);
         this.traits = copy(traits);
         this.innerCircleOnly = innerCircleOnly;
         this.supportingOnly = supportingOnly;
         this.ambassadorOnly = ambassadorOnly;
+        this.notAmbassador = notAmbassador;
+        this.relationToTarget = copyStrings(relationToTarget);
+        this.condition = condition;
+        this.protectedCharacter = protectedCharacter;
     }
 
     private static <T> Set<T> copy(Set<T> in) {
@@ -87,6 +104,16 @@ public final class EffectTarget {
         return Collections.unmodifiableSet(out);
     }
 
+    private static Set<String> copyStrings(Set<String> in) {
+        Set<String> out = new LinkedHashSet<String>();
+        if (in != null) {
+            for (String s : in) {
+                if (s != null) out.add(s);
+            }
+        }
+        return Collections.unmodifiableSet(out);
+    }
+
     public EffectScope getScope() { return scope; }
 
     /** The card types the effect may land on; empty means any. */
@@ -94,6 +121,9 @@ public final class EffectTarget {
 
     /** The races the effect may land on; empty means any. */
     public Set<Race> getRaces() { return races; }
+
+    /** The races the effect may NOT land on; empty means no exclusion. */
+    public Set<Race> getRacesNot() { return racesNot; }
 
     public EffectControllerRelation getControllerRelation() { return controllerRelation; }
 
@@ -120,6 +150,18 @@ public final class EffectTarget {
      */
     public boolean isAmbassadorOnly() { return ambassadorOnly; }
 
+    /** Whether the target must NOT be an ambassador. */
+    public boolean isNotAmbassador() { return notAmbassador; }
+
+    /** The relation of the target to the source card (ATTACKER, DEFENDER, etc.). */
+    public Set<String> getRelationToTarget() { return relationToTarget; }
+
+    /** An inline condition key for complex target filters (e.g., WAS_PLAYED_BY_YOU_AND_CONQUERED). */
+    public String getCondition() { return condition; }
+
+    /** A secondary target for dual-target effects (e.g., the protected character in Security Training). */
+    public EffectTarget getProtectedCharacter() { return protectedCharacter; }
+
     /**
      * A canonical, order-stable description of the target's filters.
      *
@@ -133,11 +175,25 @@ public final class EffectTarget {
         sb.append("/ctrl=").append(controllerRelation.name());
         appendSet(sb, "type", cardTypes);
         appendSet(sb, "race", races);
+        if (!racesNot.isEmpty()) appendSet(sb, "raceNot", racesNot);
         appendSet(sb, "status", status);
         appendSet(sb, "trait", traits);
         if (innerCircleOnly) sb.append("/row=INNER_CIRCLE");
         if (supportingOnly) sb.append("/row=SUPPORTING");
         if (ambassadorOnly) sb.append("/ambassador");
+        if (notAmbassador) sb.append("/notAmbassador");
+        if (!relationToTarget.isEmpty()) {
+            TreeSet<String> sorted = new TreeSet<String>(relationToTarget);
+            sb.append("/relation=");
+            boolean first = true;
+            for (String n : sorted) {
+                if (!first) sb.append('+');
+                sb.append(n);
+                first = false;
+            }
+        }
+        if (condition != null) sb.append("/cond=").append(condition);
+        if (protectedCharacter != null) sb.append("/protects=").append(protectedCharacter.describe());
         return sb.toString();
     }
 

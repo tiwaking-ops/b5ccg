@@ -10,8 +10,7 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 
 /**
- * B5-0336 — conflict participation restrictions (proposal §3.2,
- * docs/proposals/conflict-participation-restrictions-data-proposal.md).
+ * B5-0336 - conflict participation restrictions.
  *
  * Immutable value object parsed from the optional top-level "participation"
  * key on CONFLICT cards. Absent/null participation = open participation =

@@ -117,15 +117,6 @@ public class CardSetManifestChecker {
         String kb = CardIdNamespaceGuard.canonicalKey(bare);
         String kd = CardIdNamespaceGuard.canonicalKey(deluxe);
         if (!kb.equals(kd)) {
-            // Aftermath slug divergence, by design. A reprint of an aftermath
-            // is `de_am_X` against Premiere's `aftermath_X`; the slugs differ
-            // in the am_/aftermath_ portion, so canonicalKey does NOT collapse
-            // them and both printings keep exact pool-id literals. This is the
-            // same exception HeadlessCanonicalParityProbe applies, and it is
-            // documented in CardEffects.behaviourReferences().
-            if (deluxe.startsWith("de_am_") && kb.equals("aftermath_" + deluxe.substring(6))) {
-                return null;
-            }
             return "canonical keys differ (" + kb + " vs " + kd + ") - different cards sharing a title";
         }
         return null;

@@ -121,7 +121,13 @@ RECRUIT_CHARACTER,
     public static GameAction pass()                              { return new GameAction(Type.PASS, null, null); }
     public static GameAction playCard(Card c)                    { return new GameAction(Type.PLAY_CARD, c, null); }
     public static GameAction initiateConflict(Card c, Player t)  { return new GameAction(Type.INITIATE_CONFLICT, c, t); }
+    /** Join with a chosen character (B5-0160). */
+    public static GameAction joinSupport(Card c)                 { return new GameAction(Type.JOIN_CONFLICT_SUPPORT, c, null); }
+    /** Join with a chosen character (B5-0160). */
+    public static GameAction joinOppose(Card c)                  { return new GameAction(Type.JOIN_CONFLICT_OPPOSE, c, null); }
+    /** Legacy no-card join — kept for compatibility with existing AI/flow paths. */
     public static GameAction joinSupport()                       { return new GameAction(Type.JOIN_CONFLICT_SUPPORT, null, null); }
+    /** Legacy no-card join — kept for compatibility with existing AI/flow paths. */
     public static GameAction joinOppose()                        { return new GameAction(Type.JOIN_CONFLICT_OPPOSE, null, null); }
     public static GameAction attackConflictParticipant(Card attacker, Card target) {
         return new GameAction(Type.ATTACK_CONFLICT_PARTICIPANT, attacker, null, null, target);

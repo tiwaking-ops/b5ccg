@@ -31,6 +31,20 @@ public enum EffectConditionType {
     /** "You hold at least N marks of a type". */
     MARK_COUNT_AT_LEAST,
 
+    /**
+     * "The target's Psi is at least N" - a per-stat threshold on the target.
+     *
+     * <p>Vorlon Enhancement prints "Target a character with Psi of 1 or
+     * more" - the v0 condition vocabulary could count marks and tension and
+     * influence, but it had no way to say a character's stat meets a
+     * threshold, and a missing condition would be a missing rule.</p>
+     *
+     * <p>The amount is the threshold; the subject, when present, names the
+     * stat (e.g. "PSI") the threshold applies to, defaulting to the type's
+     * own stat when absent.</p>
+     */
+    PSI_AT_LEAST,
+
     /** "A state exists" - a card in play with a named state. */
     STATE_EXISTS,
 
@@ -99,7 +113,53 @@ public enum EffectConditionType {
      * own "if you win" is the group's controller, which is the reading this
      * predicate takes.</p>
      */
-    CONTROLLER_WON_CONFLICT;
+    CONTROLLER_WON_CONFLICT,
+
+    /**
+     * "The target's Psi is at most N" - a per-stat upper-bound threshold on the target.
+     *
+     * <p>Latent Telepath prints "A Non-Narn character with a Psi of 0 gains Psi 3" -
+     * the play condition is that the target's Psi is 0 (or less). The v0 vocabulary
+     * had PSI_AT_LEAST but no AT_MOST, so a card that gates on a stat being at or
+     * below a threshold could not be expressed.</p>
+     *
+     * <p>The amount is the threshold; the subject, when present, names the
+     * stat (e.g. "PSI") the threshold applies to, defaulting to the type's
+     * own stat when absent.</p>
+     */
+    PSI_AT_MOST,
+
+    /**
+     * "The conflict's target is a location" - a filter on the conflict being resolved.
+     *
+     * <p>Mass Drivers prints "+10 Military while supporting a conflict targeting a
+     * location or while attacking a location". The v0 trigger set named conflict
+     * types but had no way to filter by the conflict's target being a location.
+     * This condition belongs on the entry (the filter is a predicate over state at
+     * resolution time), not the trigger.</p>
+     */
+    CONFLICT_TARGETS_LOCATION,
+
+    /**
+     * "The conflict type is X" - a filter on the active conflict's type.
+     *
+     * <p>Security Training prints "when the protected character is attacked during an
+     * Intrigue conflict". The v0 trigger set carried CONFLICT_TYPE_INTRIGUE etc.,
+     * but this condition is the non-trigger form: it can be used in an ONGOING or
+     * TRIGGERED entry that already has a trigger, to further restrict when the
+     * operations apply.</p>
+     */
+    CONFLICT_TYPE_IS,
+
+    /**
+     * "The target is ready and not neutralized" - a status predicate on the target.
+     *
+     * <p>Security Training prints "If ready and not neutralized, target character
+     * takes damage in place of the protected character". The v0 target filters
+     * could name statuses (ready/rotated/neutralized) but had no way to express
+     * the conjunction "ready AND NOT neutralized" as a single check.</p>
+     */
+    TARGET_IS_READY_AND_NOT_NEUTRALIZED;
 
     /** Parses a condition type, failing closed. */
     public static EffectConditionType parse(String raw, String location)

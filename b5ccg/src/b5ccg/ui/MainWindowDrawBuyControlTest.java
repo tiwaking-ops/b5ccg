@@ -187,6 +187,8 @@ public class MainWindowDrawBuyControlTest {
         // Enabled: DRAW phase, fresh pool of 4 covers one purchase.
         GameState funded = twoPlayerState("D2586FundHuman", Race.NARN,
             "D2586FundRival", Race.MINBARI, GamePhase.DRAW);
+        giveDeck(funded.getPlayers().get(0), "fund", 10);
+
         MainWindow lit = window(controller(funded));
         JButton litButton = (JButton) field(lit, "drawRoundBuyButton");
         refresh(lit, funded);

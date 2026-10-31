@@ -76,7 +76,7 @@
    "printing": "PREMIERE_ONLY",
    "class": "ONE_SHOT",
    "tags": [
-    "RESTRICTION"
+    "COST_MODIFIER"
    ],
    "starter": true,
    "covered": true
@@ -764,7 +764,9 @@
    "type": "EVENT",
    "printing": "PREMIERE_ONLY",
    "class": "ONE_SHOT",
-   "tags": [],
+   "tags": [
+    "STAT_MODIFIER"
+   ],
    "starter": true,
    "covered": false
   },
@@ -2136,11 +2138,13 @@
    "covered": false
   },
   {
-   "title": "Level the Playing Field 3+9",
+   "title": "Level the Playing Field",
    "type": "EVENT",
    "printing": "PREMIERE_ONLY",
    "class": "ONE_SHOT",
-   "tags": [],
+   "tags": [
+    "RESTRICTION"
+   ],
    "starter": true,
    "covered": false
   },
@@ -4168,7 +4172,7 @@
    "class": "STAT_MODIFIER",
    "tags": [],
    "starter": false,
-   "covered": true
+   "covered": false
   },
   {
    "title": "Vorlon Rescue",

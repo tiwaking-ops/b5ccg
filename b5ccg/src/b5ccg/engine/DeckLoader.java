@@ -360,6 +360,21 @@ public class DeckLoader {
                         if (next == '"') { sb.append('"'); i += 2; continue; }
                         if (next == '\\') { sb.append('\\'); i += 2; continue; }
                         if (next == 'n') { sb.append('\n'); i += 2; continue; }
+                        if (next == '/' ) { sb.append('/');  i += 2; continue; }
+                        if (next == 'r') { sb.append('\r'); i += 2; continue; }
+                        if (next == 't') { sb.append('\t'); i += 2; continue; }
+                        // backslash-u escape (B5-0123: e.g. \\u0027 for a literal
+                        // apostrophe in Ko'Dath-style titles round-trips correctly).
+                        if (next == 'u' && i + 5 < obj.length()) {
+                            String hex = obj.substring(i + 2, i + 6);
+                            try {
+                                sb.append((char) Integer.parseInt(hex, 16));
+                                i += 6;
+                                continue;
+                            } catch (NumberFormatException nfe) {
+                                // malformed escape — fall through to literal
+                            }
+                        }
                         sb.append(c); i++; continue;
                     }
                     if (c == '"') { i++; break; }
@@ -503,7 +518,7 @@ public class DeckLoader {
         // Build the set of all expected fields for this card type
         // Always optional/common fields (per B5-1025 schema contract "Common to every type")
         Set<String> expected = new java.util.HashSet<String>(java.util.Arrays.asList(
-            "subtype", "rarity", "faction", "set", "imageKey", "text", "cost", "mercenary"
+            "subtype", "rarity", "faction", "set", "imageKey", "text", "cost", "mercenary", "traits"
         ));
 
         // Type-specific required and optional fields per schema contract B5-1025 table

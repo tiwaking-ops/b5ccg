@@ -24,7 +24,7 @@ import java.util.Set;
  * B5-2532 — playable-release checklist conformance (standalone CLI, new file).
  *
  * Implements the executable half of
- * {@code docs/proposals/2026-10-03-b5-2283-playable-release-checklist-proposal.md}.
+ * {@code (reference removed)}.
  * The proposal defines "playable" as a conjunction of conditions; this harness
  * is the instrument that decides that conjunction, and it is deliberately
  * explicit about which conditions it can measure itself.

@@ -21,6 +21,10 @@ import java.util.List;
  * invite a negative number where the rulebook has two different words, and
  * A3 principle 2 asks for "typed enumerations" rather than arithmetic on
  * free numbers.</p>
+ *
+ * <p>The combat-specific primitives ({@code DEAL_PRE_COMBAT_DAMAGE},
+ * {@code HALVE_DAMAGE_TAKEN}, {@code REDIRECT_DAMAGE}) are in the
+ * {@link DamageCombatPrimitives} family to keep this family <= 3 (B5-0050).</p>
  */
 public final class DamagePrimitives {
 

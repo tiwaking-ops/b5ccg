@@ -5,7 +5,7 @@ package b5ccg.ui;
  * human player (an action or a card choice).
  *
  * <p>Implements the four-state lifecycle proposed in B5-2538
- * (`docs/proposals/2026-10-04-offer-marker-lifecycle-convention-proposal.md`
+ * (`(reference removed)`
  * section 2) and implemented here as the first code that actually enforces it:
  *
  * <ul>

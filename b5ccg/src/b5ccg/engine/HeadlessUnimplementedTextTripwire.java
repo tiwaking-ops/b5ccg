@@ -105,8 +105,18 @@ public class HeadlessUnimplementedTextTripwire {
      * titles, 56 of them covered by the census, 58 implemented by the
      * engine, 328 unimplemented, of which 81 are in the starter decks. The
      * census and the engine agree exactly (0 drift).</p>
+     *
+     * <p>B5-0105: the Vorlon Enhancement mark grant was removed
+     * (CardEffects.ENHANCEMENT_MARK_GRANTS no longer behaviour-references
+     * enh_vorlon_enhancement; effect-census.json marks it covered=false) because
+     * the printed card requires 4 Vorlon Marks to play and provides none
+     * (DECISIONS.md: "the answer is no"). That deliberately makes Vorlon
+     * Enhancement a behaviour-bearing card with no implementation behind it, so
+     * the unimplemented total grows by one: 328 -> 329. The starter-deck count
+     * is unchanged (Vorlon Enhancement is not a starter). This re-baseline
+     * records a governed correctness decision, not a silent regression.</p>
      */
-    private static final int BASELINE_UNIMPLEMENTED_TOTAL = 328;
+    private static final int BASELINE_UNIMPLEMENTED_TOTAL = 329;
     private static final int BASELINE_UNIMPLEMENTED_STARTER = 81;
 
     private static int checks = 0;

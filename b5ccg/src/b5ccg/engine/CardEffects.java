@@ -221,9 +221,12 @@ public final class CardEffects {
     // Data: Vorlon Enhancement provides Vorlon marks while attached.
     private static final Map<String, MarkGrant> ENHANCEMENT_MARK_GRANTS = new HashMap<String, MarkGrant>();
     static {
-        // Vorlon Enhancement (both sets): 1 Vorlon Mark on attached character while in play
-        ENHANCEMENT_MARK_GRANTS.put("enh_vorlon_enhancement",
-                new MarkGrant(MarkType.VORLON, 1, MarkGrant.Target.AMBASSADOR));
+        // Vorlon Enhancement (both sets): no mark grant. The printed card
+        // requires 4 Vorlon Marks to play and provides none, so neither reading
+        // of the card supports a grant (see B5-0105 / DECISIONS.md). The entry
+        // was removed so ENHANCEMENT_MARK_GRANTS no longer behaviour-references
+        // enh_vorlon_enhancement; effect-census.json marks Vorlon Enhancement
+        // covered=false to match.
     }
 
     // ── B5-1995: Event mark grants ──────────────────────────────────────────────
@@ -1764,11 +1767,10 @@ public final class CardEffects {
      * hardcoded 10-id list (which drifted from the tables): this scan can never
      * disagree with the literals it walks.
      *
-     * Aftermath slug divergence (aftermath_X / de_am_X) is NOT unified here —
-     * both printings keep exact literals by design (the slugs differ in the
-     * `am_` vs bare `aftermath_` portion, so canonicalKey does not collapse them).
-     * Only Premiere literals are kept for unchanged-text twins; Deluxe-only
-     * entries (de_conf_bio_weapon_discovery, de_agenda_servants_of_order,
+     * B5-0104: aftermath slugs now converge — canonicalKey strips `de_` then maps
+     * `am_` back to `aftermath_`, so both printings share one canonical key. Only
+     * Premiere literals are kept for unchanged-text twins; Deluxe-only entries
+     * (de_conf_bio_weapon_discovery, de_agenda_servants_of_order,
      * de_agenda_total_war, and the 5 de_char_* ambassadors) are kept exact.
      */
     public static Set<String> behaviourReferences() {

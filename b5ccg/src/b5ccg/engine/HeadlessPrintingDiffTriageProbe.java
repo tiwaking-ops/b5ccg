@@ -206,24 +206,24 @@ public class HeadlessPrintingDiffTriageProbe {
                 delx + " unexpectedly present");
         }
 
-        // ── 4. Negative control: aftermath slug divergence ───────────────────
-        // aftermath_X and de_am_X do NOT collapse via canonical routing.
-        // canonicalKey("de_am_rise_to_power") = "am_rise_to_power",
-        // which differs from "aftermath_rise_to_power" — so both printings
-        // keep exact literals by design.
+        // ── 4. Aftermath slug convergence (B5-0104) ───────────────────────────────
+        // aftermath_X and de_am_X NOW collapse via canonical routing: canonicalKey
+        // strips de_ then maps am_ back to aftermath_, so both printings share one
+        // canonical key. This replaces the old negative control that asserted they
+        // must NOT collapse.
         String premAm = "aftermath_rise_to_power";
         String delxAm = "de_am_rise_to_power";
         String canonPrem = CardIdNamespaceGuard.canonicalKey(premAm);
         String canonDelx = CardIdNamespaceGuard.canonicalKey(delxAm);
-        check("aftermath slug divergence: canonical keys differ",
-            !canonPrem.equals(canonDelx),
-            "canon(" + premAm + ")=" + canonPrem + " == canon(" + delxAm + ")=" + canonDelx
-            + " — slugs collapsed, which would silently unify the two printings");
-        check("aftermath slug divergence: canon(aftermath_*) is unchanged",
+        check("aftermath slug convergence: canonical keys match",
+            canonPrem.equals(canonDelx),
+            "canon(" + premAm + ")=" + canonPrem + " != canon(" + delxAm + ")=" + canonDelx
+            + " — slugs did not collapse");
+        check("aftermath slug convergence: canon(aftermath_*) is unchanged",
             premAm.equals(canonPrem),
             "got " + canonPrem);
-        check("aftermath slug divergence: canon(de_am_*) strips to am_* not aftermath_*",
-            canonDelx.equals("am_rise_to_power"),
+        check("aftermath slug convergence: canon(de_am_*) yields aftermath_*",
+            canonDelx.equals("aftermath_rise_to_power"),
             "got " + canonDelx);
 
         // ── 5. Mutation M1: canonical routing is load-bearing ───────────────────

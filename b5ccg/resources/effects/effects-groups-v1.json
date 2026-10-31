@@ -19,7 +19,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/sustained-actions", "RB:III/ready-and-rotated-cards"],
-        "textSha256": "2d6defe1a005741789016a4a9ce5e78c1c67c5fa54cb2577e90279c32a874710",
+        "textSha256": "a9f0a5c71f4f68bea804db408e32f16e60ff51bac23cd8d7699a208bba4df70e",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -42,7 +42,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "709b221ddefa7c1b7954587b996b29f4732b229d19ca98ca667335ee8656f807",
+        "textSha256": "4a89369579d9a59fa40b59a6c2643e5e3751fe5aba15c6cf146ae8ecb5cec0ac",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -65,7 +65,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/resolution-round", "RB:III/ready-and-rotated-cards"],
-        "textSha256": "ae07034da0ea5e669a0e58696b421aca729f84833ef557a856f457a998216512",
+        "textSha256": "2216f5079047e0de00415a544787b04976fb31bc97de10bacc37883e45d0b3a0",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -88,7 +88,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "9e8b23811405f831cb1254629353e8940bd4a7a179f52530d28954f147ea6fda",
+        "textSha256": "33328da8ba17053ad75f8d92c92a6ad2f49fb81f1c23af32d855cab98edbeba8",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -111,7 +111,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:III/draw-round"],
-        "textSha256": "9e8b23811405f831cb1254629353e8940bd4a7a179f52530d28954f147ea6fda",
+        "textSha256": "33328da8ba17053ad75f8d92c92a6ad2f49fb81f1c23af32d855cab98edbeba8",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -133,7 +133,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/draw-round"],
-        "textSha256": "93504cadf304395f182478be044f2c15f118a0506dbfbad1140bd9417c7c713c",
+        "textSha256": "3fe53c0f98aa7a966e86b6e174b550f9ac2d6f0c07631e5fb101f1bbcd990f14",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -155,7 +155,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/draw-round", "RB:VI/cumulative-effects"],
-        "textSha256": "93504cadf304395f182478be044f2c15f118a0506dbfbad1140bd9417c7c713c",
+        "textSha256": "3fe53c0f98aa7a966e86b6e174b550f9ac2d6f0c07631e5fb101f1bbcd990f14",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -177,7 +177,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:I/influence", "RB:II/influence-changes"],
-        "textSha256": "340f7fff45fe73aa3a54d05ce07586bb687d50c66244404c758f20554e93057b",
+        "textSha256": "4a43c68903defc255cdd6bdd92d72af0ab84275e6b723aebb8c1d95abafcc4d4",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -200,7 +200,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/ready-round", "RB:I/influence"],
-        "textSha256": "5cc9c2980f6c08ef8fd0b0b2c747ed7cf29a50becca2a4a43d0b6c37a80fd436",
+        "textSha256": "cbcc37e8775f31086c65f9e8a69a723458b0054e32eb86f56a96a8d9705b6c9a",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -222,7 +222,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/action-round"],
-        "textSha256": "58341abea18fa2b67f79e00b44e5264de6ac81de0c8fc46ee8c39a266654aab0",
+        "textSha256": "6e7c4ab808793579a3fd3f91e371f448e4dde4ffe4f5d133a57a3d0bd3715d7a",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -245,7 +245,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "b9b18c6f151022f2a3e931092e2cceefe046314b9306d99618e19af4d09e5f73",
+        "textSha256": "f5a84b2bb08c6c1ee098740f28ef26bb0c6eacfd6421e2971655c346a553b548",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -268,7 +268,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "3c8ab0220d919b0be0b727674386be5e57d7eeb60b83838294d941ab627ae242",
+        "textSha256": "3db929c24b16d2494c91455e887996815641d41491345579518ba16050a826f6",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -291,7 +291,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "3c8ab0220d919b0be0b727674386be5e57d7eeb60b83838294d941ab627ae242",
+        "textSha256": "3db929c24b16d2494c91455e887996815641d41491345579518ba16050a826f6",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -315,7 +315,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:VI/bonuses-and-blanking", "RB:VI/discards"],
-        "textSha256": "0fa3bab48ad4868105851b250033e22a3765c468acd08d1cfc43f67b291a85a3",
+        "textSha256": "43c4c9e0176c44fdb420400d23d69af7c582cfa0aca82d0d7d1fd8c8af3a8578",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -339,7 +339,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/resolution-round", "RB:VI/discards"],
-        "textSha256": "148aa02671d568c0a6cf02aef7391031256b5d051b7eb6287d054df6828cc3dd",
+        "textSha256": "a30b394eecac32cd96cf4ef1e505140b994c9859953026979a8ad12d7811872e",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -361,7 +361,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:VI/discards"],
-        "textSha256": "42d21a43635d854e3b2c2ebd80bfdc55c960d1f30a6acb00174452d264feb856",
+        "textSha256": "bb141e52b8228be01747b0c6a1ee04d7b679b15e70e706920bf97ac3b3509593",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -384,7 +384,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "4af1bea2b0ebbcc1e5e1c3c1627d9f7617b1de9586cefbea6f861fd8d8d0c36b",
+        "textSha256": "380c8627bc193ddbe0c15dab9373a6313af9d3d18303acba30ce3cb5d8852f47",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -407,7 +407,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "4af1bea2b0ebbcc1e5e1c3c1627d9f7617b1de9586cefbea6f861fd8d8d0c36b",
+        "textSha256": "380c8627bc193ddbe0c15dab9373a6313af9d3d18303acba30ce3cb5d8852f47",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -429,7 +429,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/draw-round"],
-        "textSha256": "980f968da9bcb0c0ae5414a6421eb226180bc5663e88dc96fe45bbe6120f5b4b",
+        "textSha256": "8afb18daa2d42d59e42fd6250e3b53921f30a600d4c1a3d8ea567ed3a7f880b3",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -452,7 +452,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "78de2a70dc0e6cdb7c55abdf75a77c51c74f10612501e7ef0becc1beb05400a9",
+        "textSha256": "bf8b2f0f7b9b9f05ff0260902f3af21220d64cedaf318d044032948041ddeee7",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -475,7 +475,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:III/ready-and-rotated-cards"],
-        "textSha256": "78de2a70dc0e6cdb7c55abdf75a77c51c74f10612501e7ef0becc1beb05400a9",
+        "textSha256": "bf8b2f0f7b9b9f05ff0260902f3af21220d64cedaf318d044032948041ddeee7",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -498,7 +498,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:I/influence"],
-        "textSha256": "6cda04cb10232f41d9f75a4f09f902abfb8fa1146a099cf187fe0be7e51f149d",
+        "textSha256": "01fee10ff6afe40d20efc20c77a0860994be2600d50bd8b8c7e47849c5e6c26f",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -521,7 +521,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "5ae0cb59f30ec8c671493e110c717d5002a6ffee035ce508ab2625c24ccfb546",
+        "textSha256": "dd1a2649c532d3595d6d217c18560ad2503ab1d39bc5469e10ecb042a238f983",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -544,7 +544,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:III/draw-round"],
-        "textSha256": "5ae0cb59f30ec8c671493e110c717d5002a6ffee035ce508ab2625c24ccfb546",
+        "textSha256": "dd1a2649c532d3595d6d217c18560ad2503ab1d39bc5469e10ecb042a238f983",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -567,7 +567,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "576fddbde203158ea0be4aeb29dc6727c1748645b4e664a8a9a2bcd1441d60a0",
+        "textSha256": "14aeeeba4427b24740f3927f3888822b20fdbdc9a24a8b61fdda6dd578bc7502",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -590,7 +590,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:VI/triggered-effects", "RB:III/resolution-round", "RB:VI/discards"],
-        "textSha256": "576fddbde203158ea0be4aeb29dc6727c1748645b4e664a8a9a2bcd1441d60a0",
+        "textSha256": "14aeeeba4427b24740f3927f3888822b20fdbdc9a24a8b61fdda6dd578bc7502",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -613,7 +613,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/ready-round", "RB:I/influence"],
-        "textSha256": "c995292297a4bb2d93e027f03ebc9a193dda6542fb6b57db77a1c4f9ac4e3c7f",
+        "textSha256": "dd1d48fda21687c784293e39d04866ab149a9a5e7343d4bc022ee7937d591089",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -636,7 +636,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "7a3c9b9ef9f286cb64cafbbd9dd4c26a76b8f423b50a104fa994ad443d852ec5",
+        "textSha256": "ee1cd80d2abf55e3b8427b1bdba8c5196439436f901d7766c6b90f7bdc2233d7",
         "printingScope": "SINGLE_PRINTING"
       }
     },
@@ -659,7 +659,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "7a3c9b9ef9f286cb64cafbbd9dd4c26a76b8f423b50a104fa994ad443d852ec5",
+        "textSha256": "ee1cd80d2abf55e3b8427b1bdba8c5196439436f901d7766c6b90f7bdc2233d7",
         "printingScope": "SINGLE_PRINTING"
       }
     },
@@ -682,7 +682,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:III/ready-round", "RB:I/influence"],
-        "textSha256": "8467b1799d62ee9907b47fd0ca1ea7feef2944d141bad1af7ebb74ab9f711c69",
+        "textSha256": "b8e540a36ee637b8c8d678d98e125b7e32317c949c43c335e951232e0cd75d5f",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -704,7 +704,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/fleet-cards"],
-        "textSha256": "da9085bc628bf7bf7182d67025ee33daaf002fbe98fa626db874abea029b4a58",
+        "textSha256": "7da71ac5aa3ffb50dc1f0b2296622460224735e44adc9b9ed203753498ad0301",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -727,7 +727,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "9059218b6293bb30b9a99ab976f2e0605a7182dae5890b84229ebacbc253fddf",
+        "textSha256": "d202dfcdf2b123709e5e510eb8fff6c34f56304a251088c3b6bfd3de29d1abe1",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -750,7 +750,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "e6a704d151c2b5098a9b25fb7fc420a8cab04a560706ebb68618c4b73f67c81f",
+        "textSha256": "dfd73a4b745aa2b123269e69d81859820150386ef0fd8a782b0a34627dc8ad96",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -773,7 +773,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "e6a704d151c2b5098a9b25fb7fc420a8cab04a560706ebb68618c4b73f67c81f",
+        "textSha256": "dfd73a4b745aa2b123269e69d81859820150386ef0fd8a782b0a34627dc8ad96",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -796,7 +796,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/group-cards", "RB:IV/type-of-conflict", "RB:III/conflict-round"],
-        "textSha256": "15bf29c27d4a31088249e98aea09a3bb8f764a4f4239b2e7a06cb09d581b8807",
+        "textSha256": "c9a1e238468edb83a963522a3b8667469af6eaeda0579b20540fa4651a2c3454",
         "printingScope": "DELUXE_GOVERNS"
       }
     }

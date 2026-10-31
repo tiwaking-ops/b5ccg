@@ -275,6 +275,95 @@ if (Test-Path -LiteralPath $claimsDir) {
     }
 }
 
+# B5-0048: scope-overlap detection - report scope conflicts in existing claims
+$scopeConflicts = @()
+if (Test-Path -LiteralPath $claimsDir) {
+    $allClaims = @(Get-ChildItem -LiteralPath $claimsDir -Filter "*.json" -ErrorAction SilentlyContinue |
+                   Where-Object { $_.Name -notmatch '\.RELEASED\.json$' })
+    $processedClaims = @{}
+    
+    foreach ($claimFile in $allClaims) {
+        if ($processedClaims.ContainsKey($claimFile.BaseName)) { continue }
+        $processedClaims[$claimFile.BaseName] = $true
+        
+        try {
+            $claim = [System.IO.File]::ReadAllText($claimFile.FullName) | ConvertFrom-Json
+            if ($claim.scope -and $claim.task) {
+                # Find other claims that overlap scopes with this one
+                foreach ($otherClaimFile in $allClaims) {
+                    if ($otherClaimFile.BaseName -eq $claimFile.BaseName) { continue }
+                    if ($processedClaims.ContainsKey($otherClaimFile.BaseName)) { continue }
+                    
+                    try {
+                        $otherClaim = [System.IO.File]::ReadAllText($otherClaimFile.FullName) | ConvertFrom-Json
+                        if ($otherClaim.scope -and $otherClaim.task -and $otherClaim.agent_id -ne $claim.agent_id) {
+                            foreach ($scope in $claim.scope) {
+                                if ($scope -in $otherClaim.scope) {
+                                    $scopeConflicts += @{
+                                        Task1 = $claim.task
+                                        Agent1 = $claim.agent_id
+                                        Scope1 = $scope
+                                        Task2 = $otherClaim.task
+                                        Agent2 = $otherClaim.agent_id
+                                        Scope2 = $scope
+                                    }
+                                }
+                            }
+                        }
+                    } catch {
+                        # Skip unreadable claims
+                    }
+                }
+            }
+        } catch {
+            # Skip unreadable claims
+        }
+    }
+}
+
+# Report scope conflicts in the output if any exist
+if ($scopeConflicts.Count -gt 0) {
+    Write-Output "-- SCOPE CONFLICTS DETECTED (B5-0048): --"
+    $uniqueConflicts = @{}
+    foreach ($conflict in $scopeConflicts) {
+        $key = "$($conflict.Task1)-$($conflict.Task2)-$($conflict.Scope1)"
+        if (-not $uniqueConflicts.ContainsKey($key)) {
+            $uniqueConflicts[$key] = $conflict
+        }
+    }
+    foreach ($conflict in $uniqueConflicts.Values) {
+        Write-Output ("    $($conflict.Task1) by $($conflict.Agent1) and $($conflict.Task2) by $($conflict.Agent2) both claim scope: $($conflict.Scope1)")
+    }
+    Write-Output "-- END SCOPE CONFLICTS --"
+}
+
+# B5-0048: frozen-scope census - report every OPEN freeze-window row and the
+# scopes it freezes, so a planner or agent can see the freeze without
+# hand-grepping the ledger for "freeze window". Read-only visibility,
+# mirroring the role of the scope-conflicts report above.
+$frozenRows = @()
+foreach ($ln in [System.IO.File]::ReadAllLines($ledger, [System.Text.Encoding]::UTF8)) {
+    if ($ln -match '^\|\s*(B5-[0-9]{4}[a-z]?)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|') {
+        # Snapshot the groups FIRST: any later -notmatch repopulates $Matches
+        # (a matching -notmatch sets it, and that pattern has no groups), which
+        # would turn $matches[4] into $null.
+        $frozenId = $matches[1]
+        $frozenStatus = $matches[2].Trim()
+        $frozenTask = $matches[3]
+        $frozenScopeCell = $matches[4]
+        if ($frozenStatus -ne 'OPEN') { continue }
+        if ($frozenTask -notmatch 'freeze window') { continue }
+        $frozenScopes = @([regex]::Matches($frozenScopeCell, '(engine|tooling|resources|docs|ai|ui|model|card-text/b[0-9]+)') |
+                          ForEach-Object { $_.Value } | Select-Object -Unique)
+        $frozenRows += "    $frozenId freezes: $(if ($frozenScopes.Count) { $frozenScopes -join ', ' } else { '(no known scope token in Scope cell)' })"
+    }
+}
+if ($frozenRows.Count -gt 0) {
+    Write-Output "-- FROZEN SCOPES DETECTED (B5-0048): --"
+    foreach ($f in $frozenRows) { Write-Output $f }
+    Write-Output "-- END FROZEN SCOPES --"
+}
+
 $heartbeats = @{}
 if (Test-Path -LiteralPath $hbDir) {
     Get-ChildItem -LiteralPath $hbDir -Filter "*.json" | ForEach-Object {

@@ -31,7 +31,7 @@ public final class CostPrimitives {
     public static final String FAMILY = "COST";
 
     /** The costs a modifier may name. */
-    private static final String[] COSTS = { "INFLUENCE", "CONFLICT_INITIATION" };
+    private static final String[] COSTS = { "INFLUENCE", "CONFLICT_INITIATION", "SPONSOR" };
 
     /** A cost is changed. */
     public static final EffectPrimitive COST_MODIFIER = new SimplePrimitive(

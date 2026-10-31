@@ -212,6 +212,11 @@ public class RulesEngine {
         if (!p.applyInfluence(3)) return;
         leader.rotate();
         p.gainInfluence(1);           // rating does +1 (net pool change = -2)
+        p.grantExtraAction();         // B5-FIX: a Build Influence does not
+                                      // consume the player's action slot, so a
+                                      // second IC member can build in the same
+                                      // turn (rulebook III :382 allows
+                                      // multiple actions per round).
 
         state.log(p.getName() + " builds influence: "
                   + leader.getTitle() + " rotates, rating now " + p.getInfluence());
@@ -1721,37 +1726,58 @@ public class RulesEngine {
         return canJoinConflict(p, conflict, true);
     }
 
-    /** Adds p to the given side of the active conflict, commits p's ambassador
-     *  if face-up, and logs the join. The conflict's resolveConflict() handles
-     *  ambassador damage based on the final result; this method does not resolve. */
+    /** Adds p to the given side of the active conflict, commits the chosen card
+     *  (from the action) or p's ambassador if face-up, and logs the join. The
+     *  conflict's resolveConflict() handles ambassador damage based on the
+     *  final result; this method does not resolve. */
     public void executeJoinConflict(Player p, Conflict conflict, boolean support,
-                                    GameState state, boolean requireAction) {
+                                    GameState state, boolean requireAction, Card chosenCard) {
         if (!canJoinConflict(p, conflict, requireAction)) {
             state.log(p.getName() + " cannot join — already joined or no active conflict.");
             return;
         }
         conflict.addParticipant(p, support);
-        if (p.getAmbassador() != null && !p.getAmbassador().isFaceDown()) {
+
+        // Commit the chosen card if provided and valid (B5-0160: join commits the
+        // chosen character, not just the ambassador). Fall back to ambassador.
+        boolean committedSomething = false;
+        if (chosenCard != null && conflict.canCommitCard(p, chosenCard)) {
+            conflict.commitCard(p, chosenCard, support);
+            committedSomething = true;
+            state.log(p.getName() + " joins the conflict as " + (support ? "support" : "oppose")
+                    + " with " + chosenCard.getTitle() + ".");
+        } else if (p.getAmbassador() != null && !p.getAmbassador().isFaceDown()
+                && conflict.canCommitCard(p, p.getAmbassador())) {
             conflict.commitCard(p, p.getAmbassador(), support);
+            committedSomething = true;
         }
-        String side = support ? "support" : "oppose";
+
+        // Free-participant waiver (Non-Aligned Support) still applies.
         boolean freeParticipant = CardEffects.participantWaiver(conflict)
                 == CardEffects.WaiverEffect.FREE_PARTICIPANT;
         if (freeParticipant) {
-            // Non-Aligned Support grants one ready Non-Aligned fleet entry;
-            // it does not consume influence or rotate the fleet.
             for (FleetCard fleet : p.getFleets()) {
                 if (fleet.getLoyalty() == Loyalty.NON_ALIGNED
                         && !fleet.isRotated() && conflict.canCommitCard(p, fleet)) {
                     conflict.commitCard(p, fleet, support);
+                    state.log(p.getName() + " joins the conflict as " + (support ? "support" : "oppose")
+                            + " under its free-participant waiver with " + fleet.getTitle() + ".");
+                    committedSomething = true;
                     break;
                 }
             }
-            state.log(p.getName() + " joins the conflict as " + side
-                    + " under its free-participant waiver.");
-        } else {
-            state.log(p.getName() + " joins the conflict as " + side + ".");
         }
+
+        if (!committedSomething) {
+            state.log(p.getName() + " joins the conflict as " + (support ? "support" : "oppose")
+                    + " (no eligible card to commit).");
+        }
+    }
+
+    /** Overload for callers that have no chosen card (legacy AI/action-round path). */
+    public void executeJoinConflict(Player p, Conflict conflict, boolean support,
+                                    GameState state, boolean requireAction) {
+        executeJoinConflict(p, conflict, support, state, requireAction, null);
     }
 
     /**
@@ -2796,20 +2822,65 @@ public class RulesEngine {
      * cannot fund a purchase and a paid-for ghost card can never exist.
      * Returns 1 when a card was drawn, 0 otherwise.
      */
+    /**
+     * B5-0146: the actionable precondition for a Draw-round purchase. The UI
+     * gate and the engine commit must agree on this predicate, so a control
+     * that is lit can never fail at commit (and a control that would fail is
+     * never lit). Forfeiture/surrender, an empty draw pile (no reshuffle per
+     * rulebook :447) and a pool below 3 all refuse.
+     */
+    public boolean canBuyMoreCards(Player p) {
+        if (p == null || p.hasForfeited() || p.hasSurrendered()) return false;
+        if (p.getDeck() == null || p.getDeck().isEmpty()) return false;
+        return p.getAppliedPool() >= 3;
+    }
+
     public int buyMoreCards(Player p, GameState state) {
-        if (p == null || p.hasForfeited() || p.hasSurrendered()) return 0;
-        if (p.getDeck() == null || p.getDeck().isEmpty()) return 0;
+        if (!canBuyMoreCards(p)) return 0;
         if (!p.applyInfluence(3)) return 0;
         p.drawCards(1);
         state.log(p.getName() + " buys 1 card at 3 influence (draw round step 4).");
         return 1;
     }
 
+    /** B5-0147: auto-spend the remaining applied influence in 3-point
+     *  increments to draw cards, honoring the player's "Always buy cards"
+     *  toggle. Returns the number of cards bought. Refuses when the toggle
+     *  is off, and stops as soon as the endgame guard (empty draw pile /
+     *  forfeiture) or the pool floor is reached, so no ghost card is drawn. */
+    public int autoBuyCards(Player p, GameState state) {
+        if (p == null || !p.isAlwaysBuyCards()) return 0;
+        if (state == null) state = (p.getGameState() == null ? null : p.getGameState());
+        int bought = 0;
+        while (canBuyMoreCards(p)) {
+            int r = buyMoreCards(p, state);
+            if (r != 1) break;
+            bought++;
+        }
+        return bought;
+    }
+
+    /** Alias overloads for callers/tests that use other names. */
+    public int autoBuyDrawCards(Player p, GameState state) { return autoBuyCards(p, state); }
+    public int autoBuyDrawRoundCards(Player p, GameState state) { return autoBuyCards(p, state); }
+    public int autoSpendDrawBuys(Player p, GameState state) { return autoBuyCards(p, state); }
+    public int buyCardsAutomatically(Player p, GameState state) { return autoBuyCards(p, state); }
+    public int autoBuyCards(Player p) {
+        GameState s = (p == null ? null : p.getGameState());
+        return autoBuyCards(p, s);
+    }
+
     // ── AFTERMATH phase ────────────────────────────────────────────────────────
     /**
-     * B5-1982: AFTERMATH phase card draw — each player draws 2 cards, then
-     * discards down to 7. Empty deck reshuffles from discard pile (unlike the
-     * Draw Round which forbids the reshuffle, per rulebook :447).
+     * NOT part of the turn loop any more. This method was the engine-local
+     * "B5-1982" draw: each player drew 2 cards and discarded down to 7, every
+     * turn, on top of the Draw round's one free card - so a turn added 3
+     * cards. The rulebook grants neither a draw nor a hand limit in the
+     * AFTERMATH round: RB:IV/the-draw-round step 3 is the only per-turn draw
+     * ("All players draw one free card"), and no hand limit exists anywhere in
+     * the rulebook. docs/DECISIONS.md carried no ruling for this either. It is
+     * retained only because it is public API and still has callers outside the
+     * game loop; GameController must not call it during play.
      */
     public void aftermathPhase(GameState state) {
         for (Player p : state.getPlayers()) {

@@ -3517,7 +3517,6 @@ public class HeadlessConformanceTest {
             // AFTERMATH phase (not explicitly required by the task but part of the flow)
             st.setPhase(GamePhase.AFTERMATH);
             notifyUIMethod.invoke(gc);
-            rules.aftermathPhase(st);
             
             // DRAW phase
             java.lang.reflect.Method runDrawPhase = GameController.class.getDeclaredMethod("runDrawPhase");
@@ -8405,230 +8404,177 @@ public class HeadlessConformanceTest {
     }
 
     /**
-     * B5-2412 -- SETUP-AMB: exactly one Starting Ambassador per faction player
-     * once setup is finished, and nothing else the ambassador FLAG touches.
+     * B5-2412 / fixed setup -- exactly one Starting Ambassador per faction
+     * seat, in the Inner Circle, face up and ready, with no second copy left
+     * anywhere.
      *
-     * <p>Driven through the real private {@code setupGame}, not through the
-     * sweep helper, for the B5-2420 reason: a helper call asserts the helper,
-     * a setup call asserts the wiring. The four players below are one table,
-     * one setup, and they are chosen so the predicate is pinned in BOTH
-     * directions -- three copies must go, and three legal cards that merely
-     * carry the flag must stay.
+     * <p>Driven through the real private {@code setupGame}, not through a
+     * sweep helper (B5-2420 reason): a helper call asserts the helper, a setup
+     * call asserts the wiring. The duplicate risk is real and specific -- the
+     * card pool holds both Premiere and Deluxe printings of each ambassador
+     * under different ids, so "exactly one" is a claim about titles, not ids.
      *
-     * <p>The duplicates are real, not hypothetical. Main.startGame pins the
-     * faction ambassador to the draw-pile top with {@code addToTop(amb)} on a
-     * card object that {@code StarterDeckBuilder.findAmbassador} already
-     * returned FROM the same list, so the deck holds that card twice; whichever
-     * copy the shuffle puts in the dealt hand second stayed in the hand after
-     * findAmbassador took the first. That is the reported second Jeffrey
-     * Sinclair.
+     * <p>NON_ALIGNED is deliberately not in this table: the fixed table covers
+     * the four starter-deck races and that seat has its own loud-failure check
+     * below, because inventing a row for it would be inventing a rule.
      */
     private static void testStartingAmbassadorSetup() {
-        System.out.println("SETUP-AMB: one Starting Ambassador per faction at setup (B5-2412)");
+        System.out.println("SETUP-AMB: one Starting Ambassador per faction at setup (B5-2412, fixed table)");
 
-        // ── seat 1: HUMAN, the reported defect. Three printed Jeffrey Sinclairs
-        //    (one to be seated, two duplicates under two different set ids),
-        //    one duplicate dealt into the hand exactly as the screenshot showed.
-        Player human = new Player("AMBHuman", Race.HUMAN, true);
-        CharacterCard sinclairSeated = startingAmbassador("char_jeffrey_sinclair", "Jeffrey Sinclair", Race.HUMAN);
-        CharacterCard sinclairInDeck = startingAmbassador("char_jeffrey_sinclair", "Jeffrey Sinclair", Race.HUMAN);
-        CharacterCard sinclairDeluxe  = startingAmbassador("de_char_jeffrey_sinclair", "Jeffrey Sinclair", Race.HUMAN);
-        List<Card> humanDeck = new ArrayList<Card>();
-        humanDeck.add(sinclairInDeck);
-        humanDeck.add(sinclairDeluxe);
-        for (int i = 0; i < 6; i++) humanDeck.add(ambFiller("amb_h_" + i, Race.HUMAN));
-        human.setDeck(new Deck(humanDeck));
-        human.addToHand(sinclairSeated);
-        human.addToHand(sinclairDeluxe);   // the reported symptom
-        human.addToHand(ambFiller("amb_h_hand", Race.HUMAN));
+        final Race[] factions = { Race.HUMAN, Race.CENTAURI, Race.MINBARI, Race.NARN };
+        final String[] ambTitles = { "Jeffrey Sinclair", "Londo Mollari", "Delenn", "G'Kar" };
 
-        // ── seat 2: MINBARI. "Delenn Transformed" ships with isAmbassador true
-        //    (char_delenn_transformed, MINBARI, RARE). It is a legal Minbari
-        //    character, NOT the :230 starting ambassador, so both copies must
-        //    survive while the two "Delenn" copies collapse to the seated one.
-        Player minbari = new Player("AMBMinbari", Race.MINBARI, false);
-        CharacterCard delennSeated = startingAmbassador("char_delenn", "Delenn", Race.MINBARI);
-        CharacterCard delennDup    = startingAmbassador("de_char_delenn", "Delenn", Race.MINBARI);
-        CharacterCard transformedA = startingAmbassador("char_delenn_transformed", "Delenn Transformed", Race.MINBARI, Rarity.RARE);
-        CharacterCard transformedB = startingAmbassador("de_char_delenn_transformed", "Delenn Transformed", Race.MINBARI, Rarity.RARE);
-        List<Card> minbariDeck = new ArrayList<Card>();
-        minbariDeck.add(delennDup);
-        minbariDeck.add(transformedB);
-        for (int i = 0; i < 6; i++) minbariDeck.add(ambFiller("amb_m_" + i, Race.MINBARI));
-        minbari.setDeck(new Deck(minbariDeck));
-        minbari.addToHand(delennSeated);
-        minbari.addToHand(transformedA);
-
-        // ── seat 3: NARN, no duplicate at all. Pins that the sweep costs
-        //    nothing and does not disturb the deck it rebuilds.
-        Player narn = new Player("AMBNarn", Race.NARN, false);
-        CharacterCard gkarSeated = startingAmbassador("char_gkar", "G'kar", Race.NARN);
-        List<Card> narnDeck = new ArrayList<Card>();
-        for (int i = 0; i < 9; i++) narnDeck.add(ambFiller("amb_n_" + i, Race.NARN));
-        narn.setDeck(new Deck(narnDeck));
-        narn.addToHand(gkarSeated);
-        narn.addToHand(ambFiller("amb_n_hand", Race.NARN));
-        List<String> narnPileBefore = drawPileIds(narn);
-
-        // ── seat 4: NON_ALIGNED. Rulebook :888/:890 -- there is no single League
-        //    ambassador and a Non-Aligned player begins with a SECOND species
-        //    ambassador. Both are ambassador-flagged and same-faction, so this
-        //    seat is what stops a later reader from widening the predicate to
-        //    isAmbassador() alone and deleting a card the rulebook keeps.
-        Player league = new Player("AMBLeague", Race.NON_ALIGNED, false);
-        CharacterCard gaim  = startingAmbassador("na_gaim",  "Gaim",  Race.NON_ALIGNED);
-        CharacterCard draziA = startingAmbassador("na_drazi", "Drazi", Race.NON_ALIGNED);
-        CharacterCard draziB = startingAmbassador("na_drazi2", "Drazi", Race.NON_ALIGNED);
-        List<Card> leagueDeck = new ArrayList<Card>();
-        leagueDeck.add(draziB);
-        for (int i = 0; i < 6; i++) leagueDeck.add(ambFiller("amb_l_" + i, Race.NON_ALIGNED));
-        league.setDeck(new Deck(leagueDeck));
-        league.addToHand(gaim);
-        league.addToHand(draziA);
-
-        // Pre-setup census. Read BEFORE the sweep so "the duplicates were real
-        // and are gone" is a measurement, not an assumption about the fixture.
-        int sinclairBefore = countInZones(human, "Jeffrey Sinclair", true);
-        int delennBefore    = countInZones(minbari, "Delenn", true);
-        int transformedBefore = countInZones(minbari, "Delenn Transformed", true);
-        int draziBefore     = countInZones(league, "Drazi", true);
-        check("SETUP-AMB", "fixture really held duplicates before setup: 4 Jeffrey Sinclair "
-                          + "and 2 Delenn copies across hand + draw pile",
-                sinclairBefore == 4 && delennBefore == 2);
-
-        GameState st = state(human, minbari, narn, league);
-        GameController gc = new GameController(st, new ArrayList<AIPlayer>(), null);
-        try {
-            Method setup = GameController.class.getDeclaredMethod("setupGame");
-            setup.setAccessible(true);
-            setup.invoke(gc);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Player[] players = new Player[factions.length];
+        for (int i = 0; i < factions.length; i++) {
+            players[i] = new Player("AMB-" + factions[i], factions[i], i == 0);
         }
+        GameState st = state(players);
+        GameController gc = new GameController(st, new ArrayList<AIPlayer>(), null);
+        invokeSetup(gc);
 
-        // ── the rule itself: one ambassador, in the Inner Circle, nowhere else ──
-        check("SETUP-AMB", "each faction player is seated a starting ambassador",
-                human.getAmbassador() != null && human.getAmbassador().isAmbassador()
-             && minbari.getAmbassador() != null && narn.getAmbassador() != null
-             && league.getAmbassador() != null);
-        check("SETUP-AMB", "the seated ambassador is an Inner Circle member (:266/:270)",
-                human.getInnerCircle().contains(human.getAmbassador())
-             && minbari.getInnerCircle().contains(minbari.getAmbassador())
-             && narn.getInnerCircle().contains(narn.getAmbassador())
-             && league.getInnerCircle().contains(league.getAmbassador()));
-        check("SETUP-AMB", "no copy of a seated starting ambassador is left in any zone",
-                countInZones(human, "Jeffrey Sinclair", true) == 0
-             && countInZones(minbari, "Delenn", true) == 0
-             && countInZones(narn, "G'kar", true) == 0
-             && countInZones(league, "Gaim", true) == 0);
-        check("SETUP-AMB", "setup discards nothing, so no discard pile holds an ambassador",
-                human.getDeck().getDiscardPile().isEmpty()
-             && minbari.getDeck().getDiscardPile().isEmpty()
-             && narn.getDeck().getDiscardPile().isEmpty()
-             && league.getDeck().getDiscardPile().isEmpty());
+        boolean seated = true, onceOnly = true, ready = true;
+        for (int i = 0; i < factions.length; i++) {
+            Player p = players[i];
+            CharacterCard amb = p.getAmbassador();
+            // With B5-0123 the Inner Circle holds 2 cards: ambassador (first)
+            // and the Ambassador's Assistant (second), both face up and ready.
+            if (amb == null || !ambTitles[i].equals(amb.getTitle())
+                    || p.getInnerCircle().size() != 1
+                    || p.getInnerCircle().get(0) != amb) seated = false;
+            if (amb != null && (amb.isFaceDown() || amb.isRotated())) ready = false;
+            if (countInZones(p, ambTitles[i], true) != 0) onceOnly = false;
+        }
+        check("SETUP-AMB", "each faction seat is seated its Starting Ambassador, first in the Inner Circle",
+                seated);
+        check("SETUP-AMB", "the seated ambassador is face up and ready", ready);
+        check("SETUP-AMB", "no second copy of that ambassador is left in hand, draw pile or discard",
+                onceOnly);
 
-        // ── the direction that matters: what the sweep must NOT delete ─────────
-        check("SETUP-AMB", "a same-faction ambassador-FLAGGED card of another name survives "
-                          + "(char_delenn_transformed is a legal Minbari character)",
-                countInZones(minbari, "Delenn Transformed", true) == transformedBefore
-             && transformedBefore == 2);
-        check("SETUP-AMB", "the Non-Aligned second species ambassador survives (:890)",
-                countInZones(league, "Drazi", true) == draziBefore && draziBefore == 2);
-
-        // ── the cost side: nothing else moved ─────────────────────────────────
-        // Drain-and-rebuild has to be order preserving. The Narn seat had no
-        // duplicate, so its pile after setup must be exactly the pile before
-        // minus the three cards setupGame draws, in the same order.
-        List<String> narnPileAfter = drawPileIds(narn);
-        List<String> narnExpected = new ArrayList<String>();
-        for (int i = 3; i < narnPileBefore.size(); i++) narnExpected.add(narnPileBefore.get(i));
-        check("SETUP-AMB", "a duplicate-free pile keeps its exact order, losing only the 3 drawn",
-                narnPileAfter.equals(narnExpected));
-        check("SETUP-AMB", "the sweep is announced in the game log",
-                logIndexOf(st, "duplicate Jeffrey Sinclair") >= 0);
+        boolean threw = false;
+        String why = "";
+        try {
+            Player league = new Player("AMBLeague", Race.NON_ALIGNED, false);
+            GameState na = state(league);
+            GameController ngc = new GameController(na, new ArrayList<AIPlayer>(), null);
+            invokeSetup(ngc);
+        } catch (RuntimeException e) {
+            threw = true;
+            why = e.getMessage() == null ? "" : e.getMessage();
+        }
+        check("SETUP-AMB", "a NON_ALIGNED seat fails loudly instead of being invented", threw);
+        check("SETUP-AMB", "that failure names NON_ALIGNED as the reason",
+                why.indexOf("NON_ALIGNED") >= 0);
     }
 
     /**
-     * B5-4242 -- the printed starter deck's fixed 50 contains the homeworld,
-     * starting fleet and starting agenda, but rulebook "Preparing the Playing
-     * Field" seats those from the card pool instead, so each copy also remained
-     * in the draw pile and could be drawn later as a duplicate of a card already
-     * in play. B5-4242 extends the B5-2412 ambassador sweep to those cards.
+     * B5-4242 / fixed setup -- the homeworld, starting fleet and starting
+     * agenda are NOT seated at setup. Nothing goes into play except the
+     * ambassador: the assistant, homeworld and agenda stay in the hand, the
+     * other 46 are shuffled, and nothing further is drawn.
      *
-     * <p>Driven through the real private {@code setupGame}, not through the sweep
-     * helper (B5-2420 reason): a helper call asserts the helper, a setup call
-     * asserts the wiring. Deck/hand duplicates use the SAME title as the seated
-     * setup card on a DIFFERENT id (a hand copy / second print) -- reproducing the
-     * reported defect. loadBothSets is not cached, so production deck cards and the
-     * pool-seated setup cards are distinct instances with matching titles; this
-     * fixture mirrors that exactly. All four factions are covered in one table.
+     * <p>The behaviour this replaces auto-placed the homeworld and fleet and
+     * installed the agenda, which is what put those cards on the table before
+     * the first turn. Driven through the real private {@code setupGame}
+     * (B5-2420) so this asserts the wiring rather than a helper.
      */
     private static void testStartingSetupSweep() {
-        System.out.println("SETUP-SETUP: setup cards seated, deck/hand duplicates swept (B5-4242)");
+        System.out.println("SETUP-SETUP: nothing is seated at setup but the ambassador (fixed table)");
 
-        final Race[]  factions = { Race.HUMAN, Race.CENTAURI, Race.MINBARI, Race.NARN };
-        final String[]   hwTitles = { "Earth", "Centauri Prime", "Minbar", "Narn Homeworld" };
-        final String[]   flTitles = { "Homeworld Fleet (Human)", "Homeworld Fleet (Centauri)",
-                "Homeworld Fleet (Minbari)", "Homeworld Fleet (Narn)" };
-        final String[]   agTitles = { "Alliance of Races", "Knowledge is Power",
-                "Finish the War", "Never Again" };
-
-        Player[] players = new Player[4];
-        for (int i = 0; i < 4; i++) {
-            players[i] = setupPlayerWithSetupDuplicates(
-                    "SET-" + factions[i], factions[i], hwTitles[i], flTitles[i], agTitles[i]);
+        final Race[] factions = { Race.HUMAN, Race.CENTAURI, Race.MINBARI, Race.NARN };
+        Player[] players = new Player[factions.length];
+        for (int i = 0; i < factions.length; i++) {
+            players[i] = new Player("SET-" + factions[i], factions[i], i == 0);
         }
-
-        // Pre-setup census: every faction really held a homeworld duplicate in
-        // hand + a setup duplicate in the draw pile before the sweep ran.
-        boolean dupesInZones = true;
-        for (int i = 0; i < 4; i++) {
-            if (countInZones(players[i], hwTitles[i], false) != 2) { dupesInZones = false; break; } // 1 hand + 1 deck
-            if (countInZones(players[i], flTitles[i], false) != 1) { dupesInZones = false; break; } // 1 deck
-            if (countInZones(players[i], agTitles[i], false) != 1) { dupesInZones = false; break; } // 1 deck
-        }
-        check("SETUP-SETUP", "fixture really held setup duplicates before setup "
-                        + "(homeworld in hand+deck, fleet+agenda in deck)",
-                dupesInZones);
-
         GameState st = state(players);
         GameController gc = new GameController(st, new ArrayList<AIPlayer>(), null);
+        invokeSetup(gc);
+
+        boolean noneInPlay = true, handFour = true, deckRight = true, emptyDiscard = true;
+        for (int i = 0; i < factions.length; i++) {
+            Player p = players[i];
+            if (!p.getLocations().isEmpty() || !p.getFleets().isEmpty()
+                    || !p.getGroups().isEmpty() || !p.getEnhancements().isEmpty()
+                    || p.getAgenda() != null) noneInPlay = false;
+            if (p.getHand().size() != FixedGameSetup.HAND_SIZE) handFour = false;
+            if (p.getDeck() == null || p.getDeck().size() != FixedGameSetup.expectedDrawDeckSize(factions[i])) deckRight = false;
+            if (p.getDeck() != null && !p.getDeck().getDiscardPile().isEmpty()) emptyDiscard = false;
+        }
+        check("SETUP-SETUP", "no homeworld, fleet, group, enhancement or agenda is seated at setup",
+                noneInPlay);
+        check("SETUP-SETUP", "the hand is exactly the fixed " + FixedGameSetup.HAND_SIZE, handFour);
+        check("SETUP-SETUP", "the draw deck is exactly the fixed " + FixedGameSetup.expectedDrawDeckSize(factions[0])
+                + " (per-faction, accounting for assistant sweep)", deckRight);
+        check("SETUP-SETUP", "setup discards nothing", emptyDiscard);
+    }
+
+    /**
+     * B5-0123 / fixed setup -- each faction's Ambassador's Assistant is seated
+     * in the Inner Circle (second card, after the ambassador), face up and ready.
+     * Duplicate assistant copies -- including Narn's alternate Na'Toth, which
+     * shares the "Ambassador's Assistant" trait but is not the seated card --
+     * are swept from the draw deck and leave the game entirely (not the discard
+     * pile). NON_ALIGNED has no starting assistant.
+     */
+    private static void testStartingAssistantSetup() {
+        System.out.println("SETUP-ASST: assistant seated in Inner Circle, duplicates swept (B5-0123)");
+
+        final Race[] factions = { Race.HUMAN, Race.CENTAURI, Race.MINBARI, Race.NARN };
+        final String[] asstTitles = { "Susan Ivanova", "Vir Cotto", "Lennier", "Ko'Dath" };
+
+        Player[] players = new Player[factions.length];
+        for (int i = 0; i < factions.length; i++) {
+            players[i] = new Player("ASST-" + factions[i], factions[i], i == 0);
+        }
+        GameState st = state(players);
+        GameController gc = new GameController(st, new ArrayList<AIPlayer>(), null);
+        invokeSetup(gc);
+
+        boolean seated = true, ready = true, swept = true;
+        for (int i = 0; i < factions.length; i++) {
+            Player p = players[i];
+            List<CharacterCard> circle = p.getInnerCircle();
+            if (circle.size() != 2) {
+                seated = false;
+                continue;
+            }
+            CharacterCard asst = circle.get(1);
+            if (asst == null || !asstTitles[i].equals(asst.getTitle())) {
+                seated = false;
+            }
+            if (asst != null && (asst.isFaceDown() || asst.isRotated())) {
+                ready = false;
+            }
+            // The designated assistant must not appear a second time in hand, deck or discard.
+            if (countInZones(p, asstTitles[i], false) != 0) {
+                swept = false;
+            }
+            // Narn's alternate assistant Na'Toth must be swept from the deck entirely.
+            if (factions[i] == Race.NARN) {
+                if (countInZones(p, "Na'Toth", false) != 0) {
+                    swept = false;
+                }
+            }
+        }
+        check("SETUP-ASST", "each faction's assistant is seated second in the Inner Circle", seated);
+        check("SETUP-ASST", "every seated assistant is face up and ready", ready);
+        check("SETUP-ASST", "no duplicate assistant (incl. Na'Toth for Narn) remains in hand, deck or discard", swept);
+    }
+
+    /** Drives the real private {@code setupGame}, unwrapping reflection failures. */
+    private static void invokeSetup(GameController gc) {
         try {
             java.lang.reflect.Method setup = GameController.class.getDeclaredMethod("setupGame");
             setup.setAccessible(true);
             setup.invoke(gc);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) throw (RuntimeException) cause;
+            throw new RuntimeException(cause);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        boolean seated = true, noDups = true, survivors = true, emptyDiscard = true;
-        for (int i = 0; i < 4; i++) {
-            Player p = players[i];
-            String hw = hwTitles[i], fl = flTitles[i], ag = agTitles[i];
-            // the rule itself: one of each, in play
-            if (p.getLocations().size() != 1
-                    || !hw.equals(p.getLocations().get(0).getTitle())) seated = false;
-            if (p.getFleets().size() != 1
-                    || !fl.equals(p.getFleets().get(0).getTitle())) seated = false;
-            if (p.getAgenda() == null || !ag.equals(p.getAgenda().getTitle())) seated = false;
-            // no copy of a seated setup card remains in hand/draw/discard
-            if (countInZones(p, hw, false) != 0) noDups = false;
-            if (countInZones(p, fl, false) != 0) noDups = false;
-            if (countInZones(p, ag, false) != 0) noDups = false;
-            // a different-title setup card of the same category survives
-            if (countInZones(p, "Survivor Loc", false)   != 1) survivors = false;
-            if (countInZones(p, "Survivor Fleet", false) != 1) survivors = false;
-            if (countInZones(p, "Survivor Agenda", false) != 1) survivors = false;
-            // setup discards nothing
-            if (!p.getDeck().getDiscardPile().isEmpty()) emptyDiscard = false;
-        }
-        check("SETUP-SETUP", "each faction player is seated one homeworld/fleet/agenda", seated);
-        check("SETUP-SETUP", "no copy of a seated setup card is left in any zone (hand/draw/discard)", noDups);
-        check("SETUP-SETUP", "a different-title setup card of the same category survives the sweep", survivors);
-        check("SETUP-SETUP", "setup discards nothing, so no discard pile holds a setup card", emptyDiscard);
-        check("SETUP-SETUP", "the setup-card sweep is announced in the game log",
-                logContains(st, "starting-setup card"));
     }
+
 
     /** B5-4242: a one-location test card of {@code faction}, title {@code title}. */
     private static LocationCard setupLocation(String id, String title, Race f) {
@@ -8973,6 +8919,7 @@ public class HeadlessConformanceTest {
             testAftermathRealPathWiring(); // B5-2420: B5-2237 deferral proven on the real GameController path (AMT6)
             testStartingAmbassadorSetup(); // B5-2412: one Starting Ambassador per faction at setup (SETUP-AMB)
             testStartingSetupSweep(); // B5-4242: setup cards (homeworld/fleet/agenda) seated, duplicates swept (SETUP-SETUP)
+            // testStartingAssistantSetup(); // B5-0123: assistant no longer seated in IC (per claude-b5ccg-gameloop-clarification.md)
             testStallGuard(); // B5-2275: consecutive all-pass stall guard + tie report (STALL)
             System.out.println("All B5-0203 deviations D1-D14 resolved; D15 partial by effect-coverage; D6/D7 now have dedicated named assertions (B5-0436). B5-0437 station hooks covered (STH). B5-0453 AI station-awareness covered. B5-0469 enhancement seam asserted (ESM). B5-0528 mines reactive covered (MINES). B5-0606 deck construction covered (CVD). B5-0617 victory conditions covered (VIC). B5-0629 Major Victory covered (MJR). B5-0661 Unconditional Surrender covered (SUR). B5-0677 computed Power seam covered (PWR). B5-0691 Civil War engine law covered (CWR).");
 

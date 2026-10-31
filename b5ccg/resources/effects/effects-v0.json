@@ -19,7 +19,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:VI/cumulative-effects"],
-        "textSha256": "0e52104731575e51fc5fe4bd890604ce2d80881311b6c2033e6ba0ac4cd4c345",
+        "textSha256": "110434039fa4f3bcf2fd23c41aa508f17c3fb4a9d84fb41f2ddb08068b091738",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -41,7 +41,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:VI/cumulative-effects"],
-        "textSha256": "0e52104731575e51fc5fe4bd890604ce2d80881311b6c2033e6ba0ac4cd4c345",
+        "textSha256": "110434039fa4f3bcf2fd23c41aa508f17c3fb4a9d84fb41f2ddb08068b091738",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -50,11 +50,15 @@
       "title": "Vorlon Enhancement",
       "kind": "ONGOING",
       "window": "ANY",
-      "requirements": [],
+      "requirements": [
+        { "type": "PURGE_MARKS", "amount": 4, "markType": "VORLON" }
+      ],
       "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
-      "conditions": [],
+      "conditions": [
+        { "type": "PSI_AT_LEAST", "amount": 1 }
+      ],
       "operations": [
-        { "primitive": "STAT_MODIFY", "params": { "stat": "ALL", "amount": 2 } }
+        { "primitive": "SET_STAT", "params": { "stat": "PSI", "value": 15 } }
       ],
       "duration": "WHILE_SOURCE_IN_PLAY",
       "stacking": "ADDITIVE",
@@ -63,29 +67,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/enhancement-cards"],
-        "textSha256": "8ee4c5f41a96da198a1614c9edc9a54718dd4bb9725e2786b971083a33d931ef",
-        "printingScope": "DELUXE_GOVERNS"
-      }
-    },
-    {
-      "cardId": "enh_vorlon_enhancement",
-      "title": "Vorlon Enhancement",
-      "kind": "ONGOING",
-      "window": "ANY",
-      "requirements": [],
-      "target": { "scope": "CARD", "controllerRelation": "SELF", "cardTypes": ["CHARACTER"] },
-      "conditions": [],
-      "operations": [
-        { "primitive": "PARTICIPATION_GRANT", "params": { "conflictType": "ANY" } }
-      ],
-      "duration": "WHILE_SOURCE_IN_PLAY",
-      "stacking": "ADDITIVE",
-      "protection": "NONE",
-      "precedenceLayer": "CARD_TEXT",
-      "sourceBinding": "NONE",
-      "provenance": {
-        "ruleIds": ["RB:IV/enhancement-cards", "RB:VI/rules-of-precedence"],
-        "textSha256": "8ee4c5f41a96da198a1614c9edc9a54718dd4bb9725e2786b971083a33d931ef",
+        "textSha256": "416cfd428d412190f3cdd7cba603dd3874bf244e810f3caf5187e080f6b8deac",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -107,7 +89,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/enhancement-cards"],
-        "textSha256": "91ac09c91c0d2e61f92e977fc4110e6a458443975d316f729909f171fcf97228",
+        "textSha256": "9379ecceaefacbe7751a94f68143b2e7876b270a0171c1399f4386e708e58e87",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -129,7 +111,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/enhancement-cards"],
-        "textSha256": "91ac09c91c0d2e61f92e977fc4110e6a458443975d316f729909f171fcf97228",
+        "textSha256": "9379ecceaefacbe7751a94f68143b2e7876b270a0171c1399f4386e708e58e87",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -152,7 +134,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:IV/enhancement-cards"],
-        "textSha256": "18f5bf396b34b5fa7d5a383dc067769d49a34540909432362cc86bf5ff004124",
+        "textSha256": "b1bce9270fe2fd035a46ec90093cf73d7fe0de6462b8ab8ab9114deb063d412d",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -174,7 +156,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:I/influence"],
-        "textSha256": "6644815aef65e9852f7a12fcabd469ffc11f0f9e9bdc2e269806ee69062fe74d",
+        "textSha256": "542ce0f454c34a95158216ab4d70ec8c1f7eec13603a04841eee39b80c2ce868",
         "printingScope": "SINGLE_PRINTING"
       }
     },
@@ -196,7 +178,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:VI/rules-of-precedence"],
-        "textSha256": "6644815aef65e9852f7a12fcabd469ffc11f0f9e9bdc2e269806ee69062fe74d",
+        "textSha256": "542ce0f454c34a95158216ab4d70ec8c1f7eec13603a04841eee39b80c2ce868",
         "printingScope": "SINGLE_PRINTING"
       }
     },
@@ -218,7 +200,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:I/influence"],
-        "textSha256": "ed55f2be861663633559cbcb363f7465c59aa7e1d28981a70191f5f5ac74126b",
+        "textSha256": "01fb78298ed87a1fc6098a050fc2ebd4d27b11a490f6630b8bc983311b78410e",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -240,7 +222,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:VI/rules-of-precedence"],
-        "textSha256": "ed55f2be861663633559cbcb363f7465c59aa7e1d28981a70191f5f5ac74126b",
+        "textSha256": "01fb78298ed87a1fc6098a050fc2ebd4d27b11a490f6630b8bc983311b78410e",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -263,7 +245,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:I/influence"],
-        "textSha256": "55d8ed6601c2531a346a1ff906e23d6d25b422e4f4c7bd372cf050792cc4e45e",
+        "textSha256": "56704d7560ed0c6e36943da46ab98c8253fb7e21201989fc653db10ee51c5404",
         "printingScope": "SINGLE_PRINTING"
       }
     },
@@ -286,7 +268,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:I/influence"],
-        "textSha256": "55d8ed6601c2531a346a1ff906e23d6d25b422e4f4c7bd372cf050792cc4e45e",
+        "textSha256": "56704d7560ed0c6e36943da46ab98c8253fb7e21201989fc653db10ee51c5404",
         "printingScope": "SINGLE_PRINTING"
       }
     },
@@ -309,7 +291,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:I/influence", "RB:VI/triggered-effects"],
-        "textSha256": "f2a84271e1e78e78ece8b54c635e70d9adc95e631eb75a7ab281e9cb37f989a7",
+        "textSha256": "979f6ac6fc8a3749435d8890ba7a66ccf3ce2e3156cab9091e785413f0b59cc1",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -331,7 +313,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:III/conflict-round"],
-        "textSha256": "fd0bed6d355691a839456e1c37df88fe9fac746a19e353e81b83f44fa6b06815",
+        "textSha256": "63d15fd734d02479fee708b6b392566c947a980424ea1023b46f377c2d5a294e",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -353,7 +335,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:VI/rules-of-precedence"],
-        "textSha256": "fd0bed6d355691a839456e1c37df88fe9fac746a19e353e81b83f44fa6b06815",
+        "textSha256": "63d15fd734d02479fee708b6b392566c947a980424ea1023b46f377c2d5a294e",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -375,7 +357,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:III/draw-round", "RB:VI/cumulative-effects"],
-        "textSha256": "c99327dbe6b5ae517d57a63c3be3a507b82f8dc882e1da03e7b38593ce17e964",
+        "textSha256": "30c1dca635e0a25da62a9a74dfe87d798e9b1f6528287e41d6672e2b98d57784",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -399,7 +381,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:III/draw-round", "RB:VI/cumulative-effects"],
-        "textSha256": "c99327dbe6b5ae517d57a63c3be3a507b82f8dc882e1da03e7b38593ce17e964",
+        "textSha256": "30c1dca635e0a25da62a9a74dfe87d798e9b1f6528287e41d6672e2b98d57784",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -421,7 +403,7 @@
       "sourceBinding": "PERMANENT_MARK",
       "provenance": {
         "ruleIds": ["RB:VI/marks"],
-        "textSha256": "c99327dbe6b5ae517d57a63c3be3a507b82f8dc882e1da03e7b38593ce17e964",
+        "textSha256": "30c1dca635e0a25da62a9a74dfe87d798e9b1f6528287e41d6672e2b98d57784",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -443,7 +425,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:VI/discards"],
-        "textSha256": "033dcc5b1cdbd5b7058feb8669d7cccd64a35fd2da741c25ebf3a334bb793603",
+        "textSha256": "3febb80558d123951edd16f456744e8c9513ab74d994ccc912cbc8ab812398a3",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -468,7 +450,7 @@
       "sourceBinding": "NONE",
       "provenance": {
         "ruleIds": ["RB:I/influence", "RB:III/ready-round"],
-        "textSha256": "274403625d23286e990997603e06a8c40fbc6405afc0618a5091cfbc324e17ec",
+        "textSha256": "016729283f0124f1ab6e0acf3f160583d982b5e27dfd26dab5ca5fa280409ade",
         "printingScope": "DELUXE_GOVERNS"
       }
     },
@@ -490,7 +472,7 @@
       "sourceBinding": "CUTOFF_PURGE",
       "provenance": {
         "ruleIds": ["RB:VI/marks"],
-        "textSha256": "274403625d23286e990997603e06a8c40fbc6405afc0618a5091cfbc324e17ec",
+        "textSha256": "016729283f0124f1ab6e0acf3f160583d982b5e27dfd26dab5ca5fa280409ade",
         "printingScope": "DELUXE_GOVERNS"
       }
     }

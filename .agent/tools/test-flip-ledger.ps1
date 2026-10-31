@@ -28,6 +28,15 @@
        a different agent id
     12 a live claim on the SIBLING id does not block the parent id
     13 a claim file with no readable agent_id blocks the flip
+    14 an OPEN freeze-window row blocks flipping a frozen-scope row to
+       OPEN (B5-0048), and the refusal names the freeze row
+    15 closing the freeze row (DONE) lifts the freeze; the same flip
+       then succeeds - a guard that cannot be cleared is not a guard
+    16 new-claim.ps1 refuses a claim on a frozen scope and names the
+       freeze row, while the freeze row ITSELF stays claimable (case 16
+       lives here because the freeze contract spans both tools and the
+       sandbox is shared; the copy of new-claim.ps1 under test is the
+       real tool, invoked inside the sandbox layout)
 
   Exits 0 when every case holds, 1 otherwise, listing the failures.
 #>
@@ -77,6 +86,12 @@ function Get-Status {
   $m = Select-String -LiteralPath $sbLedger -Pattern ("^\|\s*" + [regex]::Escape($Id) + "\s*\|")
   if ($m) { return (($m.Line -split '\|')[2]).Trim() }
   return '(none)'
+}
+function Set-SandboxLedger {
+  # Reset-Sandbox writes the fixed three-row layout; the freeze cases need a
+  # custom one (a BLOCKED subject row plus an OPEN freeze-window row).
+  param([string[]]$Rows)
+  [System.IO.File]::WriteAllText($sbLedger, ($Rows -join "`r`n") + "`r`n", (New-Object System.Text.UTF8Encoding($false)))
 }
 function Invoke-Flip {
   param([string[]]$Arguments)
@@ -224,6 +239,86 @@ $after = [System.IO.File]::ReadAllText($sbLedger)
 $ok = ($r.Code -ne 0) -and ($before -eq $after) -and ((Get-Status 'B5-0300') -eq 'OPEN')
 if (-not $ok) { $failures += ("case 13: a claim with no agent_id did not block the flip (exit={0}, status={1})" -f $r.Code, (Get-Status 'B5-0300')) }
 $results += [pscustomobject]@{ N=13; Verdict=$(if($ok){'PASS'}else{'FAIL'}) }
+
+# --- case 14: an OPEN freeze-window row blocks an unblocking flip ---------
+# B5-0048. Flipping a frozen-scope row to OPEN would stage a claimable row
+# whose claim new-claim would then refuse; the flip itself is refused and
+# must name the freeze row. A closing flip (case 15) is never blocked.
+Reset-Sandbox $false
+Set-SandboxLedger @(
+  '| ID | Status | Task | Scope | Claim | Report |',
+  '|---|---|---|---|---|---|',
+  '| B5-0202 | OPEN | parent row | tooling | - | - |',
+  '| B5-0202c | OPEN | sibling row | tooling | - | - |',
+  '| B5-0404 | OPEN | freeze window: WP-xx cross-scope rename, no other claim may be created | tooling | - | - |',
+  '| B5-0300 | BLOCKED | subject row | tooling | - | - |'
+)
+$before = [System.IO.File]::ReadAllText($sbLedger)
+$r = Invoke-Flip @('-Id','B5-0300','-NewStatus','OPEN')
+$after = [System.IO.File]::ReadAllText($sbLedger)
+$bak = @(Get-ChildItem $sbBak -EA SilentlyContinue).Count
+$ok = ($r.Code -ne 0) -and ($before -eq $after) -and ($bak -eq 0) -and ((Get-Status 'B5-0300') -eq 'BLOCKED') -and ($r.Text -match 'frozen') -and ($r.Text -match 'B5-0404')
+if (-not $ok) { $failures += ("case 14: a freeze-window row did not block the unblocking flip (exit={0}, status={1}, backups={2})" -f $r.Code, (Get-Status 'B5-0300'), $bak) }
+$results += [pscustomobject]@{ N=14; Verdict=$(if($ok){'PASS'}else{'FAIL'}) }
+
+# --- case 15: closing the freeze row lifts the freeze ---------------------
+# A guard that cannot be cleared is not a guard. The freeze row's own DONE
+# flip must succeed (DONE needs a matching report), and afterwards the same
+# unblocking flip that case 14 refused must succeed.
+Reset-Sandbox $false
+Set-SandboxLedger @(
+  '| ID | Status | Task | Scope | Claim | Report |',
+  '|---|---|---|---|---|---|',
+  '| B5-0202 | OPEN | parent row | tooling | - | - |',
+  '| B5-0202c | OPEN | sibling row | tooling | - | - |',
+  '| B5-0404 | OPEN | freeze window: WP-xx cross-scope rename, no other claim may be created | tooling | - | - |',
+  '| B5-0300 | BLOCKED | subject row | tooling | - | - |'
+)
+[System.IO.File]::WriteAllText((Join-Path $sb '.agent/REPORTS/2026-10-26-me-agent-01-B5-0404.md'), '# r', (New-Object System.Text.UTF8Encoding($false)))
+$r1 = Invoke-Flip @('-Id','B5-0404','-NewStatus','DONE')
+$r2 = Invoke-Flip @('-Id','B5-0300','-NewStatus','OPEN')
+$ok = ($r1.Code -eq 0) -and ((Get-Status 'B5-0404') -eq 'DONE') -and ($r2.Code -eq 0) -and ((Get-Status 'B5-0300') -eq 'OPEN')
+if (-not $ok) { $failures += ("case 15: closing the freeze row did not lift the freeze (done exit={0}, reopen exit={1}, statuses {2}/{3})" -f $r1.Code, $r2.Code, (Get-Status 'B5-0404'), (Get-Status 'B5-0300')) }
+$results += [pscustomobject]@{ N=15; Verdict=$(if($ok){'PASS'}else{'FAIL'}) }
+
+# --- case 16: new-claim refuses a frozen scope; the freeze row itself -----
+#     stays claimable ------------------------------------------------------
+# The freeze contract's enforcement point is new-claim (CLAIMS/README.md
+# refusal #6). The copy under test is the REAL new-claim.ps1 invoked inside
+# the sandbox layout, so its $PSScriptRoot-derived ledger and claims paths
+# resolve inside the sandbox, never the repository.
+Reset-Sandbox $false
+Set-SandboxLedger @(
+  '| ID | Status | Task | Scope | Claim | Report |',
+  '|---|---|---|---|---|---|',
+  '| B5-0202 | OPEN | parent row | tooling | - | - |',
+  '| B5-0202c | OPEN | sibling row | tooling | - | - |',
+  '| B5-0404 | OPEN | freeze window: WP-xx cross-scope rename, no other claim may be created | tooling | - | - |',
+  '| B5-0300 | OPEN | subject row | tooling | - | - |'
+)
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'new-claim.ps1') -Destination (Join-Path $sb '.agent/tools/new-claim.ps1') -Force
+$sbNewClaim = Join-Path $sb '.agent/tools/new-claim.ps1'
+$old = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+try {
+  $out = & powershell -NoProfile -ExecutionPolicy Bypass -File $sbNewClaim -TaskId B5-0300 -AgentId 'other-agent-99' -Scope tooling -Javac 25.0.4.1 2>&1
+  $c1 = $LASTEXITCODE
+} finally { $ErrorActionPreference = $old }
+$flat1 = (($out | ForEach-Object { [string]$_ }) -join ' ') -replace '\s+', ' '
+$claimWritten = Test-Path -LiteralPath (Join-Path $sb '.agent/CLAIMS/B5-0300.json')
+$ok = ($c1 -ne 0) -and (-not $claimWritten) -and ($flat1 -match 'frozen') -and ($flat1 -match 'B5-0404')
+if (-not $ok) { $failures += ("case 16a: new-claim did not refuse the frozen scope (exit={0}, claimWritten={1})" -f $c1, $claimWritten) }
+# the freeze row itself: claimable, so its worker can hold and close it
+Remove-Item (Join-Path $sb '.agent/CLAIMS/*') -Force -EA SilentlyContinue
+$ErrorActionPreference = 'Continue'
+try {
+  $out = & powershell -NoProfile -ExecutionPolicy Bypass -File $sbNewClaim -TaskId B5-0404 -AgentId 'other-agent-99' -Scope tooling -Javac 25.0.4.1 2>&1
+  $c2 = $LASTEXITCODE
+} finally { $ErrorActionPreference = $old }
+$freezeClaimWritten = Test-Path -LiteralPath (Join-Path $sb '.agent/CLAIMS/B5-0404.json')
+$ok = $ok -and ($c2 -eq 0) -and $freezeClaimWritten
+if (-not $ok) { $failures += ("case 16b: the freeze row itself was not claimable (exit={0}, claimWritten={1})" -f $c2, $freezeClaimWritten) }
+$results += [pscustomobject]@{ N=16; Verdict=$(if($ok){'PASS'}else{'FAIL'}) }
 
 Write-Output '=== flip-ledger acceptance (sandboxed) ==='
 foreach ($x in $results) { Write-Output ("  [{0}] case {1}" -f $x.Verdict, $x.N) }

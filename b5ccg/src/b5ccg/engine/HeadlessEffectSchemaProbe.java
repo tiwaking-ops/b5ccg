@@ -70,15 +70,18 @@ public class HeadlessEffectSchemaProbe {
     /**
      * The number of entries the v0 document holds.
      *
-     * <p><b>22, not 29.</b> The five group cards the v0 skeleton also carried
+     * <p><b>21, not 29.</b> The five group cards the v0 skeleton also carried
      * - Commercial Telepaths, Secret Police, War College, Warrior Caste and
      * Wind Swords - moved to the Groups pilot document
      * ({@code /effects/effects-groups-v1.json}) in WP-11 (B5-0034), so that
      * every card has exactly one home. The v0 skeleton keeps the twelve
      * cards that are not part of either pilot: enhancements, events and an
-     * agenda.</p>
+     * agenda. Vorlon Enhancement's two paraphrase-based entries
+     * (STAT_MODIFY + PARTICIPATION_GRANT) were replaced by one printed-text
+     * entry (PURGE_MARKS with markType, PSI_AT_LEAST condition, SET_STAT
+     * operation) in B5-0107, reducing the count by one.</p>
      */
-    private static final int EXPECTED_ENTRIES = 22;
+    private static final int EXPECTED_ENTRIES = 21;
 
     /** The number of distinct cards the v0 document describes (12, not 17). */
     private static final int EXPECTED_CARDS = 12;
@@ -313,6 +316,52 @@ public class HeadlessEffectSchemaProbe {
         for (Map.Entry<String, Integer> e : registry.familySizes().entrySet()) {
             check("family " + e.getKey() + " holds " + e.getValue() + " primitive(s)",
                     e.getValue().intValue() <= 3, "");
+        }
+
+        // ── B5-0050: no zero-implementer schema interface remains ─────────
+        // The five WP-10/WP-15/WP-16/WP-17 stubs - GroupEffectSchema,
+        // EnhancementEffectSchema, VictoryRulesSchema, MarkRulesSchema and
+        // CostRulesSchema - had zero implementers and zero references anywhere
+        // in the tree; the live effect package (WP-10) was added beside them
+        // without promoting them. B5-0050's acceptance is "each interface is
+        // either implemented by the code that replaced it or deleted, and no
+        // interface with zero implementers is left in the tree", so the stubs
+        // are deleted and this is the check that stops one coming back.
+        //
+        // Why a NAMED check rather than a general "no interface without an
+        // implementer" scan. The tree holds seven more interfaces a SOURCE scan
+        // would call inert - ActionSpec, CardEffect, CardSelectedListener,
+        // GameStateCallback, HiddenListener, PromptPanel and TargetFilter - and
+        // every one of them IS implemented, by an anonymous class or a lambda a
+        // source scan cannot see. Measured on this tree: `new GameStateCallback()
+        // {`, `new TargetFilter() {`, `new CardSelectedListener() {`,
+        // `new DetachWindow.HiddenListener() {`. A source scan would therefore
+        // fail a correct tree, which is worse than no scan. A REFLECTION scan
+        // (load every class, ask which interfaces nothing implements) is the
+        // honest general instrument and would not false-positive on those seven,
+        // because an anonymous class really does implement its interface; it is
+        // not shipped here because it loads every class in the gate and would
+        // surface unrelated inert interfaces as this row's failures. That
+        // trade-off is recorded in the B5-0050 report.
+        System.out.println("--- B5-0050: no zero-implementer schema interface remains ---");
+        String[] removedSchemas = {
+            "b5ccg.engine.GroupEffectSchema",
+            "b5ccg.engine.EnhancementEffectSchema",
+            "b5ccg.engine.VictoryRulesSchema",
+            "b5ccg.engine.MarkRulesSchema",
+            "b5ccg.engine.CostRulesSchema"
+        };
+        for (int i = 0; i < removedSchemas.length; i++) {
+            boolean present;
+            try {
+                Class.forName(removedSchemas[i], false,
+                              HeadlessEffectSchemaProbe.class.getClassLoader());
+                present = true;
+            } catch (Throwable t) {
+                present = false;
+            }
+            check("the inert schema interface " + removedSchemas[i] + " is not in the tree",
+                    !present, "it is loadable again - a zero-implementer interface has returned");
         }
     }
 

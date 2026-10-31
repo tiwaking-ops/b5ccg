@@ -138,7 +138,7 @@ if [ "${RUN_TESTS:-0}" = "1" ]; then
   # verdict: a failure at class 5 hid 26 classes, and once class 5 was repaired
   # the HeadlessJoinTimingProbe S3 failure at class 10 hid the remaining 21,
   # including the canonical-parity, printing-diff, effect-census, rulebook-pin,
-  # aftermath-detach probes and all five UI suites. Any claim that "the failing
+  # aftermath-detach probes and all six UI suites. Any claim that "the failing
   # set is empty" from such a run describes only the classes that got to run.
   #
   # The list below is therefore executed in a loop that records every class's
@@ -183,6 +183,7 @@ b5ccg.engine.HeadlessVictoryRulesGoldenMaster
 b5ccg.engine.HeadlessMarkCostRulesProbe
 b5ccg.engine.HeadlessEffectSchemaProbe
 b5ccg.engine.HeadlessGroupEffectProbe
+b5ccg.engine.HeadlessEnhancementEffectProbe
 b5ccg.engine.HeadlessPrintingDiffTriageProbe
 b5ccg.model.EffectCensusChecker
 b5ccg.engine.HeadlessRulebookPinProbe
@@ -192,6 +193,7 @@ b5ccg.ui.TrackerColumnFitTest
 b5ccg.ui.MainWindowToolbarLayoutTest
 b5ccg.ui.MainWindowLeadFleetControlTest
 b5ccg.ui.MainWindowAgendaLifecycleControlTest
+b5ccg.ui.MainWindowConflictInitiateControlTest
 GATE_EOF
 )
 
@@ -219,7 +221,7 @@ GATE_EOF
   #
   # GameBoardCollapseTest is quarantined (B5-3487: 88 of the 248 errors, calling
   # members of types that were never authored) so it is not run here; that
-  # leaves five UI suites. GameBoardAgendaBandTest survives because its only
+  # leaves six UI suites. GameBoardAgendaBandTest survives because its only
   # references to the quarantined class are javadoc {@link} references, which
   # its own Javadoc text carries rather than importing it.
 
@@ -368,7 +370,10 @@ GATE_EOF
   # must still run on a machine that has only a JDK. When it IS present and a
   # probe fails, the gate exits non-zero - a tooling guard that cannot fail
   # the gate is not a guard.
-  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1 ../.agent/tools/test-effect-schema.ps1 ../.agent/tools/test-process-tax-measurement.ps1 ../.agent/tools/test-boot-files.ps1"
+  # B5-0169: test-find-card-scan-nopool.ps1 is hermetic (it builds its own temp
+  # scan root and a 40x30 image), so it needs none of the pre-fork scans and can
+  # run on any machine that has PowerShell.
+  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1 ../.agent/tools/test-effect-schema.ps1 ../.agent/tools/test-process-tax-measurement.ps1 ../.agent/tools/test-boot-files.ps1 ../.agent/tools/test-find-card-scan-nopool.ps1"
   if command -v powershell > /dev/null 2>&1 && [ -f "../.agent/tools/test-param-guard.ps1" ]; then
     echo ""
     echo "=== Tooling probes (B5-0044) ==="

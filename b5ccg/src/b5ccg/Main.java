@@ -79,19 +79,12 @@ public class Main {
 
         List<Player> players = Arrays.asList(human, ai1, ai2, ai3);
 
-        // ── Build and deal faction decks ──────────────────────────────────────
-        for (Player p : players) {
-            List<Card> factionCards = buildRaceDeck(allCards, p.getRace());
-            Deck deck = new Deck(factionCards);
-            // B5-0319: pin the race ambassador to the draw-pile top so the
-            // fixed starter deck's ambassador reaches the hand (GameController
-            // .setupGame extracts it from the hand only). Deck shuffles in its
-            // constructor, so pin AFTER construction.
-            CharacterCard amb = StarterDeckBuilder.findAmbassador(factionCards, p.getRace());
-            if (amb != null) deck.addToTop(amb);
-            p.setDeck(deck);
-            p.drawCards(4); // initial hand
-        }
+        // Nothing is dealt here. The whole of dealing belongs to
+        // GameController.setupGame(), which builds every seat from its own
+        // printed 50-card starter deck (FixedGameSetup): the Starting Ambassador
+        // goes into the Inner Circle face up and ready, the assistant, homeworld
+        // and agenda stay in the hand, and the other 46 are shuffled. A second
+        // dealing mechanism here could only disagree with the fixed one.
 
         // ── AI players ────────────────────────────────────────────────────────
         List<AIPlayer> aiPlayers = Arrays.asList(

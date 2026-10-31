@@ -1,21 +1,29 @@
 package b5ccg.ui;
 
 import b5ccg.engine.GameController;
+import b5ccg.model.Card;
+import b5ccg.model.CharacterCard;
 import b5ccg.model.Conflict;
+import b5ccg.model.FleetCard;
 import b5ccg.model.GameAction;
 import b5ccg.model.GameState;
 import b5ccg.model.Participation;
 import b5ccg.model.Player;
+import b5ccg.model.enums.CardType;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -44,6 +52,13 @@ import javax.swing.SwingUtilities;
  * {@link Participation} restriction, and only to tell the human the
  * <em>consequence</em> of passing — see {@link #passConsequence}.
  *
+ * <p><b>Character selection (B5-0160).</b> The panel now offers a dropdown of
+ * eligible characters (and fleets, when the participation restriction allows
+ * them) that the human may commit to the conflict. The chosen card is submitted
+ * with the JOIN_CONFLICT_SUPPORT/OPPOSE action and the engine commits it
+ * (subject to canCommitCard). If no eligible card exists, the dropdown shows
+ * "Ambassador only" and the engine falls back to the ambassador.
+ *
  * <p><b>Pass declines the join window (engine accepts {@code PASS}).</b>
  * {@code GameController.submitHumanAction} releases
  * {@code waitingForHumanConflictJoin} on {@code JOIN_CONFLICT_SUPPORT},
@@ -67,6 +82,8 @@ public class ConflictJoinPickerPanel extends JPanel {
     private final JButton supportButton;
     private final JButton opposeButton;
     private final JButton passButton;
+    private final JButton forceButton;
+    private final JComboBox<Card> characterChoice;
 
     private boolean  windowOpen = false;
     private boolean  choiceMade = false;
@@ -91,6 +108,15 @@ public class ConflictJoinPickerPanel extends JPanel {
         consequenceLabel.setMaximumSize(new Dimension(280, 34));
         add(consequenceLabel);
 
+        // Character/fleet choice dropdown (B5-0160: join commits the chosen character).
+        characterChoice = new JComboBox<>();
+        characterChoice.setMaximumSize(new Dimension(280, 24));
+        characterChoice.setBackground(new Color(20, 40, 20));
+        characterChoice.setForeground(new Color(200, 230, 200));
+        characterChoice.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        characterChoice.setAlignmentX(LEFT_ALIGNMENT);
+        add(characterChoice);
+
         supportButton = mkButton("Support", new Runnable() {
             @Override
             public void run() { submitSupport(); }
@@ -103,6 +129,13 @@ public class ConflictJoinPickerPanel extends JPanel {
             @Override
             public void run() { submitPass(); }
         });
+        // B5-XXXX: Force Continue button - submits Oppose to unblock the engine
+        // even if normal buttons are frozen. This is an emergency escape hatch.
+        forceButton   = mkButton("Force Continue", new Runnable() {
+            @Override
+            public void run() { submitForceContinue(); }
+        });
+        forceButton.setToolTipText("Emergency: force the game to continue by auto-submitting Oppose");
 
         JPanel buttons = new JPanel();
         buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
@@ -113,6 +146,8 @@ public class ConflictJoinPickerPanel extends JPanel {
         buttons.add(opposeButton);
         buttons.add(Box.createHorizontalStrut(6));
         buttons.add(passButton);
+        buttons.add(Box.createHorizontalStrut(6));
+        buttons.add(forceButton);
         buttons.setMaximumSize(new Dimension(280, 30));
         add(buttons);
 
@@ -120,7 +155,7 @@ public class ConflictJoinPickerPanel extends JPanel {
         statusLabel.setMaximumSize(new Dimension(280, 34));
         add(statusLabel);
 
-        setMaximumSize(new Dimension(280, 140));
+        setMaximumSize(new Dimension(280, 180));
         applyEnabledness();
     }
 
@@ -155,6 +190,8 @@ public class ConflictJoinPickerPanel extends JPanel {
         if (conflict == null) {
             promptLabel.setText("No active conflict.");
             consequenceLabel.setText("");
+            characterChoice.removeAllItems();
+            characterChoice.addItem(null);
             choiceMade = false;
             lastStatus = "";
             statusLabel.setText("");
@@ -163,6 +200,10 @@ public class ConflictJoinPickerPanel extends JPanel {
         }
         promptLabel.setText(joinPromptFor(state, conflict));
         consequenceLabel.setText("<html>" + passConsequence(conflict) + "</html>");
+
+        // Populate eligible cards for the human player (B5-0160).
+        populateCharacterChoice(state, conflict);
+
         if (!joiningConflict) {
             // The window closed. A choice recorded while it was open stands; a
             // bare close (the controller moved on) clears the stale "waiting"
@@ -176,12 +217,61 @@ public class ConflictJoinPickerPanel extends JPanel {
         applyEnabledness();
     }
 
+    /** Populate the character choice dropdown with eligible cards for the human. */
+    private void populateCharacterChoice(GameState state, Conflict conflict) {
+        characterChoice.removeAllItems();
+        Player human = state.getHumanPlayer();
+        if (human == null) {
+            characterChoice.addItem(null);
+            return;
+        }
+
+        List<Card> eligible = new ArrayList<>();
+        // Add eligible characters from Inner Circle and Supporting Role.
+        for (CharacterCard ch : human.getInnerCircle()) {
+            if (!ch.isFaceDown() && ch.canActAfterNeutralization()
+                    && conflict.canCommitCard(human, ch)) {
+                eligible.add(ch);
+            }
+        }
+        for (CharacterCard ch : human.getSupportingRole()) {
+            if (!ch.isFaceDown() && ch.canActAfterNeutralization()
+                    && conflict.canCommitCard(human, ch)) {
+                eligible.add(ch);
+            }
+        }
+        // Add eligible fleets (when participation allows fleets).
+        for (FleetCard fleet : human.getFleets()) {
+            if (!fleet.isRotated() && fleet.canActAfterNeutralization()
+                    && conflict.canCommitCard(human, fleet)) {
+                eligible.add(fleet);
+            }
+        }
+
+        if (eligible.isEmpty()) {
+            characterChoice.addItem(null); // "Ambassador only" fallback
+        } else {
+            for (Card c : eligible) {
+                characterChoice.addItem(c);
+            }
+        }
+    }
+
     /** Enabled iff the engine is collecting an answer right now and none is in flight. */
     private void applyEnabledness() {
         boolean live = windowOpen && !choiceMade;
         supportButton.setEnabled(live);
         opposeButton.setEnabled(live);
         passButton.setEnabled(live);
+        characterChoice.setEnabled(live);
+        // Force button is always enabled when window is open (escape hatch)
+        forceButton.setEnabled(windowOpen);
+    }
+
+    /** Get the currently selected card from the dropdown (may be null). */
+    private Card getSelectedCard() {
+        Card c = (Card) characterChoice.getSelectedItem();
+        return c;
     }
 
     // ── submissions ───────────────────────────────────────────────────────────
@@ -189,19 +279,21 @@ public class ConflictJoinPickerPanel extends JPanel {
     private void submitSupport() {
         if (!windowOpen || choiceMade || controller == null) return;
         choiceMade = true;
-        lastStatus = "Submitted Support into the join window.";
+        Card chosen = getSelectedCard();
+        lastStatus = "Submitted Support into the join window" + (chosen != null ? " with " + chosen.getTitle() : "") + ".";
         statusLabel.setText(lastStatus);
         applyEnabledness();
-        controller.submitHumanAction(GameAction.joinSupport());
+        controller.submitHumanAction(GameAction.joinSupport(chosen));
     }
 
     private void submitOppose() {
         if (!windowOpen || choiceMade || controller == null) return;
         choiceMade = true;
-        lastStatus = "Submitted Oppose into the join window.";
+        Card chosen = getSelectedCard();
+        lastStatus = "Submitted Oppose into the join window" + (chosen != null ? " with " + chosen.getTitle() : "") + ".";
         statusLabel.setText(lastStatus);
         applyEnabledness();
-        controller.submitHumanAction(GameAction.joinOppose());
+        controller.submitHumanAction(GameAction.joinOppose(chosen));
     }
 
     /**
@@ -227,6 +319,18 @@ public class ConflictJoinPickerPanel extends JPanel {
         }
         statusLabel.setText(lastStatus);
         applyEnabledness();
+    }
+
+    /**
+     * Force Continue - submits JOIN_CONFLICT_OPPOSE with no card to unblock the
+     * engine. This is an emergency escape hatch when normal buttons are frozen.
+     * It bypasses the normal choiceMade guard and forces the submission.
+     */
+    private void submitForceContinue() {
+        if (controller == null) return;
+        lastStatus = "FORCE CONTINUE: submitted Oppose to unblock game.";
+        statusLabel.setText(lastStatus);
+        controller.submitHumanAction(GameAction.joinOppose(null));
     }
 
     /** True while the controller is still blocked collecting this seat's side. */
@@ -342,6 +446,8 @@ public class ConflictJoinPickerPanel extends JPanel {
     JButton supportButton()    { return supportButton; }
     JButton opposeButton()     { return opposeButton; }
     JButton passButton()       { return passButton; }
+    JButton forceButton()      { return forceButton; }
+    JComboBox<Card> characterChoice() { return characterChoice; }
     JLabel  promptLabel()      { return promptLabel; }
     JLabel  consequenceLabel() { return consequenceLabel; }
     String  statusText()       { return lastStatus; }

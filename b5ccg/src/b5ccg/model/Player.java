@@ -42,6 +42,12 @@ public class Player {
      *  or win. Distinct from forfeiture. */
     private boolean hasSurrendered = false;
 
+    /** B5-0147: "Always buy cards" opt-in for the Draw round. Default on:
+     *  when enabled the engine auto-spends the remaining applied influence in
+     *  3-point increments to draw cards; when disabled the manual buy button
+     *  applies. */
+    private boolean alwaysBuyCards = true;
+
     /** B5-0661: characters placed in asylum on this player's side.
      *  Asylum characters may not be elevated to the Inner Circle. */
     private final List<CharacterCard> asylumCards = new ArrayList<CharacterCard>();
@@ -204,6 +210,11 @@ public class Player {
      *  (rulebook :815–:819). A surrendered player is out of the game. */
     public boolean hasSurrendered() { return hasSurrendered; }
     public void setHasSurrendered(boolean v) { hasSurrendered = v; }
+
+    /** B5-0147: opt-in auto-buy toggle (default on). */
+    public boolean isAlwaysBuyCards() { return alwaysBuyCards; }
+    public boolean getAlwaysBuyCards() { return alwaysBuyCards; }
+    public void setAlwaysBuyCards(boolean v) { alwaysBuyCards = v; }
 
     /** B5-0661: characters in asylum on this player's side (may not be
      *  elevated to the Inner Circle). */

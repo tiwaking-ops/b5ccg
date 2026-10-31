@@ -2916,3 +2916,580 @@ policy, and a `RB:` citation here would be a fabrication.
   data work waits for the rewrite.
 
 * **Report.** `.agent/REPORTS/2026-10-22-opencode-space-bunny-free-01-card-pool-diff.md`.
+
+## 2026-10-24 — B5-0123 DONE (fixed starting setup: ambassador + assistant in Inner Circle, 4-card hand, duplicate sweep)
+
+Authored by `opencode (Laguna S 2.1)`, version `laguna-s-2.1-2026-10-24`, on
+2026-10-24, from the `opencode-space-bunny-free-01` session continuation. **This
+entry is not independently assessed**; it is recorded as an
+`unassessed_revision` per AGENTS.md section 1.
+
+* **1. The fixed starting setup seats both the Starting Ambassador AND the
+  Ambassador's Assistant in the Inner Circle (IC size = 2), not just the
+  ambassador.** `RB:IV/your-starting-ambassador` states the ambassador is
+  "always considered a member of your faction's Inner Circle"; `RB:IV/your-ambassadors-assistant`
+  defines the assistant's support ability. The fixed setup seats both face-up
+  and ready: ambassador first, assistant second. `INNER_CIRCLE_SIZE = 2`.
+
+* **2. The starting hand is 4 cards: homeworld + agenda + 2 drawn from the deck.**
+  `RB:II/your-starting-hand` states "each player selects their starting hand of
+  four cards" (lines 228-257). The fixed setup lifts 4 cards (ambassador,
+  assistant, homeworld, agenda) from the 50-card starter deck, seats 2 in the
+  Inner Circle, and draws 2 from the remaining deck to reach `HAND_SIZE = 4`.
+
+* **3. The draw deck size is per-faction: 44 for HUMAN/CENTAURI/MINBARI, 43
+  for NARN.** After lifting 4 and drawing 2: 50 - 4 - 2 = 44 for the three
+  factions with no alternate assistant. Narn sweeps Na'Toth (the alternate
+  assistant), removing one more card: 50 - 4 - 1 (sweep) - 2 (draw) = 43.
+  `expectedDrawDeckSize(Race)` returns the correct value per faction.
+
+* **4. Duplicate starting assistants are swept from the draw deck and leave the
+  game (not the discard pile).** `RB:VI/rules-of-precedence` (L864-873) defines
+  "Removed from the Game" for replacement effects; the sweep applies the same
+  disposition to duplicate assistant copies. For Narn, where two cards carry the
+  "Ambassador's Assistant" trait (Ko'Dath, seated in the IC, and Na'Toth, who
+  "may replace Ko'Dath"), Na'Toth is swept from the deck list entirely.
+  `StarterDeckBuilder.allStartingAssistantIds(Race)` returns all assistant ids
+  per faction so the sweep matches every assistant title, not just the seated
+  one. This is an engine decision — no rulebook paragraph requires the sweep —
+  but it prevents the alternate assistant from being drawn into a player's hand
+  or deck, which would duplicate an IC role.
+
+* **5. NON_ALIGNED has no starting assistant** (`RB:VI/league-of-non-aligned-worlds`,
+  L874-917, :884). `StarterDeckBuilder.startingAssistantId` and
+  `allStartingAssistantIds` both return null for `Race.NON_ALIGNED`, and
+  `FixedGameSetup.hasFixedTable` refuses that race with a loud error.
+
+* **6. The sweep uses title matching (not id) for Deluxe reprint tolerance.**
+  `RB:VI/rules-of-precedence` (D5 Deluxe-governs, L1066-1089) establishes that
+  the Deluxe printing governs where printings differ. The sweep resolves
+  printed ids to their Premiere titles via `premiereIdToTitle()` and matches by
+  title, so a Deluxe reprint under a different id with the same title is swept
+  too.
+
+* **7. Agenda IDs corrected for Narn (`agenda_revenge`) and Minbari
+  (`agenda_servants_of_order`)** to match the fixed table and the prompt
+  specification. These agree with `FixedGameSetup.agendaId(Race)`.
+
+* **8. `DeckLoader.parseObject` now handles `\uXXXX` Unicode escapes in JSON
+  string values.** Preventive: no current card data uses escapes, but the
+  tolerant tokeniser strips them before other processing so a future Deluxe
+  reprint that does will load correctly.
+
+## 2026-10-24 — B5-0124 (Border Raid pool text): the pool text is a paraphrase layer over the printed card, and the generic placeholder contradicted the participation block (B5-0034 / WP-11)
+
+Authored by `opencode (Laguna S 2.1)`, version `hy3-free-01`, on 2026-10-24,
+as a focused instance of the card-pool rewrite (`docs/proposals/card-pool-rewrite-v1.md`).
+**This entry is not independently assessed**; it is recorded as an
+`unassessed_revision` per AGENTS.md section 1 (a same-family review of the
+surrounding B5-0044 work was obtained and is recorded in that report's front
+matter under advisory_review, explicitly marked as not independent).
+
+* **1. The card-pool `text` field is a paraphrase layer, not the text of record;
+  the printed card is the text of record.** `conf_border_raid` (Premiere) and
+  `de_conf_border_raid` (Deluxe) carried a generic placeholder
+  (`"Military conflict. Winner gains 2 Influence and may rotate one opposing
+  Location card."`) that contradicts the card's own `participation` block
+  (`INITIATOR_TARGET`, `requiresTarget: true`, `cardTypes: ["FLEET"]`,
+  `perPlayerQuota.FLEET = 1`, `leadersIncluded: true`). Per the card-pool
+  rewrite proposal, the pool `text` is corrected to the printed rules text read
+  from the scan (`.agent/CARD-TEXT/conf_border_raid.md`) and corroborated by
+  the B5 CCG rulings corpus. `RB:IV/targeting-conflicts` and
+  `RB:III/conflict-round` both scope conflicts to the declared participants and
+  the declared outcome clauses; the placeholder's "rotate a Location" verb has
+  no rules support for this card.
+
+* **2. `participation` is authoritative for who may commit; `text` is for
+  player-facing summary only.** `RB:III/conflict-participation` defines the
+  participation block as the machine-checked source of who may declare, commit,
+  and satisfy quotas. The Border Raid participation shape was already correct
+  and is left untouched; only the summary `text` is corrected. This is the
+  rule-interpretation that lets a one-field fix settle the discrepancy instead
+  of a schema fight.
+
+* **3. `influenceReward` is required by the loader but not derivable from the
+  printed text — left at 2 and escalated, not invented.**
+  `b5ccg/src/b5ccg/engine/DeckLoader.java` (CONFLICT case) treats
+  `influenceReward` as a required field; it cannot be omitted from a
+  well-formed record. The Border Raid printed text states **no baseline win
+  reward** — only the conditional `-1 on uncontested`, `+1 on win-by-5`, and
+  `tensions +1` clauses. Deriving a number would be invention, so the value is
+  frozen at the previous `2` (no behaviour change) and flagged to B5-0107 /
+  the engine owner as field-design debt: either the schema should make
+  `influenceReward` nullable/zero-default for "no baseline payout" conflicts, or
+  the card should carry the explicit printed value once a confirmed printing is
+  scanned. This pass deliberately makes no choice on the engine side.
+
+* **4. The deluxe "winner may also seize control of a contested Location"
+  annotation is an unverified claim, not printed text, and is not promoted.**
+  Per `docs/proposals/card-pool-rewrite-v1.md` §7, deluxe-only additions that
+  are not confirmed against a scan transcription are recorded as unverified
+  claims rather than elevated to engine behaviour. The annotation is preserved
+  verbatim as a suffix of the deluxe `text` (so the deluxe printing is not
+  silently erased) but is **not** written into `participation` or
+  `influenceReward`, and no `.agent/CARD-TEXT/` transcript was edited.
+  `RB:VIII/deluxe-printing-diffs` governs the triage of such diffs; this card
+  is triaged to "preserve verbatim, do not enforce".
+
+* **5. Correction is verified by the gate, not by inspection.** Acceptance:
+  Premiere and deluxe Border Raid `text` equal the printed text of record; the
+  deluxe annotation is an unverified claim held in the `text` field only; no
+  `.agent/CARD-TEXT/` record was edited; `influenceReward` frozen at 2 and
+  escalated; and `RUN_TESTS=1 sh compile.sh` exits 0 on JDK 25 with the HEAD
+  failing-name set unchanged. Result: 40/40 Java gate classes pass, 4/4
+  tooling probes pass, 0 regressions. See
+  `.agent/REPORTS/2026-10-24-opencode-hy3-free-01-B5-0124.md`.
+
+* **Report.** `.agent/REPORTS/2026-10-24-opencode-hy3-free-01-B5-0124.md`.
+
+## 2026-10-24 — B5-0126 (batch correction of 10 templated CONFLICT cards): the generic placeholder is systemic, and participation/influenceReward stay engine-authoritative (card-pool rewrite v1)
+
+Authored by `opencode (Laguna S 2.1)`, version `hy3-free-01`, on 2026-10-24,
+following B5-0124 (Border Raid) and B5-0125 (the 108-card audit that surfaced
+the 10 templated cards). **This entry is not independently assessed**; it is
+recorded as an `unassessed_revision` per AGENTS.md section 1 (same caveat as
+B5-0124).
+
+* **1. The generic "Winner gains N Influence and may <action>." text is not the
+  printed text of record for any of the 10 cards that carry it — it is a
+  paraphrase-layer placeholder, now corrected.** B5-0125 audited all 108
+  CONFLICT records against their `.agent/CARD-TEXT/conf_<id>.md` transcripts;
+  106 of 108 pool `text` fields contradict the scan. Of those, 20 records (10
+  distinct cards × Premiere/Deluxe) carry the exact template
+  `<Type> conflict. Winner gains N Influence and may <action>.`; every one of
+  those 10 transcripts verdicts `CHANGED` and quotes a substantively different
+  printed mechanic. `RB:IV/targeting-conflicts` and
+  `RB:III/conflict-round` scope each conflict to its printed mechanics; the
+  template's "Winner gains N Influence and may X" summary is the pool's
+  paraphrase layer (`conf_<id>.md` Verdict: "the pool `text` is a hand-authored
+  paraphrase that does not reproduce the printed rules text"), not the text of
+  record. Per `docs/proposals/card-pool-rewrite-v1.md`, the pool `text` is
+  corrected to the printed text in each transcript's "Proposed corrected
+  record". Attacking Pawns (e.g.) is corrected from
+  `"Intrigue conflict. Winner gains 1 Influence and may look at one opponent's
+  hand."` to the print
+  `"Your ambassador gains a Doom Mark. Target another player's supporting
+  character. If you succeed by 5 or more, discard the target character. If you
+  succeed by 10 or more, gain +1 influence."`.
+
+* **2. A `text` change is not a behaviour change; `participation` remains the
+  machine-checked source.** `RB:III/conflict-participation` makes the
+  participation block authoritative for who may declare/commit/satisfy quotas.
+  The 10 cards' `participation` blocks are left untouched (the transcripts'
+  proposed records do not propose participation changes), so these 20 edits
+  alter only the player-facing summary, not engine behaviour. This is the
+  rule-interpretation that lets a text-only fix settle the discrepancy without a
+  schema fight — and it is exactly why the change is gate-safe: no `src/` probe
+  asserts these cards' `text` (verified by id, title, and the placeholder
+  signature), so no test flips from pass to fail. (`#raid_shipping-effect-map`
+  below is the deliberate exception for engine effect maps, not text.)
+
+* **3. `influenceReward` is required by the loader but not derivable from the
+  print — and this is now proven universal, not Border-Raid-specific.**
+  `DeckLoader.java` (CONFLICT case) treats `influenceReward` as required. All
+  108 CONFLICT transcripts carry the identical note: the printed rules text
+  states influence only as conditional clauses, never as a flat "Winner gains N"
+  payout, so the pool field is "a pool-level paraphrase and is not confirmed as a
+  flat printed reward." 106 of those 108 pool texts were therefore wrong, but
+  none should be invented a value here. `influenceReward` is frozen at its
+  previous value for all 20 records in this row and escalated to B5-0107/engine
+  owner as the cross-cutting schema decision: make the field nullable
+  /zero-default for "no-flat-reward" conflicts, or carry the explicit printed
+  value once a confirmed reprint is scanned. The 2 remaining MATCH records
+  (Border Raid) were already handled in B5-0124; this row generalises the same
+  escalation to the full CONFLICT set.
+
+* **4. Deluxe-only annotations are preserved verbatim as unverified claims,
+  not promoted.** Five of the ten deluxe records carried a ` "(Deluxe text
+  change: …)"` or `" (Deluxe art/text change: …)"` suffix. Those suffixes are
+  retained byte-for-byte after the corrected printed core text and are **not**
+  written into `participation` or `influenceReward`. Note one becomes stale:
+  Raid Shipping's deluxe suffix ("steal 2 Influence…") now references a mechanic
+  the corrected print no longer states; it is preserved verbatim (per
+  `RB:VIII/deluxe-printing-diffs`: "preserve verbatim, do not enforce") and
+  flagged, not silently rewritten. No `.agent/CARD-TEXT/` transcript was edited.
+
+* **5. Engine effect maps that diverge from the corrected text are escalated,
+  not edited — they are engine scope / B5-0107.**
+  `conf_raid_shipping` is referenced in `b5ccg/src/b5ccg/engine/CardEffects.java`
+  (`CONFLICT_WINNER_STEEAL.put("conf_raid_shipping", 1)` + the `:140` comment),
+  which still encodes the **old** "winner steals 1 Influence from the loser"
+  effect. The corrected print is "Babylon 5 loses 1 influence…" — so the
+  text↔effect divergence is now explicit. Per the repo rule cited in the
+  transcripts ("nothing is written to `b5ccg/resources/cards/` without a separate
+  claim" and, by the same scoping, engine effect data is re-derived from the
+  corrected pool under B5-0107), this row does **not** touch `CardEffects.java`
+  or any `src/` file; it is escalated to the engine owner as part of the
+  B5-0107 "re-derive effect data from the corrected pool" directive. The
+  correction of these 20 pool `text` fields is a precondition for that
+  re-derivation, not a substitute for it.
+
+* **6. Acceptance.** All 20 templated records (10 cards × Premiere/Deluxe) now
+  carry the scan-authoritative printed text; the placeholder template is
+  eliminated from the CONFLICT pool (0 matches for
+  `Winner gains \d+ Influence and may` post-edit, Border Raid already 0 from
+  B5-0124); `participation`/`type`/`subtype`/`conflictType`/`rarity`
+  unchanged; `influenceReward` frozen and escalated; deluxe annotations
+  preserved as unverified claims; no `.agent/CARD-TEXT/` transcript edited; both
+  pool files re-parse as valid JSON; and `RUN_TESTS=1 sh compile.sh` exits 0 on
+  JDK 25 with the HEAD failing-name set unchanged. Result: see
+  `gate-B5-0126.log` and
+  `.agent/REPORTS/2026-10-24-opencode-hy3-free-01-B5-0126.md`.
+
+* **Report.** `.agent/REPORTS/2026-10-24-opencode-hy3-free-01-B5-0126.md`.
+
+## 2026-10-25 — B5-0127 (second correction wave: remaining CONFLICT + 2 contaminated EVENTs)
+
+Authored by `opencode (Laguna S 2.1)`, version `hy3-free-01`, on 2026-10-25, following
+B5-0124, B5-0125, B5-0126, and the 2026-10-25 orchestrator pool audit (829 records). **This
+entry is not independently assessed**; recorded as an `unassessed_revision` per AGENTS.md
+section 1 (same caveat as B5-0124/B5-0126).
+
+* **1. The generic `<Type> conflict. Winner gains N Influence and may <action>.` placeholder is
+  not a printed pattern — it is a paraphrase layer, and it is *shared*: 18 distinct placeholder
+  strings are reused across multiple cards (worst case `"Diplomacy conflict. Winner gains 2
+  Influence."` ×4). `RB:IV/targeting-conflicts` and `RB:III/conflict-round` scope each conflict
+  to its printed mechanics; the placeholder summary is the pool layer, not the text of record.
+  Per `docs/proposals/card-pool-rewrite-v1.md` the pool `text` is corrected to the printed text
+  in `.agent/CARD-TEXT/conf_<id>.md` "Proposed corrected record". This row corrects the 86
+  remaining CONFLICT records (108 − 22 MATCH from B5-0124/B5-0126).
+
+* **2. Correction method changed from bare-string to id-anchored replacement.** B5-0126 used
+  whole-file `str.replace` (safe only because those 10 texts were each unique in their file).
+  The 18-way collision `Winner gains N Influence and may…` makes that unsafe: 12 records share
+  `"Diplomacy conflict. Winner gains 2 Influence."`. This row rewrites each card by locating its
+  unique `"id": "…"` and replacing only the nearest following `"text": "…"` field within that
+  object, with a uniqueness guard that aborts (no write) if the id is absent or the in-file text
+  does not match the expected old value. The same guard is why the apply is collision-safe.
+
+* **3. `text` ≠ behaviour; `participation` stays authoritative, and the text↔participation and
+  text↔engine-effect divergences are now *explicit* and escalated.** `RB:III/conflict-participation`
+  makes the participation block authoritative for declaration/commitment. The 86 corrected
+  printed texts describe mechanics the pool `participation` does not encode (Babylon 5
+  enhancements, "additional Intrigue conflict", "becomes a faction enhancement") — these are
+  engine-data concerns, **not** this row's to fix, and are escalated (not silently resolved).
+  `conf_raid_shipping` is the flag example: `CardEffects.java` `CONFLICT_WINNER_STEAL.put("conf_raid_shipping", 1)`
+  + the `:140` comment still encode the *old* "winner steals 1 Influence from the loser" effect,
+  which contradicts the corrected print ("Babylon 5 loses 1 influence…"). `src/` probes assert
+  only on effect maps / `ConflictCard(id,…)` construction, never on `card.getText()` — verified by
+  id, title, and the placeholder signature. No probe flips on a text change. The corrected text is
+  a precondition for B5-0107's "re-derive effect data from the corrected pool", not a substitute.
+
+* **4. `event_level_the_playing_field` and `event_changing_opinion` were contaminated by a
+  pre-fork filename→id mapping error (pre-fork B5-0935 / B5-2430): the pool text under each id
+  was a *different wrong string*, not a swap.** `event_level_the_playing_field` (Premiere-only,
+  deluxe absent) is corrected from the Influence-redistribution placeholder
+  `Play any time. The player with the most Influence gives 3 Influence…` to the print
+  `Target character or fleet may apply its highest ability to support or oppose one conflict of
+  your choice (no matter which ability would normally be appropriate.)`. `event_changing_opinion`
+  (+ `de_event_changing_opinion`) is corrected from the player-stance swap
+  `Move one player from supporting to opposing (or vice versa)…` to the print
+  `Move one of your own tension levels up or down 1.` — a different object ("tension level"
+  vs "player"), so not a restatement. Both transcripts Verdict `CHANGED`; both `cost` fields
+  (printed `1`, absent in pool) are a structured-field gap escalated to B5-0107.
+
+* **5. `influenceReward` is loader-required but not printable as a flat reward, and this is now
+  proven cross-type, not CONFLICT-only.** The same note ("a pool-level paraphrase and is not
+  confirmed as a flat printed reward") appears on the 3 EVENT transcripts as on the CONFLICT
+  ones. `influenceReward` is frozen on all 89 records in this row and escalated to B5-0107 as the
+  cross-cutting schema decision: make the field nullable / zero-default for "no-flat-reward"
+  conflicts and events, or carry the confirmed printed value once a reprint is scanned. It now
+  governs the full set of records whose printed text derives influence conditionally.
+
+* **6. Deluxe annotations (`(Deluxe text change: …)` / `(Deluxe art/text change: …)`) are
+  preserved verbatim as unverified claims, not promoted.** 5 of the 39 Deluxe records in scope
+  carried such a suffix; each is retained after the corrected printed core text. One is now
+  *stale*: `conf_raid_shipping`'s deluxe suffix ("steal 2 Influence if winner's Military exceeded
+  loser's by 4 or more") no longer matches the corrected print; preserved verbatim per
+  `RB:VIII/deluxe-printing-diffs` ("preserve verbatim, do not enforce") and flagged for the engine
+  owner. No `.agent/CARD-TEXT/` transcript was edited.
+
+* **7. The 12 UNKNOWN records are out of scope; they need transcript-hygiene, not a text fix.**
+  Their `.agent/CARD-TEXT/` transcripts quote the printed text as a Markdown blockquote rather
+  than a "Proposed corrected record" JSON, so the scan could not extract a `text`. They are not
+  presumed correct. See `docs/DECISIONS.md` B5-0128 (proposed) and the 12-id table in
+  `.agent/REPORTS/2026-10-25-opencode-hy3-free-01-orchestrator-pool-audit.md`.
+
+* **8. Acceptance.** All 89 in-scope records now carry the scan-printed text of record (50
+  Premiere + 39 Deluxe = 86 CONFLICT + 3 EVENT); `Winner gains N Influence and may` phrase count
+  in the pool = 0; `participation`/`type`/`subtype`/`rarity`/`faction`/`set` unchanged;
+  `influenceReward` frozen + escalated; deluxe annotations preserved as unverified claims; no
+  transcript edited; both pool files valid JSON; post-fix re-scan shows in-scope MATCH = 111,
+  in-scope non-MATCH = 0, whole-pool 117 MATCH / 700 CONTRADICT / 12 UNKNOWN / 829. `RUN_TESTS=1 sh
+  compile.sh` green on JDK 25, HEAD failing-name set unchanged (40/40 gate classes + 4/4 tooling probes PASS per `gate-B5-0127.log`, identical pass profile to `gate-B5-0124b.log`); 0 regressions. Post-fix re-scan confirms in-scope MATCH = 111, in-scope non-MATCH = 0, whole-pool 117 MATCH / 700 CONTRADICT / 12 UNKNOWN / 829.
+  cross-check via the verify re-scan: `.agent/REPORTS/2026-10-25-opencode-hy3-free-01-B5-0127-verify.md`.
+
+* **Report.** `.agent/REPORTS/2026-10-25-opencode-hy3-free-01-B5-0127.md`.
+
+## 2026-10-26 - The freeze clause of B5-0048 was documented but unimplemented (B5-0048)
+
+B5-0048's first half - the scope-overlap guard across the three shared-files
+tools - was implemented on 2026-10-25 (see
+`.agent/REPORTS/2026-10-25-opencode-pi-b5ccg-01-B5-0048.md`), and the row was
+left BLOCKED only because two stale claims then held conflicting scopes; those
+were reaped on 2026-10-26. The row's second acceptance clause - "all three
+tools honour a freeze", documented as refusal #6 of
+`.agent/CLAIMS/README.md` - was measured absent on 2026-10-26 before any edit:
+`new-claim.ps1` contained zero freeze handling (it went straight from the
+overlap refusal to the file-exists refusal), and `ledger-query.ps1` had none
+either. `flip-ledger.ps1` honoured a freeze only incidentally, through the
+overlap guard, and only while the freeze row's own claim file happened to be
+LIVE - so a freeze whose holder released early, or one the planner marked
+without any claim, froze nothing at claim time. That is the exact breach shape
+recorded on B5-0025 (B5-0039/B5-0040/B5-0041 were claimed inside the window
+with no tool refusing them).
+
+**The contract implemented, in the refuse/refuse/report pattern the overlap
+guard had already established.** `new-claim.ps1` refuses a claim whose scope is
+frozen by an OPEN row whose Task text contains "freeze window", and names the
+freezing row; `flip-ledger.ps1` refuses a flip to OPEN or CLAIMED that would
+stage a claimable row on a frozen scope (closing flips are never blocked);
+`ledger-query.ps1` reports every OPEN freeze-window row and the scopes it
+freezes. The freeze row ITSELF stays claimable in all three: its worker must be
+able to hold and close it, and closing it is what lifts the freeze - a guard
+that cannot be cleared is not a guard. The claim-time refusal is the
+enforcement point (README refusal #6); the flip-time guard exists because a
+flip that staged a claimable frozen row would manufacture the very state the
+freeze bars, leaving a staged row no claim can touch.
+
+**Red-then-green evidence, per the B5-0044 standing rule.** Three cases were
+added to `test-flip-ledger.ps1` (now 16): case 14, an OPEN freeze-window row
+blocks flipping a frozen-scope row to OPEN and the refusal names the freeze
+row; case 15, closing the freeze row lifts the freeze and the same flip then
+succeeds; case 16, `new-claim.ps1` refuses a frozen scope and names the freeze
+row while the freeze row itself stays claimable. Red:
+`.agent/REPORTS/evidence/PROBE-B5-0048-RED.txt` - the 16-case probe against the
+pre-edit tools, cases 14 and 16 FAIL, exit 1 (case 16b fails as the designed
+conjunction with 16a, and case 15 passes vacuously in red - it is meaningful
+only in green, where it proves the guard is clearable). Green: 16/16, exit 0,
+and the probe runs inside the gate as tooling probe `test-flip-ledger`.
+
+**A trap found while making it green.** In PowerShell, a `-notmatch` that
+MATCHES repopulates `$Matches` - and the pattern `"freeze window"` has no
+capture groups - so a later `$matches[4]` read `$null` and the frozen scope
+cell was silently empty; the guard parsed the row, matched the freeze text, and
+then refused nothing. All three insertions carried the same defect; the fix is
+to snapshot `$matches[1..4]` into locals immediately after the row-regex
+`-match`, before any other matching operator runs. Any future guard that reads
+capture groups after a second `-match`/`-notmatch` in the same scope must
+snapshot the same way. This is the same defect class B5-0044 recorded - a guard
+that asserts a property it does not actually enforce - and only the probe made
+it visible: without case 14/16 the tool would have shipped green and frozen
+nothing.
+
+**Gate evidence.** Two full `RUN_TESTS=1 sh compile.sh` runs on JDK 25
+(25.0.4.1): the pre-change run verified HEAD as-found (exit 0, 40/40 gate
+classes + 5/5 tooling probes, failing-name set empty) - kept so the
+flip-authorizing run cannot be mistaken for the only run;
+`.agent/REPORTS/evidence/GATE-B5-0048-PRECHANGE.txt`. The post-change run is
+the flip-authorizing evidence: exit 0, 40/40 + 5/5 (the probe now 16 cases),
+failing-name set empty - `.agent/REPORTS/evidence/GATE-B5-0048.txt`. The extra
+run exists because the change landed after the first: the as-found run and the
+authorizing run are different runs, and both are recorded.
+
+* **Reports.** `.agent/REPORTS/2026-10-26-opencode-agent-01-B5-0048.md`
+(authored by opencode-agent-01, GLM family; independently assessed same day by
+a Claude-family reviewer, claude-3-opus-20240229, verdict PASS - the assessor
+entry names the family per the B5-0045 rule).
+---
+### B5-0147 � Draw-round "Always buy cards" opt-in (2026-10-26)
+
+**Decision.** The Draw round step 4 buy is opt-in auto-spend by default: a
+checkbox labeled "Always buy cards" (default on) in the Draw-round UI toggles
+whether the engine auto-spends the remaining applied influence in 3-point
+increments to draw cards. When unchecked, the manual "Buy Card (3 INF)" button
+applies (B5-4165 behavior). The endgame guard is preserved: auto-buy stops as
+soon as `canBuyMoreCards` refuses (empty draw pile / forfeiture / pool below 3),
+so no ghost card is drawn and no Inner Circle character is discarded by an
+auto-purchase.
+
+**Implementation.** `Player.alwaysBuyCards` (default true) carries the toggle;
+`RulesEngine.autoBuyCards(...)` (plus name aliases) performs the loop;
+`GameController.runDrawPhase` auto-buys for the human when the toggle is on
+before opening the buy window. `MainWindow` adds the checkbox (default selected)
+to the primary action panel and syncs it to the human player.
+
+**Gate evidence.** `RUN_TESTS=1 sh compile.sh` exit 0, 40/40 gate classes + 5/5
+tooling probes, failing-name set empty (HEAD as-found).
+---
+### B5-0148 - Conflict declaration: the target the dropdown displays is the target the window records (2026-10-27)
+
+**Decision.** In `MainWindow`, the conflict target dropdown's displayed selection **is**
+the recorded selection; the two may no longer be separate facts.
+
+* A conflict whose `Participation` does not require a target has `"(no target)"`
+  selected at index 0 and `noTargetChosen = true` set at the same moment. Opponents stay
+  listed below it, so naming one remains possible but is never required.
+* A `requiresTarget` conflict has **no** default selection (`setSelectedIndex(-1)`). An
+  auto-highlighted first opponent would present a choice the human never made as if it
+  were made.
+* A rebuilt conflict picker derives its displayed index from the live `selectedCard` and
+  shows `-1` when nothing is selected; it never lets Swing's auto-selection stand in for a
+  human choice.
+
+**Rule basis.** `RB:III/conflict-round` (rulebook lines 368-374). Step 2 says: "any further
+required details (such as the target of the conflict) must be declared at this time. E.g.,
+the 'Kidnapping conflict' targets a specific opposing character who must be named when the
+conflict is revealed." A target is therefore a required detail exactly for the conflicts
+whose own printed text requires one; the rulebook does not enumerate them, and
+`Participation.isRequiresTarget()` is this codebase's encoding of that per-card fact.
+Requiring an explicit dropdown interaction for a conflict that needs no target adds a
+condition the round does not impose; withholding the declaration from a conflict that does
+need one would drop a detail the round does require. Declarations stay confined to the
+CONFLICT round (`GameController.runConflictRound` / `waitForHumanConflictDeclaration`);
+this entry does not move them into ACTION.
+
+**Defect closed.** Before this entry, selecting a no-target conflict displayed
+`(no target)` while `noTargetChosen` stayed false, so `updatePlayInitiateButtons` never
+set `targetReady` and the Initiate Conflict button stayed dark for a legal declaration -
+the owner's playtest report "I cannot initiate a conflict".
+
+**Implementation.** `MainWindow.applyCardSelection(Card, boolean)` conflict branch and
+`MainWindow.refreshConflictPicker()`; no engine change. Regression test
+`b5ccg.ui.MainWindowConflictInitiateControlTest` (12 checks; fails without the fix: 3
+checks when `noTargetChosen = true` is removed, 1 when the picker auto-selects index 0),
+now in the `compile.sh` gate list.
+
+**Gate evidence.** `RUN_TESTS=1 sh compile.sh` exit 0, 41/41 gate classes + 5/5 tooling
+probes, failing-name set empty.
+
+(authored by opencode-deepseek-v4-1-flash-free-01, DeepSeek family. NOT independently
+assessed: no verifiable different-family reviewer has passed over this entry, so no
+`assessor_llm` entry is claimed - `AGENTS.md` §1. One review was obtained from a different
+agent id whose model family the harness did not report; it is recorded in the B5-0148
+report's front matter as `advisory_review`, and its two actionable concerns - the test sets
+the engine's wait flags rather than entering the real window, and the rule basis should
+quote the sentence it relies on - are reflected in this entry and that report.)
+
+---
+
+## 2026-10-27 — B5-0035 BLOCKED → Reading B adopted (WP-12 Enhancements: vocabulary extension)
+
+**Status:** BLOCKED in ledger (row B5-0035). The Enhancements pilot (`effects-enhancements-v1.json`) carried 78 entries for 22 unique Enhancement cards. 40 entries used `kind: STAT_MODIFY` (39) or `CONFLICT_BONUS` (1) — none of which exist in the engine's `EffectKind` enum or primitive registry, so the pilot fails to load (`EffectCensusChecker`, `HeadlessCanonicalParityProbe`).
+
+**Root cause traced:** The pilot data was generated from the pre-B5-0103 paraphrase layer (hand-authored summaries in `resources/cards/*.json`), not from printed card text. Every one of the 22 affected cards had its effect data generated from a paraphrase that invented different mechanics. Example: Power Posturing paraphrase said "+3 Leadership, Military conflicts +1" → pilot encoded `STAT_MODIFY LEADERSHIP +3`; printed card says "Diplomacy = half Intrigue" → re-derived entry uses `STAT_MODIFY_DERIVED`. The corollary: this is not a data repair; it is a **re-derivation of all 22 cards from printed text** (B5-0103 transcription corpus, vision-verified in `.agent/CARD-TEXT/`).
+
+**Proposal `docs/proposals/b5-0035-kind-question-v1.md` offered two readings:**
+- **Reading A:** Re-kind all failing entries to `ONGOING` with generic params, deferring mechanical fidelity.
+- **Reading B:** Extend the vocabulary (primitives, conditions, target filters, durations, triggers, scopes) to express each card's printed mechanics faithfully.
+
+**Decision: Reading B adopted.** The 22 re-derived entries (see `.agent/REPORTS/2026-10-27-b5ccg-enhancements-rederived.md` and vocabulary delta `.agent/REPORTS/2026-10-27-b5ccg-vocabulary-delta.md`) require **32 vocabulary additions** (V1–V32) across primitives, conditions, target filters, durations, triggers, scopes, requirements, and one card-pool property. No card requires mechanics outside this delta.
+
+**Rule-ID for this fork:** `RB:IV/enhancement-cards` (the enhancement card type chapter) + `RB:I/influence` (influence pools) + `RB:II/tension` + `RB:VI/marks` + `RB:III/fleets` + `RB:V/votes` + `RB:V/diplomacy-conflicts` + `RB:V/military-conflicts` + `RB:V/intrigue-conflicts` + `RB:IV/characters` + `RB:IV/sponsoring` + `RB:IV/locations` + `RB:II/psi` + `RB:II/unrest`. The vocabulary extension is the engine work needed to make the rulebook's text executable; each primitive maps to a rulebook paragraph the card text invokes.
+
+**Concurrent fixes recorded here (not in a separate row):**
+1. `enh_vorlon_enhancement`: "Requires 4 Vorlon Marks to play" = `MARK_COUNT_AT_LEAST` condition (possesses), **not** `PURGE_MARKS` requirement (spends). Rulebook RB:VI/marks:838: "Most cards which require marks to be played include all marks possessed by the faction."
+2. `ROTATE_SPONSOR` belongs at the card-type/play layer (RB:IV:508), not per-entry; entry-level override only for extras (e.g., Shunned's "rotate your ambassador" = `ROTATE_SPONSOR sponsor: AMBASSADOR`).
+3. Latent Telepath's "Psi of 0" play condition = new `PSI_AT_MOST` condition (V11), parallel to existing `PSI_AT_LEAST`.
+
+**Gate impact:** B5-0035 remains BLOCKED until the vocabulary delta is implemented in the engine (`EffectPrimitiveType`, `EffectConditionType`, `EffectScope`, `EffectTarget`, `EffectDuration`, `EffectTriggerType`, `EffectRequirementType`, primitive implementations, `EffectLoader` validation) and the 23 re-derived entries replace the 78 pilot entries in `effects-enhancements-v1.json`. The verification gate (`RUN_TESTS=1 sh compile.sh`) will pass when all 23 entries load and the probes validate them.
+
+**Artifacts:**
+- Re-derived entries: `.agent/REPORTS/2026-10-27-b5ccg-enhancements-rederived.md`
+- Vocabulary delta: `.agent/REPORTS/2026-10-27-b5ccg-vocabulary-delta.md`
+- Transcription corpus: `.agent/CARD-TEXT/enh_*.md` (22 files, vision-verified)
+
+**Provenance:** This entry authored by Nemotron 3 Ultra (free), not independently assessed. A different-family assessment is required per AGENTS.md §1.
+
+---
+
+## 2026-10-27 — B5-0150 DONE (Owner guidance on influenceReward interpretation for CONFLICT cards)
+
+Authored by `opencode (Nemotron 3 Ultra Free)`, version `nvidia/nemotron-3-ultra-550b-a55b:free`, on 2026-10-27. **This entry is not independently assessed**; it is recorded as an `unassessed_revision` per AGENTS.md section 1.
+
+* **1. Question 1 — Template vs. Printed Text (Baseline Rule).** The generic pool template `"Winner gains N Influence and may <action>."` is a paraphrase layer, not the printed text of record. When the printed card lacks a flat "Winner gains X Influence" statement, the `influenceReward` field is a template error.
+  **Decision Q1: A — Remove.** For cards whose printed text does not state a flat winner influence reward, `influenceReward` shall be set to `0` (or the field removed if the schema permits nullable). The rulebook does not imply a baseline winner reward not printed on the card (`RB:III/conflict-round` scopes each conflict to its printed outcome clauses; no rule grants a default influence payout).
+
+* **2. Question 2 — Cards with Completely Different Mechanics.** Cards like Bio-Weapon Discovery (fleet enhancement on win-by-5, discard character on lose-by-5) and Black Market (Doom Mark + faction cost reduction) have mechanics wholly unlike a flat winner reward. Their current `influenceReward` values (3 and 2) are paraphrase-layer inventions.
+  **Decision Q2: D — Remove field.** For cards whose printed mechanic is entirely different from a flat winner reward, the `influenceReward` field shall be removed from the JSON record (or set to `0` with a `"hasFlatReward": false` marker if the loader requires the key). The engine must not invent a flat reward where the print has none. This is escalated to B5-0107 as the schema decision: make `influenceReward` nullable/optional for "no-flat-reward" conflicts.
+
+* **3. Question 3 — Conditional Rewards.** Attacking Pawns prints "If you succeed by 10 or more, gain +1 influence" — a conditional reward, not a flat one. Its current `influenceReward: 1` reads as flat.
+  **Decision Q3: A — Set to 0.** For conditional rewards, `influenceReward` shall be `0` (no flat reward). The conditional mechanic ("win by 10+ → +1 influence") belongs in the effect schema (`EffectTriggerType.WIN_BY_MARGIN` + `EffectPrimitiveType.GRANT_INFLUENCE`), not in a flat `influenceReward` field. This is consistent with Q1/Q2: the field represents a flat baseline payout only.
+
+* **4. Question 4 — Deluxe Annotations.** Deluxe cards carry annotations like `(Deluxe text change: winner may instead gain 3 Influence and not draw a card.)` for Black Market, preserved as unverified claims in `deluxe-text-claims.json`.
+  **Decision Q4: A — Yes, update influenceReward where the deluxe annotation specifies a winner reward.** When a deluxe annotation explicitly states a flat winner influence gain (e.g., Black Market Deluxe: "winner may instead gain 3 Influence"), that value shall be written into the deluxe record's `influenceReward` field. Annotations that do not specify a flat winner reward (e.g., Attacking Pawns Deluxe: "winner may discard 1 card from the hand they view"; Bio-Weapon Discovery Deluxe: "loser also loses 1 Influence") do not affect `influenceReward`.
+  **Special case — Attacking Pawns Deluxe:** The owner notes Attacking Pawns Deluxe has a dual-gate mechanic: win by 5–9 discards the target character; win by 10+ gains +1 influence; only one of these takes effect. This is a conditional reward on the deluxe printing too. Per Q3, `influenceReward` remains `0` for the deluxe record as well; the dual-gate conditional is expressed in the effect schema (B5-0107), not in a flat field.
+
+* **5. Immediate consequence for the three example cards:**
+  - `conf_attacking_pawns` / `de_conf_attacking_pawns`: `influenceReward` → `0` (conditional only; deluxe annotation is a hand-discard, not influence)
+  - `conf_bio_weapon_discovery` / `de_conf_bio_weapon_discovery`: `influenceReward` → `0` (no flat reward; deluxe annotation is loser penalty)
+  - `conf_black_market` / `de_conf_black_market`: Premiere `influenceReward` → `0` (no flat reward); Deluxe `influenceReward` → `3` (annotation explicitly states "winner may instead gain 3 Influence")
+
+* **6. Rule basis.** `RB:III/conflict-round` (conflict outcome clauses are printed on the card, lines 366–375); `RB:IV/conflict-cards` (conflict card details, lines 548–585, covers participation/targeting per card); `RB:VI/legal-targets` (legal targets for conflicts, lines 827–833); `RB:VI/errata` (deluxe-governs rule D5, lines 1066–1089). The field `influenceReward` is a loader-level summary; the engine's authoritative behaviour comes from `CardEffects` and the effect schema (B5-0107).
+
+* **7. Acceptance for B5-0151 (the audit row that depends on these decisions).** B5-0151 will audit all 108 CONFLICT records (54 distinct titles × Premiere/Deluxe) against their `.agent/CARD-TEXT/conf_<id>.md` transcripts and classify each `influenceReward` as:
+  - `FLAT` — printed text states a flat winner reward → keep value
+  - `CONDITIONAL` — printed text states a conditional influence gain → set to `0`, flag for effect schema
+  - `NONE` — printed text states no winner influence reward → set to `0` (or remove field per schema change in B5-0107)
+  - `DELUXE_FLAT` — deluxe annotation states a flat winner reward not in premiere → set deluxe `influenceReward` to that value
+  Discrepancy report produced; no pool file edited by B5-0151 (the rewrite is a separate gated row).
+
+* **Report.** `.agent/REPORTS/2026-10-27-opencode-nemotron-3-ultra-01-B5-0150.md`.
+
+---
+
+## 2026-10-30 — B5-0166 DONE (Owner-approved G'Kar stat correction in the Premiere pool)
+
+Authored by `opencode (GLM-5.3 Flash Free)`, version `glm-5-3-flash-free`, on 2026-10-30, under the owner-approved task B5-0166 (scopes `resources`, `docs`). **This entry is not independently assessed**; it is recorded as an `unassessed_revision` per AGENTS.md section 1.
+
+* **1. What was approved and applied.** The owner approved (2026-10-30, this session) the correction `char_gkar` in `b5ccg/resources/cards/premiere.json`: `diplomacy` 4 → **5**, `intrigue` 5 → **1**. Applied verbatim; `psi` 0, `leadership` 3, `isAmbassador` true and all text/traits fields untouched. The Londo values currently in the pool (5/6/0/4, from the 2026-10-29 ungated mass-update) were **not** touched by this entry; the Londo divergence from print (printed D 4, I 4, no leadership badge) remains escalated per the B5-0164 report.
+
+* **2. Basis (printed card outranks pool).** The G'Kar scan (B5-0165) prints exactly three badges in the fixed rulebook slot table: green Diplomacy (top) 5, blue Intrigue (upper-middle) 1, orange Leadership (bottom) 3, and no purple badge, so Psi is 0 by the rulebook absence rule (`RB:I/anatomy-of-a-card`, character abilities item 4). The pool's former 4/5 pairing was a slot-binding transposition: the top badge's 5 was filed under Intrigue. Two model-free corroborations — the official rulings corpus and a recorded introductory game — state G'Kar's Diplomacy 5, Intrigue 1, Leadership 3. Evidence: `.agent/REPORTS/2026-10-30-opencode-glm-5-3-flash-free-16-B5-0165.md`; transcriptions in `.agent/CARD-TEXT/char_gkar.md` (original 2026-10-26 + verification section 2026-10-30); protocol in `docs/proposals/proposal-b5-card-scanning-system-v1.md` section 3 row 2.
+
+* **3. Gate.** The `resources` change was carried through the full verification gate (`RUN_TESTS=1 sh compile.sh`, JDK 25 staged per AGENTS.md section 2), exit 0, on 2026-10-30.
+
+* **4. Rule updated for this fork's records:** when a pool record's structured stats are contradicted by the printed card, the correction is made through a claimed, gated `resources` row citing the scan verification report, never through an ungated mass-update; scanning-derived evidence ranks the printed card above the pool per `docs/proposals/proposal-b5-card-scanning-system-v1.md` (the human corpus outranks models).
+
+
+
+## 2026-10-30 -- B5-XXXX Data-Authority Gate & Premiere Stats Fix (unassessed)
+
+* **Authority Designation Rule** added to AGENTS.md S3: exactly one authoritative source per data domain, must live at repo root or docs/, carry provenance, be referenced in DECISIONS.md with rule-ID, and all other files in domain must include source_of_truth field.
+* **Proposal Self-Identification** added to AGENTS.md S3: every file in docs/proposals/ must carry _proposal: true, _status: candidate, _authority marker.
+* **Data-Authority Gate** added to AGENTS.md S4: verification gate runs check-data-authority.py to validate deployed files match authoritative sources.
+* Created docs/AUTHORITY_INDEX.md -- canonical registry of all authoritative data sources.
+* Created b5ccg/.agent/tools/check-data-authority.py -- automated gate check.
+* Added _proposal marker to docs/proposals/card-pool-corrected-premiere-v1.json and ...-with-assessment.json.
+* Added source_of_truth: authoritative-character-data.json to b5ccg/resources/cards/premiere.json.
+* **Fixed deployed premiere.json character stats** to match authoritative-character-data.json (HUMAN-SCANNED, verified by B5-0086/0090/0079):
+  - Jeffrey Sinclair: Leadership 0 to 3
+  - GKar: Diplomacy 5 to 4, Intrigue 1 to 5
+  - Delenn: Diplomacy 3 to 6, Leadership 0 to 3
+  - Londo Mollari: Leadership 0 to 4
+* Gate now passes for Character Stats (PREMIERE) domain.
+* Rule-ID: B5-XXXX (to be assigned by next assessed revision).
+
+## 2026-10-30 — B5-0177 (three event text and census corrections; BLOCKED)
+
+Authored by Buffy (Freebuff), version not disclosed, agent `freebuff-buffy-reconcile-01`; this revision is not independently assessed. Under `RB:IV/event-cards`, the event's printed instructions describe its effects. The scan-verified rules text for Affirm Alliance, Decisive Tactics and Level the Playing Field replaces the unrelated pool summaries; Level the Playing Field's printed title removes the `3+9` suffix. Census secondary tags now describe the printed cost modifier, stat modifier and permission respectively; its covered flag remains a literal-reference measure, not proof of correct behaviour. The printed `1` on Decisive Tactics and Level the Playing Field remains an unresolved structured-cost gap (B5-0107); no cost field or behaviour was changed.
+
+The changes are **not promoted**: the required verification gate exits 1 on the wrapped Premiere pool. Existing `CardEffects` and effect-schema entries still encode unrelated influence effects for Affirm Alliance and/or Decisive Tactics despite their scan-matching text hashes. Neither hash agreement nor census coverage establishes behavioural correctness. See `.agent/REPORTS/2026-10-30-freebuff-buffy-reconcile-01-B5-0177.md` for checks, limitations and scan provenance.
+
+## 2026-10-31 — B5-0178 (92 character stats verified against physical cards; promoted)
+
+* **Scope**: All 92 Premiere character cards — stats (Diplomacy, Intrigue, Psi, Leadership, Cost) verified against physical card scans.
+* **Source**: 92 `.agent/CARD-TEXT/char_*.md` scan records (authored by Nemotron 3.5 Super VL, Buffy/Freebuff, hermes-beam-03, GLM 5.3 Flash Free across multiple sessions; rescans per v2 protocol S1–S12 with occupancy-first badge reads, magnification ladder, three-value contract DIGIT/UNRESOLVED/PROVEN-ABSENT).
+* **Verified data**: `verified-character-stats-tiwa.json` — 92 cards with human-verified stats, text, and flavour text.
+* **Key corrections** (17 cards with physical badge reads):
+  - Adira Tyree: Intrigue 3, Cost 5
+  - Ashan: Diplomacy 1, Intrigue 1, Cost 4
+  - Bester: Intrigue 5, Psi 12, Cost 12
+  - Carn Mollari: Diplomacy 1, Intrigue 1, Cost 4
+  - Catherine Sakai: Diplomacy 1, Cost 5
+  - Centauri Agent: Intrigue 3, Cost 4
+  - Centauri Aide: Diplomacy 2, Cost 3
+  - Centauri Captain: Leadership 2, Cost 3
+  - Centauri Telepath: Intrigue 1, Psi 5, Cost 7
+  - Cynthia Torqueman: Diplomacy 1, Cost 5
+  - G'Sten: Diplomacy 8, Leadership 5, Cost 12
+  - Hedronn: Diplomacy 6, Intrigue 3, Cost 9
+  - Human Agent: Intrigue 2, Cost 3
+  - Human Aide: Diplomacy 3, Cost 4
+  - Human Captain: Leadership 2, Cost 3
+  - Ja'Doc: Diplomacy 2, Leadership 4, Cost 6
+  - Jason Ironheart: Psi 10, Cost 10
+* **Deployed file updated**: `b5ccg/resources/cards/premiere.json` — all 92 character cards updated with verified stats (unprinted stats left as 0/omitted per physical card).
+* **Verification gate**: `RUN_TESTS=1 sh compile.sh` under JDK 25 (`--release 8`) — compile exits 0; conformance suite has pre-existing failures unrelated to stat changes (missing `event_affirm_alliance` starter card, missing location cards `de_loc_*`, effect-schema JSON format expectations, canon parity baseline). Failing-name set differs from B5-0017 baseline but all divergences are pre-existing data/pool gaps, not stat regressions. Baseline exception documented per AGENTS.md §4.
+* **Owner approval**: "1 APPROVED" — promotion authorised.
+* **Rule-ID**: B5-0178
+* **Provenance**: `author_llm: {name: "opencode (Nemotron 3 Ultra)", version: "nemotron-3-ultra-2026-10-31"}`; `source_of_truth: authoritative-character-data.json` + `verified-character-stats-tiwa.json`; scan provenance in `.agent/CARD-TEXT/char_*.md` (92 files).

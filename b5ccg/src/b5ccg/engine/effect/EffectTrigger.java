@@ -66,7 +66,10 @@ public enum EffectTrigger {
     CHARACTER_DAMAGED,
 
     /** A card is discarded. */
-    CARD_DISCARDED;
+    CARD_DISCARDED,
+
+    /** The enhancement card is rotated as an action. */
+    ROTATE_CARD;
 
     /** Parses a trigger, failing closed. */
     public static EffectTrigger parse(String raw, String location) throws EffectLoadException {
