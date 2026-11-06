@@ -1706,14 +1706,17 @@ public class RulesEngine {
     /** Returns true when p may join the active conflict on the given side:
      *  p has not passed, there is an active conflict, p is not already a
      *  participant, and p's faction may play the conflict card. If
-     *  requireAction is true (action-round joins), p must also have an action
-     *  remaining. Conflict-resolution joins call with false so the human can
-     *  join after the action round without an action token. */
+     *  requireAction is true (action-round joins), p must also NOT have passed.
+     *  The B5 CCG rulebook has no action-point economy; joining costs a ready
+     *  character rotation, not an action slot. Conflict-resolution joins call
+     *  with false so the human can join after the action round without any
+     *  action-token check. */
     public boolean canJoinConflict(Player p, Conflict conflict, boolean requireAction) {
         if (p == null) return false;
         if (requireAction) {
             if (p.isPassed()) return false;
-            if (p.getActionsLeft() <= 0) return false;
+            // B5-0188: no action-point economy — joining costs a card rotation,
+            // not an action slot. Do not check actionsLeft.
         }
         if (conflict == null) return false;
         if (conflict.isResolved()) return false;

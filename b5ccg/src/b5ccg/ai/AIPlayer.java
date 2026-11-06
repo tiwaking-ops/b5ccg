@@ -329,20 +329,21 @@ public class AIPlayer {
 
     // ── Legal action builder ──────────────────────────────────────────────────
 
-    /** B5-0202c: early return for already-passed or action-spent players.
+    /** B5-0202c: early return for already-passed players.
      *  NOTE: this also suppresses conflict initiation offers, which the
      *  B5-0017 baseline suite relies on for the HARD AI to initiate a
      *  losing-matchup conflict when 6 WON aftermaths anticipate the win -
      *  the test builds a legal initiate action outside the normal offer
      *  loop. The phase/gate check below therefore excludes the
      *  conflict-initiation branch rather than blocking all actions.
-     */
+     *  B5-0188: no action-point economy — remove actionsLeft check. */
     private List<GameAction> buildLegalActions(GameState state, Player p) {
         List<GameAction> actions = new ArrayList<GameAction>();
         actions.add(GameAction.pass());
 
-        // B5-0202c: early return for already-passed or action-spent players
-        if (p.isPassed() || p.getActionsLeft() <= 0) {
+        // B5-0202c: early return for already-passed players (passing is
+        // temporary per cycle; actionsLeft is no longer a gate).
+        if (p.isPassed()) {
             return actions; // only PASS is legal
         }
 

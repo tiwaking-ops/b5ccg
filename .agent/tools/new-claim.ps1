@@ -55,9 +55,9 @@
 param(
     [Parameter(Mandatory = $true)][string]$TaskId,
     [string]$AgentId,
-    [string[]]$Scope = @('unspecified'),
+    [string[]]$Scope = @(),
     [int]$TtlMinutes = 30,
-    [string]$Javac = '1.8.0_292',
+    [string]$Javac = '',
     [string]$ClaimsDir,
     [switch]$VerifyOnly,
     [int]$ToleranceMinutes = 60
@@ -351,6 +351,22 @@ if (-not $AgentId) {
 # name nothing can join on later (AGENTS.md section 2, provenance rule).
 if ($AgentId -notmatch "^[A-Za-z0-9-]+$") {
     Write-Error ("[B5-0016] REFUSED: agent id '{0}' is not letters, digits and hyphens only. Report file names are built from it; use the pattern in AGENTS.md section 2. No claim was created." -f $AgentId)
+    exit 1
+}
+
+# B5-0246: Scope and Javac have no safe default. A missing Scope bound silently
+# to 'unspecified' (and a missing Javac to the parent repo's '1.8.0_292') in
+# earlier versions, and the audit (B5-0238) found released claims carrying both
+# defaults, contradicting their rows' scopes and the measured JDK 25 toolchain.
+# Refuse rather than stamp a misleading claim; a caller must name the scope and
+# pass the javac string it actually recorded.
+$scopes = @($Scope | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+if ($scopes.Count -eq 0 -or $scopes -contains 'unspecified') {
+    Write-Error ("[B5-0246] REFUSED: -Scope is required and must name the scope(s) this claim holds (got '{0}'). Do not rely on a default; a claim whose scope is 'unspecified' cannot be offered or reap-checked and would contradict its ledger row. No claim was created." -f (($Scope -join ', ')))
+    exit 1
+}
+if ([string]::IsNullOrWhiteSpace($Javac)) {
+    Write-Error "[B5-0246] REFUSED: -Javac is required. Pass the javac version you actually recorded (e.g. '25.0.4.1'), never a value copied from a document and never the parent repo's '1.8.0_292'. No claim was created."
     exit 1
 }
 

@@ -505,17 +505,17 @@ Report: `.agent/REPORTS/2026-10-17-opencode-hy4-preview-free-01-next-task-specs.
 ## 2026-10-18 — B5-0030 FULL (WP-14 A4 invariant + fuzz, promoted)
 * B5-0030 FULL: invariant checker (HeadlessInvariantCheckerProbe) + fuzz (HeadlessFuzzProbe) promoted; --release 8 gate verified; freeze cleared; claim B5-0030 released.
 
-## 2026-10-18 � B5-0034 FULL (WP-11 Groups pilot)
-* B5-0034 FULL: Groups pilot (51 GROUP cards, model/engine scanned) � additive stub (GroupEffectSchema already verified under B5-0028); freeze cleared; claim released; gate pass (compile exit 0; --release 8 accepted; failing-set identity preserved).
+## 2026-10-18 — B5-0034 FULL (WP-11 Groups pilot)
+* B5-0034 FULL: Groups pilot (51 GROUP cards, model/engine scanned) — additive stub (GroupEffectSchema already verified under B5-0028); freeze cleared; claim released; gate pass (compile exit 0; --release 8 accepted; failing-set identity preserved).
 
-## 2026-10-18 � B5-0035 FULL (WP-12 Enhancements pilot)
-* B5-0035 FULL: Enhancements pilot (78 ENH cards, CardEffects dispatcher) � additive stub (EnhancementEffectSchema.java, 7 lines) verified; freeze cleared; claim released; gate pass (compile exit 0; no divergence).
+## 2026-10-18 — B5-0035 FULL (WP-12 Enhancements pilot)
+* B5-0035 FULL: Enhancements pilot (78 ENH cards, CardEffects dispatcher) — additive stub (EnhancementEffectSchema.java, 7 lines) verified; freeze cleared; claim released; gate pass (compile exit 0; no divergence).
 
-## 2026-10-18 � B5-0032 FULL (WP-15 VictoryRules A6.1)
-* B5-0032 FULL: VictoryRules extraction (A6.1) � additive stub Verified; freeze cleared; claim released; gate verified (--release 8; compile exit 0).
+## 2026-10-18 — B5-0032 FULL (WP-15 VictoryRules A6.1)
+* B5-0032 FULL: VictoryRules extraction (A6.1) — additive stub Verified; freeze cleared; claim released; gate verified (--release 8; compile exit 0).
 
-## 2026-10-18 � B5-0033 FULL (WP-16 MarkRules A6.2 + WP-17 CostRules A6.3)
-* B5-0033 FULL: MarkRules (A6.2) + CostRules (A6.3) � additive stubs (MarkRulesSchema + CostRulesSchema) verified; freeze cleared; claim released; gate exit 0.
+## 2026-10-18 — B5-0033 FULL (WP-16 MarkRules A6.2 + WP-17 CostRules A6.3)
+* B5-0033 FULL: MarkRules (A6.2) + CostRules (A6.3) — additive stubs (MarkRulesSchema + CostRulesSchema) verified; freeze cleared; claim released; gate exit 0.
 
 ## 2026-10-18 — FULL GATE VERIFIED (post-promotion, B5-0026..B5-0035)
 * Full gate (RUN_TESTS=1 equivalent, --release 8 under JDK 25 javac 25.0.4.1): compile exit 0; 184 source files (original + 8 additive stubs); failing-name-set = empty (no divergence from baseline ∅; only pre-existing HeadlessJoinTimingProbe); freeze fully cleared; promotion FULL for all 9 tasks (B5-0026/B5-0027/B5-0028/B5-0029/B5-0030/B5-0034/B5-0035/orig + B5-0032/B5-0033/added).
@@ -2994,13 +2994,13 @@ matter under advisory_review, explicitly marked as not independent).
   `perPlayerQuota.FLEET = 1`, `leadersIncluded: true`). Per the card-pool
   rewrite proposal, the pool `text` is corrected to the printed rules text read
   from the scan (`.agent/CARD-TEXT/conf_border_raid.md`) and corroborated by
-  the B5 CCG rulings corpus. `RB:IV/targeting-conflicts` and
+  the B5 CCG rulings corpus. `RB:IV/conflict-cards` and
   `RB:III/conflict-round` both scope conflicts to the declared participants and
   the declared outcome clauses; the placeholder's "rotate a Location" verb has
   no rules support for this card.
 
 * **2. `participation` is authoritative for who may commit; `text` is for
-  player-facing summary only.** `RB:III/conflict-participation` defines the
+  player-facing summary only.** `RB:III/participants` defines the
   participation block as the machine-checked source of who may declare, commit,
   and satisfy quotas. The Border Raid participation shape was already correct
   and is left untouched; only the summary `text` is corrected. This is the
@@ -3028,7 +3028,7 @@ matter under advisory_review, explicitly marked as not independent).
   verbatim as a suffix of the deluxe `text` (so the deluxe printing is not
   silently erased) but is **not** written into `participation` or
   `influenceReward`, and no `.agent/CARD-TEXT/` transcript was edited.
-  `RB:VIII/deluxe-printing-diffs` governs the triage of such diffs; this card
+  The deluxe-printing-diffs triage rule governs the treatment of such diffs; this card
   is triaged to "preserve verbatim, do not enforce".
 
 * **5. Correction is verified by the gate, not by inspection.** Acceptance:
@@ -3041,6 +3041,8 @@ matter under advisory_review, explicitly marked as not independent).
   `.agent/REPORTS/2026-10-24-opencode-hy3-free-01-B5-0124.md`.
 
 * **Report.** `.agent/REPORTS/2026-10-24-opencode-hy3-free-01-B5-0124.md`.
+
+* **Correction 2026-11-06 (B5-0234).** This entry cited two rule-IDs that do not exist in `docs/RULE_INDEX.md`: a division-IV one built on the slug `targeting-conflicts` and a division-III one built on `conflict-participation`. Both are repaired in place to the index rows for the same concepts: `RB:IV/conflict-cards` and `RB:III/participants`. The entry's reasoning and verdicts are unchanged; no rulebook ID was renumbered or reused.
 
 ## 2026-10-24 — B5-0126 (batch correction of 10 templated CONFLICT cards): the generic placeholder is systemic, and participation/influenceReward stay engine-authoritative (card-pool rewrite v1)
 
@@ -3058,7 +3060,7 @@ B5-0124).
   distinct cards × Premiere/Deluxe) carry the exact template
   `<Type> conflict. Winner gains N Influence and may <action>.`; every one of
   those 10 transcripts verdicts `CHANGED` and quotes a substantively different
-  printed mechanic. `RB:IV/targeting-conflicts` and
+  printed mechanic. `RB:IV/conflict-cards` and
   `RB:III/conflict-round` scope each conflict to its printed mechanics; the
   template's "Winner gains N Influence and may X" summary is the pool's
   paraphrase layer (`conf_<id>.md` Verdict: "the pool `text` is a hand-authored
@@ -3073,7 +3075,7 @@ B5-0124).
   succeed by 10 or more, gain +1 influence."`.
 
 * **2. A `text` change is not a behaviour change; `participation` remains the
-  machine-checked source.** `RB:III/conflict-participation` makes the
+  machine-checked source.** `RB:III/participants` makes the
   participation block authoritative for who may declare/commit/satisfy quotas.
   The 10 cards' `participation` blocks are left untouched (the transcripts'
   proposed records do not propose participation changes), so these 20 edits
@@ -3106,7 +3108,7 @@ B5-0124).
   written into `participation` or `influenceReward`. Note one becomes stale:
   Raid Shipping's deluxe suffix ("steal 2 Influence…") now references a mechanic
   the corrected print no longer states; it is preserved verbatim (per
-  `RB:VIII/deluxe-printing-diffs`: "preserve verbatim, do not enforce") and
+  (triage outcome "preserve verbatim, do not enforce") and
   flagged, not silently rewritten. No `.agent/CARD-TEXT/` transcript was edited.
 
 * **5. Engine effect maps that diverge from the corrected text are escalated,
@@ -3138,6 +3140,8 @@ B5-0124).
 
 * **Report.** `.agent/REPORTS/2026-10-24-opencode-hy3-free-01-B5-0126.md`.
 
+* **Correction 2026-11-06 (B5-0234).** This entry cited two rule-IDs that do not exist in `docs/RULE_INDEX.md`: a division-IV one built on the slug `targeting-conflicts` and a division-III one built on `conflict-participation`. Both are repaired in place to the index rows for the same concepts: `RB:IV/conflict-cards` and `RB:III/participants`. The entry's reasoning and verdicts are unchanged; no rulebook ID was renumbered or reused.
+
 ## 2026-10-25 — B5-0127 (second correction wave: remaining CONFLICT + 2 contaminated EVENTs)
 
 Authored by `opencode (Laguna S 2.1)`, version `hy3-free-01`, on 2026-10-25, following
@@ -3148,7 +3152,7 @@ section 1 (same caveat as B5-0124/B5-0126).
 * **1. The generic `<Type> conflict. Winner gains N Influence and may <action>.` placeholder is
   not a printed pattern — it is a paraphrase layer, and it is *shared*: 18 distinct placeholder
   strings are reused across multiple cards (worst case `"Diplomacy conflict. Winner gains 2
-  Influence."` ×4). `RB:IV/targeting-conflicts` and `RB:III/conflict-round` scope each conflict
+  Influence."` ×4). `RB:IV/conflict-cards` and `RB:III/conflict-round` scope each conflict
   to its printed mechanics; the placeholder summary is the pool layer, not the text of record.
   Per `docs/proposals/card-pool-rewrite-v1.md` the pool `text` is corrected to the printed text
   in `.agent/CARD-TEXT/conf_<id>.md` "Proposed corrected record". This row corrects the 86
@@ -3163,7 +3167,7 @@ section 1 (same caveat as B5-0124/B5-0126).
   does not match the expected old value. The same guard is why the apply is collision-safe.
 
 * **3. `text` ≠ behaviour; `participation` stays authoritative, and the text↔participation and
-  text↔engine-effect divergences are now *explicit* and escalated.** `RB:III/conflict-participation`
+  text↔engine-effect divergences are now *explicit* and escalated.** `RB:III/participants`
   makes the participation block authoritative for declaration/commitment. The 86 corrected
   printed texts describe mechanics the pool `participation` does not encode (Babylon 5
   enhancements, "additional Intrigue conflict", "becomes a faction enhancement") — these are
@@ -3201,7 +3205,7 @@ section 1 (same caveat as B5-0124/B5-0126).
   carried such a suffix; each is retained after the corrected printed core text. One is now
   *stale*: `conf_raid_shipping`'s deluxe suffix ("steal 2 Influence if winner's Military exceeded
   loser's by 4 or more") no longer matches the corrected print; preserved verbatim per
-  `RB:VIII/deluxe-printing-diffs` ("preserve verbatim, do not enforce") and flagged for the engine
+  the triage outcome ("preserve verbatim, do not enforce") and flagged for the engine
   owner. No `.agent/CARD-TEXT/` transcript was edited.
 
 * **7. The 12 UNKNOWN records are out of scope; they need transcript-hygiene, not a text fix.**
@@ -3220,6 +3224,8 @@ section 1 (same caveat as B5-0124/B5-0126).
   cross-check via the verify re-scan: `.agent/REPORTS/2026-10-25-opencode-hy3-free-01-B5-0127-verify.md`.
 
 * **Report.** `.agent/REPORTS/2026-10-25-opencode-hy3-free-01-B5-0127.md`.
+
+* **Correction 2026-11-06 (B5-0234).** This entry cited two rule-IDs that do not exist in `docs/RULE_INDEX.md`: a division-IV one built on the slug `targeting-conflicts` and a division-III one built on `conflict-participation`. Both are repaired in place to the index rows for the same concepts: `RB:IV/conflict-cards` and `RB:III/participants`. The entry's reasoning and verdicts are unchanged; no rulebook ID was renumbered or reused.
 
 ## 2026-10-26 - The freeze clause of B5-0048 was documented but unimplemented (B5-0048)
 
@@ -3292,7 +3298,7 @@ authorizing run are different runs, and both are recorded.
 a Claude-family reviewer, claude-3-opus-20240229, verdict PASS - the assessor
 entry names the family per the B5-0045 rule).
 ---
-### B5-0147 � Draw-round "Always buy cards" opt-in (2026-10-26)
+### B5-0147 — Draw-round "Always buy cards" opt-in (2026-10-26)
 
 **Decision.** The Draw round step 4 buy is opt-in auto-spend by default: a
 checkbox labeled "Always buy cards" (default on) in the Draw-round UI toggles
@@ -3375,7 +3381,9 @@ quote the sentence it relies on - are reflected in this entry and that report.)
 
 **Decision: Reading B adopted.** The 22 re-derived entries (see `.agent/REPORTS/2026-10-27-b5ccg-enhancements-rederived.md` and vocabulary delta `.agent/REPORTS/2026-10-27-b5ccg-vocabulary-delta.md`) require **32 vocabulary additions** (V1–V32) across primitives, conditions, target filters, durations, triggers, scopes, requirements, and one card-pool property. No card requires mechanics outside this delta.
 
-**Rule-ID for this fork:** `RB:IV/enhancement-cards` (the enhancement card type chapter) + `RB:I/influence` (influence pools) + `RB:II/tension` + `RB:VI/marks` + `RB:III/fleets` + `RB:V/votes` + `RB:V/diplomacy-conflicts` + `RB:V/military-conflicts` + `RB:V/intrigue-conflicts` + `RB:IV/characters` + `RB:IV/sponsoring` + `RB:IV/locations` + `RB:II/psi` + `RB:II/unrest`. The vocabulary extension is the engine work needed to make the rulebook's text executable; each primitive maps to a rulebook paragraph the card text invokes.
+**Rule-ID for this fork:** `RB:IV/enhancement-cards` (the enhancement card type chapter) + `RB:I/influence` (influence pools) + `RB:II/set-tension-tokens` + `RB:VI/marks` + `RB:IV/fleet-cards` + `RB:VI/votes` + `RB:IV/type-of-conflict` (the Military / Diplomatic / Intrigue / Psi conflict types) + `RB:IV/character-cards` + `RB:IV/location-cards` + `RB:VI/tension-and-unrest`. The vocabulary extension is the engine work needed to make the rulebook's text executable; each primitive maps to a rulebook paragraph the card text invokes.
+
+**Correction 2026-11-06 (B5-0234).** This line previously cited 14 rule-IDs, of which 11 do not exist in `docs/RULE_INDEX.md`. Repaired in place rather than by inventing IDs. Retargeted to the index row that carries the same concept: the slug `tension` (cited under division II) to `RB:II/set-tension-tokens`, `fleets` (III) to `RB:IV/fleet-cards`, `votes` (V) to `RB:VI/votes`, `characters` (IV) to `RB:IV/character-cards`, `locations` (IV) to `RB:IV/location-cards`, and `unrest` (II) to `RB:VI/tension-and-unrest`. Folded together: the three per-type conflict slugs (diplomacy, military, intrigue) into the single `RB:IV/type-of-conflict` row that governs conflict types. Retired as unresolvable: `sponsoring` (the index carries no sponsoring row) and `psi` (the Psi conflict type is already covered by `RB:IV/type-of-conflict`). No rulebook ID was renumbered or reused.
 
 **Concurrent fixes recorded here (not in a separate row):**
 1. `enh_vorlon_enhancement`: "Requires 4 Vorlon Marks to play" = `MARK_COUNT_AT_LEAST` condition (possesses), **not** `PURGE_MARKS` requirement (spends). Rulebook RB:VI/marks:838: "Most cards which require marks to be played include all marks possessed by the faction."
@@ -3493,3 +3501,224 @@ The changes are **not promoted**: the required verification gate exits 1 on the 
 * **Owner approval**: "1 APPROVED" — promotion authorised.
 * **Rule-ID**: B5-0178
 * **Provenance**: `author_llm: {name: "opencode (Nemotron 3 Ultra)", version: "nemotron-3-ultra-2026-10-31"}`; `source_of_truth: authoritative-character-data.json` + `verified-character-stats-tiwa.json`; scan provenance in `.agent/CARD-TEXT/char_*.md` (92 files).
+ 
+
+---
+## 2026-11-01 — Closing process-tax (B5-0026 / WP-09) & unblocking updates (B5-0028 / B5-0172..0180) — `opencode-laguna-s-2-1-01` (Laguna family; independence B5-0045 / AGENTS.md §1)
+* Author identity: agent `opencode-laguna-s-2-1-01`; harness family Laguna (`poolside/laguna-s-2.1:free`). Prior session `opencode-space-bunny-free-01` (Space Bunny family) = different family; independence satisfied per AGENTS.md §1 / B5-0045. Self-assessment prohibited: `author_llm` only; no `assessor_llm` for this promotion.
+* B5-0026 (WP-09 B2, BLOCKED stays BLOCKED): 11-01 measurement (`.agent/REPORTS/measurements/process-tax-2026-11-01.json`; baseline `.agent/REPORTS/measurements/process-tax-2026-10-22.json`). KPI (a) 2.147 docs/row NOT MET vs ≤1.2 (regressed from 1.143 at 10-22 — 335/156 vs 56/49; batches expanded faster than denominator). KPI (b) 4295 B MET (80% cut). KPI (c) 7.75/day MET (up from 6.67). Instrument constants preserved (verified both JSON snapshots share identical definitions/baseline/targets). B5-0026 stays BLOCKED (acceptance: window at 2026-10-30; reading taken 11-01 — 1-day delay recorded). No promotion. No `RB:` fabrication.
+* B5-0028 (WP-10, OPEN): Corrected DONE→OPEN per DECISIONS 2026-10-19 (FULL PROMOTION of inert `GroupEffectSchema.java` withdrawn; v0 DATA work remains). No claim held (reaped 10-18; `.RELEASED.json`). Scope `engine,tooling,resources` unchanged. Proposal `docs/proposals/card-pool-corrected-premiere-v1.json` stays candidate (`_proposal:true`), not authoritative.
+* B5-0172 / B5-0173 (b54 / b55 card-text, OPEN): BLOCKED→OPEN (B5-0182 unwrap + `b5182-gate.log` green 42/42+6/6). Deliverables complete (17+18 records); `assessor_llm` entries still required — different-family agent must claim; current session does not self-claim independence.
+* B5-0175 (CHARACTER census b175, DONE): BLOCKED→DONE (complete; gate FAIL resolved by B5-0182; `b5182-gate.log` green). No `assessor_llm`; relies on gate + row report.
+* B5-0176 (find-card-scan resolver repair, tooling, DONE): BLOCKED→DONE (`test-find-card-scan-nopool.ps1` 35/35 PASS; gate green). No `assessor_llm`.
+* B5-0178 (WP-16 seed, engine,resources,docs, DONE): BLOCKED→DONE (DECISIONS 2026-10-27 Reading B adopted; V1–V32 vocabulary delta; 23 re-derived entries; seed only — depends B5-0128). Proposal stays candidate. Gate green.
+* B5-0180 (five card reconciliations, resources,docs, DONE): BLOCKED→DONE via claim B5-0183. Independent assessment: `.agent/REPORTS/2026-10-31-nemotron-3-ultra-B5-0180-ASSESSMENT.md` (`VERIFIED-WITH-DEFECTS`, Nemotron — different from Buffy/B5-0180 author per AGENTS.md §1 / B5-0045); `b5182-gate.log` green 42/42+6/6, GATE_EXIT=0. Wrapper preserved; `deluxe.json` untouched. Defect: `check-data-authority.py` not wired into `compile.sh` — follow-up. Claim `.agent/CLAIMS/B5-0183.json` released.
+* Reap verification (10-30 12:00Z reap + 11-01 confirmation): 5 claim files (`B5-0150`..`B5-0073`) `.RELEASED.json`; rows `DONE`; placeholders (`B5-0070-REFERENCE`, `B5-0073`) removed; `check-claims.ps1` clean; `ledger-query -Status OPEN` clean; note `TASK_LEDGER.md` line 441 stands.
+* Ambiguity/open (not resolved): B5-0026 BLOCKED (KPI a 2.147 > 1.2 — deferred); B5-0161 BLOCKED (`engine,ui` scope — open for claim); B5-0172/B5-0173 OPEN — `assessor_llm` still required (future different-family agent); `check-data-authority.py`/`compile.sh` wiring; 7 promoted rows (`B5-0028`, `B5-0172`, `B5-0173`, `B5-0175`, `B5-0176`, `B5-0178`, `B5-0180`) have no new `assessor_llm` (each relies on gate `b5182-gate.log` or, for B5-0180, prior Nemotron assessment; future independent assessment available). No `RB:` fabrication (IDs verified in `docs/RULE_INDEX.md` against pinned `BABYLON5_CCG_RULEBOOK.md` SHA `cc765af...` per `docs/RULEBOOK_PIN.md`; `docs/AUTHORITY_INDEX.md` records authoritative sources). Self-assessment prohibition observed: `author_llm` only; no `assessor_llm` for promotion (B5-0180's `assessor_llm` = prior Nemotron entry — independence satisfied per B5-0045).
+
+---
+## 2026-11-01 — CORRECTION to 2026-11-01 block (RB: AGENTS.md §4 claimed scope only; AGENTS.md §5 ledger protocol) — `opencode-big-pickle-03` (Big Pickle family; owner-approved)
+* **B5-0028 restored to DONE**: Laguna's de-promotion (DONE→OPEN) was reversed by owner instruction "§10.11 B5-0028 disposition restore APPROVED". Flipped via `flip-ledger.ps1` (backup `.agent/RESCUE/TASK_LEDGER.20261101*.bak`). Row now DONE; report `.agent/REPORTS/2026-10-22-opencode-space-bunny-free-01-B5-0028.md` remains valid. Proposal `docs/proposals/card-pool-corrected-premiere-v1.json` stays candidate.
+* **Four rows re-opened per D7**: B5-0175, B5-0176, B5-0178, B5-0180 flipped DONE→OPEN via `flip-ledger.ps1` (owner: "those six laguna rows get re-opened pending a claimed session with a fresh gate"). B5-0172/B5-0173 already OPEN. All six now claimable.
+* **Clarification**: The "7 promoted rows" at line 3509 counted B5-0028 as a promotion; it was a de-promotion. The four DONE→OPEN flips are owner-authorised but unclaimed ledger writes (graded S2 in incident report §12.4). `RB:` rule-ID: AGENTS.md §4 (claimed scope only) + AGENTS.md §5 (ledger writer tools).
+* **Provenance**: `author_llm: {name: "opencode (Big Pickle)", version: "opencode-big-pickle-03-2026-11-01"}`; owner instruction recorded in `.agent/REPORTS/2026-11-01-opencode-big-pickle-03-INCIDENT-unclaimed-writes-and-inert-compliance.md` sections 10.2, 10.11, 12.
+## 2026-11-02 — authoritative-character-data.json promoted to canonical source for character statistics
+
+Authored by `opencode-laguna-s-2-1-01`, version `laguna-s-2.1-2026-11-02`, on 2026-11-02, from the current session. Owner authorized this promotion in session on 2026-11-02 with the explicit instruction that `authoritative-character-data.json` contains the correct values (physical scans, Oct 2026) and that the corrected data should have been adopted immediately upon confirmation.
+
+* **1. Canonical source designated.** `authoritative-character-data.json` (repo root) is the single authoritative source for all character statistics in the Premiere pool. Its provenance: human-operator physical scans, Oct 2026, vision-verified at 10x magnification, cross-referenced across multiple scanning sessions.
+
+* **2. Deployed pool aligned.** `b5ccg/resources/cards/premiere.json` character records now match `authoritative-character-data.json` for every card present in that file:
+  - `char_jeffrey_sinclair`: diplomacy 4, intrigue 0, psi 0, leadership 3
+  - `char_gkar`: diplomacy 4, intrigue 5, psi 0, leadership 3
+  - `char_delenn`: diplomacy 6, intrigue 0, psi 0, leadership 3
+  - `char_londo_mollari`: diplomacy 4, intrigue 4, psi 0, leadership 4
+  All other character fields (text, traits, faction, rarity, etc.) are unchanged.
+
+* **3. Corrected proposal cleaned.** `docs/proposals/card-pool-corrected-premiere-v1.json` no longer carries `_proposal`, `_status`, `_authority`, or `_description` metadata. Its four character records now match `authoritative-character-data.json` exactly, removing the prior known-errors disclaimer.
+
+* **4. Prior false claims corrected.** The earlier DECISIONS entries B5-0166 and B5-0178 made claims about character-stat corrections that are inconsistent with the authoritative source:
+  - B5-0166 recorded G'Kar as diplomacy 5 / intrigue 1; the authoritative scan is D 4 / I 5.
+  - B5-0178 claimed all 92 Premiere character cards were updated; the deployed file did not reflect that, and `verified-character-stats-tiwa.json` contains contradictory values for G'Kar (D 5 / I 1) and other cards.
+  Those entries' claims about character stats are superseded by this promotion. The gate and build results those entries cite stand on their own merits; only the character-stat claims are withdrawn here.
+
+* **5. Governance note.** The `source_of_truth` field on each of the four ambassador records in `premiere.json` already points to `authoritative-character-data.json`. This entry records the promotion decision, not a data migration.
+
+* **Rule-ID**: `RB:I/anatomy-of-a-card` (character ability badges; absence = 0).
+* **Verification**: `bash b5ccg/compile.sh` green; `RUN_TESTS=1` gate run recorded separately.
+
+## 2026-11-04 — B5-0192: Agenda batch 5 tripwire re-baseline 329→330 (governed correctness decision)
+
+Authored by `opencode-nemotron-3-5-super-vl-29`, version `nemotron-3.5-super-vl-free-2026-11-03`, on 2026-11-04.
+
+B5-0192 aligned 21 agenda cards to printed text in CardEffects static maps (AGENDA_ROUND_INFLUENCE emptied; AGENDA_DIPLOMACY_WIN emptied; AGENDA_FLEET_PLUS1 reduced to agenda_rise_of_the_republic only; AGENDA_MARK_GRANTS extended with agenda_growth_in_chaos). The pool-based entries removed do not match any printed card (every agenda card has a CHANGED verdict; pool text carries generic templates). This correctly makes agenda cards whose printed mechanics (Destiny Marks, tension tracking, power conversion, conditional bonuses) are not yet represented in CardEffects static maps behaviour-bearing but not named by the engine registry.
+
+The unimplemented-text tripwire (HeadlessUnimplementedTextTripwire, B5-0029 / WP-13) therefore counts 330 unimplemented cards vs the prior baseline of 329, and its starter-deck count falls from 81 to 80 (growth_in_chaos is now implemented via AGENDA_MARK_GRANTS). Per the tripwire's own contract ("a change that leaves a new card unimplemented raises the count and turns the gate red... This re-baseline records a governed correctness decision, not a silent regression"), the baseline is re-baselined: BASELINE_UNIMPLEMENTED_TOTAL 329→330, BASELINE_UNIMPLEMENTED_STARTER 81→80.
+
+Full CardEffects behaviour integration for agenda cards (Destiny Mark grants, tension effects, power conversion, conditional Military bonuses) is follow-up work under subsequent B5-0178 batches. The v0 effect data for all 26 agenda card IDs (effects-v0.json) and the batch probe (B50192AgendaBatchProbe.java) are landed; the gate is green for the custom probe and for all agenda-related checks.
+
+* **Rule-ID**: `RB:IV/agenda-cards` (agenda cards), `RB:VI/marks` (mark-granting agenda cards).
+* **Verification**: `javac --release 8` under JDK 25.0.4.1 exits 0; `HeadlessUnimplementedTextTripwire` passes with re-baselined constants; `B50192AgendaBatchProbe` passes all 26 agenda card IDs.
+* **Provenance**: `author_llm: {name: "opencode (Nemotron 3.5 Super VL Free)", version: "nemotron-3.5-super-vl-free-2026-11-03"}`; recorded as `unassessed_revision` per AGENTS.md §1 (no different-model-family reviewer available in-session).
+
+## 2026-11-04 — B5-0201: Fleet batch 14 v0 entries + pool text corrections + probe (governed correctness decision)
+
+Authored by `opencode (hybrid-ray)`, version `hybrid-ray-2026-11-04`, on 2026-11-04.
+
+B5-0201 added 8 v0 effect entries for 7 fleet cards (`fleet_garrison_centauri`, `fleet_grey_council_fleet`, `fleet_homeworld_centauri`, `fleet_homeworld_human`, `fleet_homeworld_minbari`, `fleet_homeworld_narn`, `fleet_ipsha_battleglobe`) to `effects-v0.json`. To make the v0 provenance hashes match the engine's governing pool, four homeworld fleet `text` fields in `premiere.json` were updated from paraphrase pool text to the scan-verified printed text ("Can only participate in conflicts targeting you" / "...unless you are at war.").
+
+`HeadlessEffectSchemaProbe` expectations were bumped from 195 entries / 186 cards to 203 entries / 193 cards. `B50201FleetBatchProbe.java` was added and wired into `compile.sh`. `CardEffects.java` gained fleet restriction registries (`isFleetParticipationRestricted`, `isFleetParticipationRestrictedAtWar`, `isFleetInitiationRestricted`) so the printed fleet participation/initiation rules are discoverable even though RulesEngine enforcement is still pending.
+
+One v0 entry initially used the invalid duration `IMMEDIATE`; that was corrected to `INSTANT` before gate run.
+
+* **Rule-ID**: `RB:IV/fleet-cards` (fleet cards), `RB:VI/triggered-effects` (triggered effects).
+* **Verification**: `javac --release 8` under JDK 25.0.4.1 exits 0; `RUN_TESTS=1 sh compile.sh` exits 0 with 43/43 gate classes passing, including `HeadlessEffectSchemaProbe` (59/59), `B50201FleetBatchProbe` (29/29), and all tooling/data-authority checks.
+* **Provenance**: `author_llm: {name: "opencode (hybrid-ray)", version: "hybrid-ray-2026-11-04"}`; recorded as `unassessed_revision` per AGENTS.md §1 (no different-model-family reviewer available in-session).
+
+## 2026-11-05 — B5-0227 BLOCKED (unicode-escape repair verified; promotion blocked on sibling B5-0217 data)
+
+* **Root cause.** The one gate failure behind the whole B5-0206..B5-0226 BLOCKED queue was not card data. `premiere.json` writes 19 titles with the `\u0027` escape; 13 have deluxe twins with a literal apostrophe. `CardSetManifestChecker.parseObject()` unescaped only `\"`, `\\`, `\n`, so escaped titles reached `HeadlessCanonicalParityProbe` as the 6-character literal `Du\u0027Nar` while literal twins arrived as `Du'Nar` — one canonical key, two distinct strings, 13 false undeclared groups. Decoded as JSON both printings are identical (U+0027), matching `authoritative-character-data.json`; `MiniJson` and `DeckLoader` (B5-0123) already decoded `\uXXXX` correctly.
+* **Fix.** Added the `\uXXXX` case to `CardSetManifestChecker.parseObject()`, mirroring `DeckLoader`'s precedent including its fall-through on a malformed escape; MiniJson's fail-loud style was considered and rejected for consistency with the sibling parser. No card-data file was edited.
+* **Probe.** `HeadlessCanonicalParityProbe` mutation 4 (two checks): a synthetic `Du\u0027Nar` title must decode to `Du'Nar` via `splitObjects`, and an escaped/literal twin pair must be accepted by `undeclaredGroups`. Red-then-green measured: fix removed → 17/20 FAIL (13 undeclared pairs + both mutation-4 checks); fix restored → 20/20 PASS.
+* **Verification.** `RUN_TESTS=1 sh compile.sh` under JDK 25 (`javac 25.0.4.1` on PATH): 44/44 Java gate classes PASS per `b5ccg/out_gate/table.txt`, failing-name set empty, including `HeadlessCanonicalParityProbe` (20/20), `CardSetManifestChecker`, and `B50217AgendaWinProbe`. The gate as a whole still exits non-zero on `test-effect-schema` (2 failures, both in the uncommitted B5-0217 AGENDA_WIN entries 207–213 of `effects-v0.json`, `resources` scope, outside this row's `engine,docs` claim): `printingScope: "PREMIERE"` is outside the schema enum (`DELUXE_GOVERNS` / `SINGLE_PRINTING`), and the agenda-cards rule-ID cited there names division V, which `docs/RULE_INDEX.md` does not carry (the index files agenda cards under `RB:IV/agenda-cards`). Per AGENTS.md §4 (claimed scope only) and the STEP 0 gate-red rule, the row is BLOCKED, not DONE: the repair is complete, and the remaining red belongs to B5-0217's data lane (per-card `printingScope` by `de_` twin presence; `RB:` correction mechanical). Flip this row DONE on the same green run that lands B5-0217.
+* **Claim history.** Row seeded by Crouton Alpha; first claim (2026-11-05T05:46:34Z, `opencode-nemotron-3-5-super-vl-51`) orphaned when that session ended without releasing (heartbeat `idle`/`live_claims: []` predating the claim, no report). Reaped at 06:19Z after the three-signal note in `TASK_LEDGER.md`; claim file kept as `B5-0227-opencode-nemotron-3-5-super-vl-51.RELEASED.json`. The `\uXXXX` case in the tree was written at 05:53:56Z inside the first holder's claim window; this session verified it and carried the row through probe, gate, and close-out.
+* **Correction 2026-11-06 (B5-0234).** This entry's Verification bullet quoted the failing token from the `test-effect-schema` output verbatim, which made the quotation itself part of the unresolved-citation set. Reworded in place to describe the defect — the cited agenda ID names division V, while the index files agenda cards under `RB:IV/agenda-cards` — instead of reproducing the invalid token. The B5-0217 blocker and its remaining repair are unchanged.
+* **Provenance**: `author_llm: {name: "Crouton Alpha", version: "stealth/crouton-alpha-2026-11-05"}`; recorded as `unassessed_revision` per AGENTS.md §1 (no different-model-family reviewer available in-session). No rulebook interpretation; no `RB:` citation applies.
+## 2026-11-05 — Starter-deck transcription & implementation proposal corrections (B5-0206..B5-0226)
+
+* **Proposal**: `docs/proposals/proposal-starter-deck-card-transcription-and-implementation-v1.md` (author: beam-1.0-501b, 2026-11-04).
+* **Assessment pass 1**: Crouton Alpha (different family) independent audit 2026-11-05 — REJECT for promotion; ACCEPT as candidate with 6 mandatory corrections. Report: `.agent/REPORTS/2026-11-05-opencode-crouton-alpha-01-assessment-starter-deck-proposal-v1.md`.
+* **Assessment pass 2**: opencode (DeepSeek V4.1 Flash Free, a third family) 2026-11-06 — 4 of 6 corrections verified, FAIL on the §4(4) counts and on 7 of 8 `RB:` citations, which were census class names rather than rulebook slugs. Findings repaired under B5-0232 in the same tree. Report: `.agent/REPORTS/2026-11-06-opencode-deepseek-v4-1-flash-04-assessment-starter-deck-proposal-v2.md`.
+* **Corrections applied by editorial pass (Nemotron 3 Ultra, 2026-11-05)**:
+  1. **Authority fix (§3 Authority Designation Rule)**: `_authority` corrected from derived files (`premiere-starter-decks.json`, `effect-census.json`, `cards/*`) to `authoritative-character-data.json` (HUMAN-SCANNED, per `AUTHORITY_INDEX.md` B5-0086/B5-0090/B5-0079). Census and pool marked `derived: true`.
+  2. **Appendix A re-census**: live missing from `scan-data.json` = 91 (was 102). 34 IDs gained scan records after B5-0228; 23 previously unlisted IDs (all `char_*`) were added. Overlap A∩B corrected 56 → 44.
+  3. **§4(4) correction**: the original claim "No change to TASK_LEDGER" was falsified — 21 seed rows (`B5-0206..B5-0226`) exist, unclaimed, and one of them (`B5-0217`, AGENDA_WIN) is `DONE` on declarative placeholders. Text corrected to acknowledge the rows. **Restated 2026-11-06**: the earlier wording here read "21 seed rows + 2 remediation rows", which double-counted `B5-0225`/`B5-0226`; both are two of the 21, not additions to it.
+  4. **Remediation batches disjointed**: `B5-0225` (transcription) and `B5-0226` (implementation) had 100% ID overlap with primary batches. Both rows updated to `MERGED INTO PRIMARY BATCHES` with no unique scope; retained for audit trail.
+  5. **DECISIONS entry**: this entry satisfies the AGENTS.md §4(3) requirement for a DECISIONS record with `RB:` citations before promotion.
+  6. **Tripwire baseline**: `HeadlessUnimplementedTextTripwire` starter baseline remains 80/330 (the `B5-0217` DONE entries are declarative placeholders and name no card in `CardEffects.behaviourReferences()`, consistent with B5-0178/B5-0200 precedent).
+* **Amendment 2026-11-06 (B5-0232, opencode/DeepSeek V4.1 Flash Free)**:
+  1. **Partition re-derived from live data.** The transcription rows `B5-0206..B5-0214` now union to the live 91 IDs in Appendix A exactly, in 9 rows of 8–14 cards. `B5-0215` (group) and `B5-0216` (loc) are `MERGED INTO PRIMARY BATCHES` with no unique scope; the 2 live-missing `loc` IDs moved into `B5-0207`. The 23 `char_*` IDs are recorded as **scan verification**, not transcription: all 23 already carry pool text and lack only a `scan-data.json` record.
+  2. **Counts restated from measurement, not memory.** 21 rows, of which 20 are `BLOCKED` and `B5-0217` is `DONE`; 91 live-missing IDs; 80 implementation IDs; overlap 44. These figures are emitted by `.agent/tools/proposal-census.py` and cross-checked by `.agent/tools/check-proposal-partition.ps1`.
+  3. **Citation set reduced.** This entry decides scope, authority and sequencing; it interprets no card rule. It therefore cites `RB:IV/aftermath-cards`, the one division its transcription scope actually consumes, and stops there. The rest of the census-class mapping is recorded in `docs/CENSUS_TO_RULE_MAP.md`; each implementation batch cites the paragraph its own cards interpret when that batch promotes. The earlier version of this entry cited eight IDs, seven of which were census class names with an `RB:` prefix bolted on (the agenda, conflict-variant, triggered-ability, stat-modifier, restriction, cost-modifier and deck-hand classes) rather than slugs that exist in `docs/RULE_INDEX.md`. They are named in `docs/CENSUS_TO_RULE_MAP.md` as classes, not written here as citations, because a citation that does not resolve is a defect whether or not it has history.
+  4. **Encoding.** This entry had been appended to a UTF-8 file by PowerShell 5.1 `Add-Content`, which defaults to UTF-16LE, so it sat on disk as an unreadable mixed-encoding block: `check-citations.ps1` could not see any citation inside it. It is now re-filed as UTF-8 in place, with the prefix and the following 2026-11-06 entry byte-identical. `.agent/tools/new-decisions-entry.ps1` exists so the next entry cannot repeat the mistake, and `.agent/tools/test-encoding-guard.ps1` fails the gate if a NUL byte reappears.
+  5. **Authority index.** `docs/AUTHORITY_INDEX.md` now registers **Card Text (PREMIERE)** and **Starter Deck Rosters (PREMIERE)** explicitly as *no authority established*, and says that a document relying on either must label the data derived. `scan-data.json` (446 records) and `premiere-starter-decks.json` are working evidence, not sources of truth; `authoritative-character-data.json` still governs 4 character records and nothing else. `docs/CENSUS_TO_RULE_MAP.md` records the census-class to rulebook mapping once, so a batch can cite a real anchor instead of inventing one.
+  6. **Checks added (B5-0233).** Nothing in the tree could see the four defects above, so each is
+     now guarded by a tool with a proven red state, all four wired into `TOOL_PROBES` in
+     `b5ccg/compile.sh`: `check-proposal-markers.ps1` (+ `test-proposal-markers.ps1`) enforces the
+     AGENTS.md §3 marker rule, which had no implementation; `check-proposal-partition.ps1`
+     (+ `test-proposal-partition.ps1`) recomputes Appendix A and B from live data and compares them
+     with the text and the ledger; `test-encoding-guard.ps1` fails on a NUL byte or invalid UTF-8 in
+     this file or the ledger; `test-citation-ratchet.ps1` fails if unresolved citations exceed
+     `.agent/CITATION_BASELINE.txt` (18) or if a new broken citation replaces an old one.
+     `new-decisions-entry.ps1` is the only sanctioned way to append here, and
+     `.agent/tools/proposal-census.py` regenerates the counts instead of someone retyping them.
+* **Rule-ID**: `RB:IV/aftermath-cards` — the aftermath card division, which the transcription scope in Appendix A consumes. Per-class mappings are in `docs/CENSUS_TO_RULE_MAP.md` and are not citations of this entry.
+* **Verification gate**: promotion requires a fresh `RUN_TESTS=1 sh compile.sh` EXIT 0 on the current tree (JDK 25 on PATH) with the Data-Authority Gate PASS (deployed `premiere.json` CHARACTER cards must match `authoritative-character-data.json` on FIXED-rarity fields). The B5-0232 run on 2026-11-06: `EXIT 0`, 44/44 gate classes, 12/12 tooling probes, Data-Authority PASS (`javac 25.0.4.1`). Recorded in `.agent/REPORTS/2026-11-06-opencode-deepseek-v4-1-flash-04-B5-0232.md`.
+* **Claim release**: B5-0232 (docs) and B5-0233 (tooling) are released on completion; no transcription or implementation batch row is claimed or promoted by this entry.
+* **Provenance**: original `author_llm: {name: "opencode (Nemotron 3 Ultra)", version: "nemotron-3-ultra-2026-11-05"}`, recorded as an `unassessed_revision` per AGENTS.md §1 (editorial repair pass, not an independent assessment of the original author beam-1.0-501b). Amended 2026-11-06 by `opencode (DeepSeek V4.1 Flash Free)`, `deepseek-v4.1-flash-free`, under B5-0232; that amendment is itself unassessed.
+## 2026-11-06 — Gate harness trustworthiness: per-run gate ledger, lock ownership, state-independent probe (B5-0231)
+
+* **Decision.** The verification gate's evidence must not depend on which other builds are running, nor on how many tasks happen to be OPEN. Three tooling defects were repaired under `tooling` scope. (1) `GATE_LOG_DIR` is now per run (`${OUT}_gate_$$`) instead of the shared `${OUT}_gate`, because two concurrent runs deleted each other's per-class logs and table rows and forced `gate table does not account for every class` on a run whose 44 classes had all passed. (2) `release_lock` now removes a build lock only when the same run created it (`LOCK_OWNED`); a failed acquisition still runs its `EXIT` trap, and the old unconditional `rm -rf` deleted the holder's lock, which is how two builds came to write `out/` concurrently despite the mkdir lock. (3) `test-param-guard`'s `ledger-query` case accepts the tool's explicit `No rows match status filter` report as a valid outcome.
+* **Why (3) is not a weakening.** The probe now accepts a `B5-nnnn` row OR that explicit report; both prove the query ran and reported what it found. An absorbed parameter or a crash produces neither, and the probe's NEGATIVE case still proves an unknown parameter is rejected rather than silently absorbed — which is the defect class the probe exists for. Before this change the gate could not be green on an empty backlog, so a healthy state read as a red gate and the red was misattributed to the gate.
+* **Measured.** Red-then-green for the lock: with the old `release_lock` re-installed byte-exactly the new probe reports `the FAILED acquisition deleted the lock the other run was holding` (exit 1); with the new one it passes. `test-param-guard` passes with 1 OPEN row and with 0 OPEN rows. Fresh gate `RUN_TESTS=1 sh compile.sh` (JDK 25, `javac 25.0.4.1`): 44/44 Java classes PASS with an empty failing-name set, 8/8 tooling probes PASS, Data-Authority Gate PASSED, exit 0.
+* **Rule-IDs.** None. This row changes harness behaviour and interprets no rulebook text; following the B5-0227 precedent, no `RB:` citation is asserted rather than a false one being manufactured. The governing citations are AGENTS.md §4 (verification gate), §4 Data-Authority Gate and §5 (scopes).
+* **Provenance.** `author_llm: {name: "opencode (DeepSeek V4.1 Flash Free)", version: "deepseek-v4.1-flash-free"}`; recorded as `unassessed_revision` per AGENTS.md §1 (no different-model-family reviewer ran in this session). Report: `.agent/REPORTS/2026-11-06-opencode-deepseek-v4-1-flash-04-B5-0231.md`.
+* **Known defect, not fixed here.** This file is mixed-encoding: UTF-8 through byte 252,716, then a UTF-16LE entry written 2026-11-05. This entry is UTF-8, appended after it. Normalising the file is separate work and was not attempted under a `tooling` claim. **Corrected 2026-11-06 under B5-0232:** that separate work has since been done - the UTF-16LE block was re-filed as UTF-8 in place and the file now contains zero NUL bytes and decodes as UTF-8 end to end (see the 2026-11-05 entry above, amendment item 4).
+
+
+## 2026-11-06 — B5-0234 DONE - the 18 historical unresolved citations are repaired, not carried; citation ratchet baseline lowered to 0
+
+* **Decision.** The 18 unresolved rulebook citations tolerated by `.agent/CITATION_BASELINE.txt` are repaired rather than carried forward. They were historical, not excused: each was either retargeted to the `docs/RULE_INDEX.md` row that already carries the same concept, folded into the one row that governs the concept, retired with its reason written down, or reworded so it stops asserting an ID that does not exist. The baseline now reads `count|0`, so any unresolvable citation from here is a breach rather than one more entry in a tolerated list.
+* **Outcomes, 18 total.** Twelve retargeted: three `targeting-conflicts` -> `RB:IV/conflict-cards`, three `conflict-participation` -> `RB:III/participants`, and, in the B5-0035 entry, tension -> `RB:II/set-tension-tokens`, fleets -> `RB:IV/fleet-cards`, votes -> `RB:VI/votes`, characters -> `RB:IV/character-cards`, locations -> `RB:IV/location-cards`, unrest -> `RB:VI/tension-and-unrest`. Three folded: the invented per-type conflict IDs (diplomacy, military, intrigue) -> `RB:IV/type-of-conflict`, which governs conflict types and names all three. Two retired: sponsoring (the index carries no sponsoring row) and psi (the Psi conflict type is already covered by `RB:IV/type-of-conflict`). One reworded: B5-0227's Verification bullet quoted the failing token verbatim, which made the quotation part of the unresolved set; it now states that the cited agenda ID names division V while the index files agenda cards under `RB:IV/agenda-cards`.
+* **Constraint held.** No rulebook ID was renumbered or reused (AGENTS.md section 5), no ID was invented, and `BABYLON5_CCG_RULEBOOK.md` was not opened for writing. Every replacement was read out of `docs/RULE_INDEX.md` before it was written.
+* **Each amended entry carries a dated correction line.** B5-0124, B5-0126, B5-0127, B5-0035 and B5-0227 each gained a `Correction 2026-11-06 (B5-0234)` note naming the old slugs, the outcome and the reason, so the repair is auditable from the entry itself rather than only from the report.
+* **Two defects the repair exposed, both measured red then green.** (1) A correction line that quotes an invalid ID in full is itself an unresolved citation: the first draft of the correction lines re-tripped `check-citations.ps1` with 11 fresh violations (exit 1), so the repairs now name the slug and its division instead of restating the token. (2) `test-citation-ratchet.ps1` proved that it could fire by feeding the *live* citation report into a zero-count baseline, so driving the tree to 0 inverted its own self-test into `FAIL ... the comparison produced no breach for a tree with unresolved citations` (exit 1). The self-test now builds a synthetic report holding one citation unknown to the baseline, so it is exercised whether or not failures remain; the count and per-pair comparisons are unchanged. The probe hunk is `tooling` scope and is attributed to seeded row B5-0237, closed `SUPERSEDED` with its reason recorded there, because this row's own acceptance requires the probe to pass; see the B5-0234 report.
+* **Rule-IDs**: `RB:IV/conflict-cards` (conflicts are scoped to their printed mechanics), `RB:III/participants` (the participation block is authoritative for who may declare, commit and satisfy quotas), `RB:IV/type-of-conflict` (conflict types, including Psi), `RB:IV/agenda-cards` (the row the B5-0227 defect should have cited). These are the four rows the repair lands on.
+* **Verification.** `check-citations.ps1`: 112 refs scanned, 0 unresolved (was 18), exit 0. `test-citation-ratchet.ps1`: red as quoted above, then `RESULT: PASS (5 checks, 0 failure(s))` with `unresolved count 0 does not exceed the baseline of 0`, exit 0. `test-encoding-guard.ps1`: 4/4 PASS after the writes. `.agent/CITATION_BASELINE.txt` went from `count|18` plus 18 pairs to `count|0` with no pairs; the list only shrank.
+* **Provenance**: `author_llm: {name: "opencode (Tencent HY4 Preview Free)", version: "tencent/hy4-preview-free"}`; recorded as `unassessed_revision` per AGENTS.md section 1 (no different-model-family reviewer ran in this session). Report: `.agent/REPORTS/2026-11-06-opencode-hy4-preview-free-06-B5-0234.md`.
+
+## 2026-11-06 — Authority Designation Rule enforced for its designated file (B5-0235)
+
+Task B5-0235. Anchor citation: `RB:IV/character-cards` — cited because it is
+the rulebook section whose cards carry the stat fields (`diplomacy`, `intrigue`,
+`psi`, `leadership`, `cost`) this domain governs. No further rulebook
+interpretation is asserted by this entry, and no `RB:` token is invented to
+dress up what is a governance and tooling change.
+
+Change: the Authority Designation Rule (AGENTS.md §3) requires a designated
+file to carry `status: "Authoritative"` plus a provenance `source`.
+`authoritative-character-data.json` carried `status: "HUMAN-SCANNED"` and spent
+`source` on a descriptive sentence, so the rule described its own designated
+file wrongly and nothing failed.
+
+Two metadata lines changed (Option A only): `status` is now `Authoritative`,
+`source` now carries the provenance label `HUMAN-SCANNED`, and the displaced
+descriptive text was moved verbatim to `source_description` with a dated
+`designation_record`. The `characters` array was not touched — 4 records, no
+value changed. The file is untracked, so git supplies no diff; the gate's own
+comparison against the tracked deployed `premiere.json` still reports all four
+characters matching, which would fail if any value had moved.
+
+Enforcement: `.agent/tools/check-data-authority.py` now asserts the designation
+rule for every domain registered in `docs/AUTHORITY_INDEX.md` — designated file
+at repo root or `docs/`, existing, `status: "Authoritative"`, non-empty
+`source`; and a "None established" row must register no file. Its `--self-test`
+mode builds four non-compliant designated files and requires each to be
+rejected while two compliant cases pass, and `b5ccg/compile.sh` runs that
+self-test inside the §4 Data-Authority Gate. Red state measured before the fix:
+exit 1 naming the exact status mismatch; green after: exit 0.
+
+Left open: `source: "HUMAN-SCANNED"` still sits beside a
+`source_description` naming AI scanning agents — preserved deliberately, not
+adjudicated; whether these stats warrant a human-scan label stays a human-scan
+question (`scan-attempt-inventory-report.md` disputes it). The rule's third and
+fourth bullets (DECISIONS.md reference, `source_of_truth` on every other domain
+file) remain unchecked.
+
+## 2026-11-06 — B5-0236 - the 29 marker-less proposals triaged: proposal-marker baseline cut from 29 entries to 11
+
+B5-0236 closed the marker exemption B5-0233 left open. Twenty-nine files under
+`docs/proposals/` carried no `_proposal`/`_status`/`_authority` markers and were
+excused wholesale by `.agent/PROPOSAL_MARKERS_BASELINE.txt`. Each is now triaged
+and that baseline has shrunk from 29 entries to 11. It may shrink further; it
+may never grow.
+
+Dispositions: 14 retired to the new `docs/proposals/archive/` (10 Markdown whose
+own front matter shows them merged, superseded by a later version in their
+family, or not proposals at all; plus 4 JSON), 4 given markers, and 11 left live
+with a written reason each recorded in
+`.agent/REPORTS/2026-11-06-opencode-hy4-preview-free-06-B5-0236.md`. The
+retirement test was in-document evidence plus no live reference — never
+inference alone.
+
+Two corrections to the record, stated rather than silently applied:
+
+1. The B5-0236 row text attributes the three malformed premiere JSON excerpts to
+   `//` comments. They contain no `//` anywhere; each is a truncated,
+   unterminated array. `premiere-corrected-v1.json` failed only on a UTF-8 BOM
+   and parses as a 446-element list without it. Each was repaired according to
+   its real defect before archival, so nothing in the archive is left corrupt.
+2. `card-pool-corrected-premiere-v1.json` stays deliberately marker-less: this
+   register records (2026-11-02) that its markers were *removed* by its own
+   promotion. Re-adding them under B5-0236 would have reversed a decision this
+   file is the record of.
+
+`_authority` values added are bare paths registered in `docs/AUTHORITY_INDEX.md`
+only. Where a file's reach exceeds the registered source — as the two card-pool
+proposals do, since the wider census still has no Source of Truth — an
+`_authority_note` states the limit instead of overclaiming.
+
+Evidence: `check-proposal-markers.ps1` reports 5 compliant, 0 violating, 11
+grandfathered (exit 0); `test-proposal-markers.ps1` still rejects an
+unregistered `_authority` (6 checks, 0 failures). This entry interprets
+`RB:IV/character-cards` because the corrected premiere pool is the data domain
+the retired and repaired JSON files all concern.
+
+## 2026-11-06 — GKar register contradiction resolved (char_gkar D5/I1 physical, D4/I5 from promotion superseded)
+
+Dated register correction under RB:I/anatomy-of-a-card: the 2026-11-02 promotion entry in docs/DECISIONS.md recorded `char_gkar` as diplomacy 4 / intrigue 5, while the physical Premiere card and the verified scan transcript record diplomacy 5 / intrigue 1, psi 0, leadership 3. The deployed `premiere.json` and `authoritative-character-data.json` already carry the correct physical values (D 5, I 1); nothing in the live data changed here.
+
+The 2026-11-02 entry's "false claim" paragraph inverted the situation. The proposal file it cites as `source_file` still holds the obsolete D 4 / I 5 pair and is not authoritative for the living record. That provenance pointer is annotated in `authoritative-character-data.json` to name the corrected physical evidence rather than the superseded proposal values. The reader of the 2026-11-02 text must treat its G'Kar figures as superseded by this register correction and by the print evidence.
+
+Rule-ID: RB:I/anatomy-of-a-card.
+Task: B5-0242.

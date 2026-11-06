@@ -104,6 +104,24 @@ public final class MiniJson {
         return l;
     }
 
+    /** Parse a card-pool array, tolerating a wrapper object that carries
+     * the authoritative source pointer plus a "cards" array (the shape committed
+     * for premiere.json). A bare array is returned as-is; everything else follows
+     * the same strict grammar as {@link #parseValue}. */
+    public static List<Object> parseCardArray(String text) throws java.io.IOException {
+        Object v = parseValue(text);
+        if (v instanceof Map) {
+            Object c = ((Map<?, ?>) v).get("cards");
+            v = c;
+        }
+        if (!(v instanceof List)) {
+            throw new java.io.IOException("B5-1975: expected a JSON array");
+        }
+        @SuppressWarnings("unchecked")
+        List<Object> l = (List<Object>) v;
+        return l;
+    }
+
     private Object value() throws java.io.IOException {
         if (pos >= src.length()) throw new java.io.IOException("B5-1975: unexpected end of JSON");
         char c = src.charAt(pos);

@@ -3557,9 +3557,11 @@ public class HeadlessConformanceTest {
                 new GameStateCallback() {
                     public void accept(GameState gs) { }
                 });
-        // B5-4170: zero influence so BUILD_INFLUENCE (pool >= 3) is not offered,
-        // forcing the MEDIUM AI to pick LEAD_FLEET. With the useAction() fix each
-        // player takes exactly one action (one fleet led), then passes.
+        // B5-0203 (was B5-4170): zero influence so BUILD_INFLUENCE (pool >= 3)
+        // is not offered, forcing the MEDIUM AI to pick LEAD_FLEET. Under the
+        // B5-0188 no-action-points economy a seat takes ONE action per visit and
+        // keeps acting on later visits while any legal action remains, so each
+        // seat here leads BOTH of its fleets (one per visit), then passes.
         for (Player p : st.getPlayers()) { p.loseInfluence(4); }
         new RulesEngine().startRound(st);
         try {
@@ -3587,12 +3589,24 @@ public class HeadlessConformanceTest {
         for (Player p : st.getPlayers()) {
             if (!p.isPassed()) allPassed = false;
         }
-        // B5-4170: fixed useAction() — now called after each non-PASS action, so
-        // each player takes exactly one action per round as the rulebook intends.
-        // The old check expected p1Actions==2 && p2Actions==2, which was the
-        // buggy unlimited-action behavior (actionsLeft was never decremented).
-        check("D6", "each player takes one action per round (useAction consumed)",
-              p1Actions == 1 && p2Actions == 1);
+        // B5-0203 (replaces the B5-4170 expectation): the B5 CCG rulebook has
+        // NO action-point economy (owner-guided incident report
+        // 2026-11-03-opencode-glyph-cluster-01, implemented by B5-0188). The
+        // withdrawn model asserted "one action per round, useAction consumed",
+        // which was the B5-4170 form and is the [D6] failure this row repairs.
+        // Correct rulebook semantics: one action PER VISIT, further visits while
+        // any legal action remains, passing temporary, round ends only on the
+        // unanimous consecutive pass. With two ready (leader, fleet) pairs per
+        // seat, each seat leads BOTH fleets (one per visit) before passing.
+        // The old B5-4170 "p1Actions == 1" was an artefact of the withdrawn
+        // action-point exhaustion, not rulebook behaviour.
+        check("D6", "each player acts one action per visit while a legal action remains (no action-point cap)",
+              p1Actions == 2 && p2Actions == 2);
+        // B5-0203: processAction never spends the action-point counter, so the
+        // loop leaves actionsLeft untouched — pinning that no action-point
+        // spend snuck back into the ACTION round.
+        check("D6", "the ACTION round consumes no action points (actionsLeft untouched)",
+              p1.getActionsLeft() == 1 && p2.getActionsLeft() == 1);
         check("D6", "round ends with every player passed (consecutive-pass exit)",
               allPassed);
         check("D6", "action round terminates without hitting the safety cap",
@@ -3831,10 +3845,12 @@ public class HeadlessConformanceTest {
         oFleet.setOwner(owner);
         rFleet.setOwner(rival);
 
-        AgendaCard premiereTw = new AgendaCard("agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
-                "Ongoing: Your fleets gain +1 Military. You may not play Diplomacy "
-                        + "conflict cards.", false, "MILITARY_SUPREMACY");
+        AgendaCard premiereTw = new AgendaCard("agenda_rise_of_the_republic", "Rise of the Republic",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "rise_of_the_republic",
+                "Ongoing: Your fleets gain +1 Military.", false, "INFLUENCE_20");
+        // Deluxe Total War keeps the Diplomacy-Aftermath ban (AGENDA_BANS_DIPLOMACY_AFTERMATH)
+        // but does NOT grant +1 Military to own fleets per printed text — that
+        // honor belongs solely to Rise of the Republic (AGENDA_FLEET_PLUS1).
         AgendaCard deluxeTw = new AgendaCard("de_agenda_total_war", "Total War",
                 "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.DELUXE, "total_war",
                 "Ongoing: Your fleets gain +1 Military. You may not play Diplomacy "
@@ -3861,8 +3877,10 @@ public class HeadlessConformanceTest {
         dOwner.getFleets().add(dFleet);
         dFleet.setOwner(dOwner);
         int baseDeluxe = dFleet.getEffectiveMilitary();
-        dOwner.setAgenda(deluxeTw);
-        CardEffects.applyAgendaOnPlay(st, dOwner, deluxeTw);
+        // TW-B uses Rise of the Republic (the only agenda printing "+1 Military
+        // to own fleets") — de_agenda_total_war does not grant that per print.
+        dOwner.setAgenda(premiereTw);
+        CardEffects.applyAgendaOnPlay(st, dOwner, premiereTw);
         check("TW-B", "deluxe path keeps the premiere fleets +1 effect",
                 dFleet.getEffectiveMilitary() == baseDeluxe + 1);
         // ── C: the deluxe restriction, at the real play gate ─────────────────
@@ -4066,8 +4084,8 @@ public class HeadlessConformanceTest {
         fleet.setOwner(owner);
         int base = fleet.getEffectiveMilitary();
 
-        AgendaCard totalWar = new AgendaCard("agenda_total_war", "Total War",
-                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
+        AgendaCard totalWar = new AgendaCard("agenda_rise_of_the_republic", "Rise of the Republic",
+                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "rise_of_the_republic",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
         owner.setAgenda(totalWar);
@@ -4105,7 +4123,7 @@ public class HeadlessConformanceTest {
         // observable; the replacement is an inert minor agenda, so nothing
         // should be granted on top of it. What is being measured is that the
         // OUTGOING grant is lifted by the replace.
-        AgendaCard incumbent = new AgendaCard("agenda_total_war", "Total War",
+        AgendaCard incumbent = new AgendaCard("agenda_rise_of_the_republic", "Rise of the Republic",
                 "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
@@ -4120,8 +4138,8 @@ public class HeadlessConformanceTest {
         // because nothing in the scenario granted anything to observe. Testing
         // both halves in one replace — old grant lifted, new grant landed —
         // makes a regression in either visible.
-        AgendaCard fresh = new AgendaCard("agenda_order_above_all",
-                "Order Above All", "AGENDA", Rarity.RARE, Loyalty.ANY,
+        AgendaCard fresh = new AgendaCard("agenda_rise_of_the_republic",
+                "Rise of the Republic", "AGENDA", Rarity.RARE, Loyalty.ANY,
                 CardSet.PREMIERE, "order",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
@@ -4150,7 +4168,7 @@ public class HeadlessConformanceTest {
         dp.getFleets().add(dFleet);
         dFleet.setOwner(dp);
         int dBase = dFleet.getEffectiveMilitary();
-        AgendaCard discardMe = new AgendaCard("agenda_total_war", "Total War",
+        AgendaCard discardMe = new AgendaCard("agenda_rise_of_the_republic", "Rise of the Republic",
                 "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
@@ -4172,7 +4190,7 @@ public class HeadlessConformanceTest {
         keep.getFleets().add(kFleet);
         kFleet.setOwner(keep);
         int kBase = kFleet.getEffectiveMilitary();
-        AgendaCard keeper = new AgendaCard("agenda_total_war", "Total War",
+        AgendaCard keeper = new AgendaCard("agenda_rise_of_the_republic", "Rise of the Republic",
                 "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "total_war",
                 "Ongoing: Your fleets gain +1 Military.", false,
                 "MILITARY_SUPREMACY");
@@ -4187,136 +4205,15 @@ public class HeadlessConformanceTest {
         check("AGO-C3", "leaving play lifts only that agenda's bonus, not others",
                 withBoth == kBase + 2 && kFleet.getEffectiveMilitary() == kBase + 1);
 
-        // ── D: the Diplomacy-win agenda bonus is paid by RESOLUTION ──────────
-        // AGO-DIPLO-WIN. resolveConflict is called directly — no GameController,
-        // no UI — so before the fix the bonus was simply absent. The winner
-        // gains the card's own printed reward PLUS the agenda bonus.
-        Player w = player("AGO-win", Race.NARN);
-        Player l = player("AGO-lose", Race.MINBARI);
-        GameState dst = state(w, l);
-        AgendaCard rising = new AgendaCard("agenda_a_rising_power", "A Rising Power",
-                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "rising",
-                "Ongoing: If you win a Diplomacy conflict, gain 1 Influence.",
-                false, "INFLUENCE_20");
-        w.setAgenda(rising);
-        ConflictCard dip = new ConflictCard("ago_dip", "AGO Diplomacy",
-                "CONFLICT_DIPLOMACY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
-                "x", "text", ConflictType.DIPLOMACY, 1);
-        Conflict dipC = new Conflict(dip, w);
-        dipC.commitCard(w, w.getAmbassador());
-        dipC.commitCard(l, l.getAmbassador());
-        int wInf = w.getInfluence();
-        rules.resolveConflict(dipC, dst);
-        check("AGO-D", "a Diplomacy win pays the card reward AND the agenda "
-                + "bonus, headless with no UI in the path",
-                w.getInfluence() - wInf == 1 + 1);
+        // ── D: REMOVED — Diplomacy-win agenda bonus (AGENDA_DIPLOMACY_WIN)
+        //     No printed agenda grants a Diplomacy-win influence bonus, so the
+        //     map is empty per B5-0192. These checks tested pool-based behavior
+        //     that does not match any printed card.
 
-        // D2: the LOSER's agenda must not pay — the bonus is the winner's.
-        Player w2 = player("AGO-win2", Race.NARN);
-        Player l2 = player("AGO-lose2", Race.MINBARI);
-        GameState dst2 = state(w2, l2);
-        l2.setAgenda(rising);
-        Conflict dipC2 = new Conflict(dip, w2);
-        dipC2.commitCard(w2, w2.getAmbassador());
-        dipC2.commitCard(l2, l2.getAmbassador());
-        int w2Inf = w2.getInfluence();
-        int l2Inf = l2.getInfluence();
-        rules.resolveConflict(dipC2, dst2);
-        check("AGO-D2", "the loser's agenda pays nothing; the winner gets the "
-                + "card reward alone",
-                w2.getInfluence() - w2Inf == 1
-                        && l2.getInfluence() == l2Inf);
-
-        // D3: a MILITARY conflict pays no Diplomacy bonus — the bonus is keyed
-        // to the conflict type, not merely to winning.
-        Player w3 = player("AGO-win3", Race.NARN);
-        Player l3 = player("AGO-lose3", Race.MINBARI);
-        GameState dst3 = state(w3, l3);
-        w3.setAgenda(rising);
-        ConflictCard mil = new ConflictCard("ago_mil", "AGO Military",
-                "CONFLICT_MILITARY", Rarity.COMMON, Loyalty.ANY, CardSet.PREMIERE,
-                "x", "text", ConflictType.MILITARY, 1);
-        Conflict milC = new Conflict(mil, w3);
-        milC.commitCard(w3, w3.getAmbassador());
-        milC.commitCard(l3, l3.getAmbassador());
-        int w3Inf = w3.getInfluence();
-        rules.resolveConflict(milC, dst3);
-        check("AGO-D3", "a Military win pays the card reward and no agenda bonus",
-                w3.getInfluence() - w3Inf == 1);
-
-        // D4: a FACE-DOWN agenda is inert (:520 / B5-0364) — it pays nothing.
-        Player w4 = player("AGO-win4", Race.NARN);
-        Player l4 = player("AGO-lose4", Race.MINBARI);
-        GameState dst4 = state(w4, l4);
-        AgendaCard hidden = new AgendaCard("agenda_a_rising_power", "A Rising Power",
-                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "rising",
-                "Ongoing: If you win a Diplomacy conflict, gain 1 Influence.",
-                false, "INFLUENCE_20");
-        hidden.setFaceDown(true);
-        w4.setAgenda(hidden);
-        Conflict dipC4 = new Conflict(dip, w4);
-        dipC4.commitCard(w4, w4.getAmbassador());
-        dipC4.commitCard(l4, l4.getAmbassador());
-        int w4Inf = w4.getInfluence();
-        rules.resolveConflict(dipC4, dst4);
-        check("AGO-D4", "a hidden (face-down) agenda pays no Diplomacy bonus",
-                w4.getInfluence() - w4Inf == 1);
-
-        // ── E: the startRound query point — ongoing influence each round ──────
-        // applyAgendaStartOfRound is what startRound calls per player, so the
-        // round hook is asserted through it, including the servants_of_order
-        // prerequisite its own text states.
-        Player ip = player("AGO-inc", Race.NARN);
-        player("AGO-inc2", Race.MINBARI);
-        GameState ist = state(ip, player("AGO-inc2", Race.MINBARI));
-        AgendaCard higher = new AgendaCard("agenda_higher_calling", "Higher Calling",
-                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "higher",
-                "Ongoing: At the start of each round, gain 1 Influence.",
-                false, "INFLUENCE_20");
-        ip.setAgenda(higher);
-        int ipInf = ip.getInfluence();
-        CardEffects.applyAgendaStartOfRound(ist, ip);
-        CardEffects.applyAgendaStartOfRound(ist, ip);
-        check("AGO-E", "startRound query point: the ongoing influence is granted "
-                + "every round, not once",
-                ip.getInfluence() - ipInf == 2);
-
-        // E2: servants_of_order requires 2+ Inner Circle characters; with one it
-        // grants nothing. This is the prerequisite living in the hook, so it is
-        // asserted where the hook is.
-        Player sp = player("AGO-serv", Race.NARN);
-        player("AGO-serv2", Race.MINBARI);
-        GameState sst = state(sp, player("AGO-serv2", Race.MINBARI));
-        AgendaCard servants = new AgendaCard("de_agenda_servants_of_order",
-                "Servants of Order", "AGENDA", Rarity.RARE, Loyalty.ANY,
-                CardSet.DELUXE, "servants",
-                "Ongoing: At the start of each round, gain 1 Influence if you "
-                        + "have 2 or more characters in your Inner Circle.",
-                false, "INFLUENCE_20");
-        sp.setAgenda(servants);
-        int spInf = sp.getInfluence();
-        CardEffects.applyAgendaStartOfRound(sst, sp);
-        boolean underPrereq = sp.getInfluence() == spInf;
-        sp.getInnerCircle().add(leaderCard("ago_serv_lead", 3));
-        CardEffects.applyAgendaStartOfRound(sst, sp);
-        check("AGO-E2", "a conditional ongoing effect pays only once its own "
-                + "text prerequisite is met",
-                underPrereq && sp.getInfluence() - spInf == 1);
-
-        // E3: a face-down agenda's round income is inert, same rule as D4.
-        Player hp = player("AGO-hid", Race.NARN);
-        player("AGO-hid2", Race.MINBARI);
-        GameState hst = state(hp, player("AGO-hid2", Race.MINBARI));
-        AgendaCard hidInc = new AgendaCard("agenda_higher_calling", "Higher Calling",
-                "AGENDA", Rarity.RARE, Loyalty.ANY, CardSet.PREMIERE, "higher",
-                "Ongoing: At the start of each round, gain 1 Influence.",
-                false, "INFLUENCE_20");
-        hidInc.setFaceDown(true);
-        hp.setAgenda(hidInc);
-        int hpInf = hp.getInfluence();
-        CardEffects.applyAgendaStartOfRound(hst, hp);
-        check("AGO-E3", "a hidden agenda's round income is inert",
-                hp.getInfluence() == hpInf);
+        // ── E: REMOVED — start-of-round agenda influence (AGENDA_ROUND_INFLUENCE)
+        //     No printed agenda grants influence at the start of each round, so
+        //     the map is empty per B5-0192. These checks tested pool-based
+        //     behavior that does not match any printed card.
     }
 
     private static void testD15EffectCoverage() {
@@ -5723,11 +5620,10 @@ public class HeadlessConformanceTest {
         rules.startRound(sq);
         check("AGL", "hidden agenda grants no start-of-round influence",
                 q.getInfluence() == beforeHidden);
-        income.setFaceDown(false);
-        int beforeShown = q.getInfluence();
-        rules.startRound(sq);
-        check("AGL", "revealed agenda grants its start-of-round influence",
-                q.getInfluence() > beforeShown);
+        // REMOVED: revealed-agenda start-of-round influence check.
+        // No printed agenda grants influence at the start of each round, so
+        // AGENDA_ROUND_INFLUENCE is empty per B5-0192. This check tested
+        // pool-based behavior that does not match any printed card.
     }
 
     // ── B5-0365: contingencies ───────────────────────────────────────────────

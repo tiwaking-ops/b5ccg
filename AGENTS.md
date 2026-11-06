@@ -5,14 +5,16 @@ document:
 provenance:
   author_llm: {name: "Muse Spark", version: "muse-spark-1.3-contributor-free"}
   created_date: "2026-10-16"
-  last_modified_date: "2026-10-30"
-  last_modified_by_llm: {name: "opencode (Nemotron 3 Ultra)", version: "nemotron-3-ultra-2026-10-30"}
+  last_modified_date: "2026-11-06"
+  last_modified_by_llm: {name: "opencode (HY4 Preview Free)", version: "hy4-preview-free-2026-11-06"}
   assessor_llm:
     - {name: "opencode (verifier)", version: "independent-verify-2026-10-16", passes: 1, date: "2026-10-16", note: "updated §2 build rule to reflect Hop-1 (--release 8 / JDK 25), owner-approved"}
   unassessed_revision:
     - {author_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-19-01"}, date: "2026-10-19", change: "section 2 rulebook pin re-pinned to the canonical LF bytes under B5-0043 and B5-0047", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass"}
     - {author_llm: {name: "opencode (Space Bunny Free)", version: "space-bunny-free-2026-10-21-01"}, date: "2026-10-21", change: "section 1: added the reviewer-independence-by-model-family rule under B5-0045", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass. A same-family advisory review of the surrounding B5-0044 work was obtained and is recorded in the B5-0044 report's front matter under advisory_review, explicitly marked as not independent. A different-family assessment of this revision is outstanding."}
     - {author_llm: {name: "opencode (Nemotron 3 Ultra)", version: "nemotron-3-ultra-2026-10-30"}, date: "2026-10-30", change: "Added Authority Designation Rule (§3), Proposal Self-Identification (§3), Data-Authority Gate (§4), created docs/AUTHORITY_INDEX.md, created .agent/tools/check-data-authority.py, added _proposal marker to proposal files, added source_of_truth to deployed premiere.json, fixed deployed premiere.json stats to match authoritative-character-data.json", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass"}
+    - {author_llm: {name: "opencode (DeepSeek V4.1 Flash Free)", version: "deepseek-v4.1-flash-free"}, date: "2026-11-06", change: "§1: added the editorial-pass rule (an edit is recorded in last_modified_by_llm/unassessed_revision, never assessor_llm). §3: replaced the unenforced enforcement claim with the real checker and probe (check-proposal-markers.ps1 / test-proposal-markers.ps1) created under B5-0233", note: "authored by this agent and NOT independently assessed; no assessor_llm entry is claimed for this pass"}
+    - {author_llm: {name: "opencode (HY4 Preview Free)", version: "hy4-preview-free-2026-11-06"}, date: "2026-11-06", change: "§3: recorded that the Authority Designation Rule's first two bullets are enforced by .agent/tools/check-data-authority.py (with a --self-test red state), after B5-0235 found the rule and its one designated file in disagreement. An editorial/record pass only; no assessor_llm entry is claimed for this pass."}
 ---
 
 # AGENTS.md — b5ccg (lean reset, Claude v1 §7 B1/B2)
@@ -61,6 +63,14 @@ reader can check the independence rather than take it on trust.
   assessment carries the same blind spots as the work and must not be recorded
   as independent. The same reasoning already applies to advice that benefits
   the adviser's own maker (see `docs/DECISIONS.md`).
+* **An editorial pass is not an assessment.** A pass that repairs a broken
+  pointer, regenerates a table, recounts a set, or supplies a missing field is
+  an *edit*: record it in `last_modified_by_llm` and, for a document that keeps
+  a revision list, in `unassessed_revision`. Never record it in `assessor_llm`.
+  `assessor_llm` lists independent reviews only, so a reader who counts those
+  entries is counting independence; an editorial entry there inflates the count
+  and hides the fact that the revision was never assessed. (A proposal listed
+  exactly this way was corrected on 2026-11-06 under B5-0232.)
 
 
 ## 2. Build rules
@@ -116,6 +126,17 @@ reader can check the independence rather than take it on trust.
 - All other files in that domain must include a `source_of_truth` field pointing to it
 - Any document that names a different file as "authoritative" is itself erroneous and must be corrected.
 
+The first two bullets are checked, not asserted. `.agent/tools/check-data-authority.py`
+(in the §4 Data-Authority Gate) fails when a file designated as a Source of
+Truth in `docs/AUTHORITY_INDEX.md` is not at repo root or under `docs/`, or does
+not carry `status: "Authoritative"` and a provenance `source`. A domain
+registered as "None established" must register no file at all. The check has a
+proven red state: `--self-test` builds four non-compliant designated files and
+requires each to be rejected, and it runs in the gate every time. Before
+B5-0235 the one file this rule designates carried `status: "HUMAN-SCANNED"`
+instead, and nothing failed — the rule and the file disagreed without
+consequence, which is exactly the gap this paragraph used to have.
+
 **Proposal Self-Identification.** Every file in `docs/proposals/` (JSON or Markdown) must carry a machine-readable marker:
 ```json
 {
@@ -125,7 +146,14 @@ reader can check the independence rather than take it on trust.
   ...
 }
 ```
-Tooling (compile gate, linter) fails if any proposal lacks this, or if any non-proposal file references a proposal as authoritative.
+Tooling enforces this. `.agent/tools/check-proposal-markers.ps1` fails when a
+proposal lacks `_proposal`/`_status`/`_authority`, and when a proposal's
+`_authority` does not name a file registered as a Source of Truth in
+`docs/AUTHORITY_INDEX.md`. Its gate probe is
+`.agent/tools/test-proposal-markers.ps1`, which passes only if the checker
+rejects a fixture without the marker. Before B5-0232 this paragraph claimed an
+enforcement that no script performed; the claim is now true, and a script that
+cannot be run is not a substitute for it.
 
 ## 4. Promotion
 

@@ -274,35 +274,77 @@ public class GameController {
     }
 
     private void runActionPhase() {
-        int passCount = 0;
-        int playerCount = state.getPlayers().size();
-        int totalActions = 0;
-        // B5-2275: a round counts as a FULL-TABLE pass only when every action
-        // taken in it was a PASS. One real action anywhere makes the round a
-        // non-pass, so the stall counter cannot be driven by one busy player
-        // while the rest of the table idles.
-        boolean sawNonPassAction = false;
-        // B5-0372 (D6): initiative-cycle loop — each player acts once per cycle;
-        // the round ends only when all players pass consecutively. No per-player
-        // action cap (the loop itself delivers one action per eligibility visit).
-        // Safety cap (non-rulebook, liveness only): 8 × playerCount.
-        final int MAX_ACTIONS_PER_ROUND = playerCount * 8;
+        // B5-0188: ACTION round action economy fix — the B5 CCG rulebook has no
+        // "action points". The ACTION round cycles through players in initiative
+        // order. Each player may act (one action per visit) or PASS. The round
+        // ends ONLY when ALL active players pass in a single complete cycle
+        // (unanimous pass). Passing is temporary: if any player acts, all
+        // passed flags are cleared and the cycle continues. Support/oppose
+        // conflicts by rotating a ready character (card cost, not action cost).
+        //
+        // Implementation: track a set of players who have passed in the current
+        // cycle. Cycle through initiative order, skipping passed players. When
+        // a player acts, clear the passed set. When all active players are in
+        // the passed set, the round ends.
 
-        while (passCount < playerCount && !state.isGameOver()) {
-            if (totalActions >= MAX_ACTIONS_PER_ROUND) {
-                state.log("Action round safety cap reached (" + MAX_ACTIONS_PER_ROUND
-                          + " actions); ending round.");
+        List<Player> initiativeOrder = rules.getInitiativeOrder();
+        if (initiativeOrder.isEmpty()) {
+            // Fallback: use player list order if initiative not yet frozen
+            initiativeOrder = new ArrayList<Player>(state.getPlayers());
+        }
+
+        // Filter to active players only
+        List<Player> activePlayers = new ArrayList<Player>();
+        for (Player p : initiativeOrder) {
+            if (state.isPlayerActive(p)) activePlayers.add(p);
+        }
+        if (activePlayers.isEmpty()) {
+            rules.finishActionRound(state);
+            return;
+        }
+
+        Set<Player> passedThisCycle = new HashSet<Player>();
+        boolean sawNonPassAction = false;
+        int cycleIndex = 0;
+        // Safety cap (non-rulebook, liveness only): 50 cycles × playerCount
+        final int MAX_CYCLES = activePlayers.size() * 50;
+        int cycles = 0;
+
+        while (!state.isGameOver()) {
+            if (cycles >= MAX_CYCLES) {
+                state.log("Action round safety cap reached (" + MAX_CYCLES
+                          + " cycles); ending round.");
                 break;
             }
-            Player current = state.getActivePlayer();
+
+            // Check for unanimous pass: all active players have passed this cycle
+            if (passedThisCycle.size() >= activePlayers.size()) {
+                state.log("Action round ends: all " + activePlayers.size()
+                          + " active players passed (unanimous pass).");
+                break;
+            }
+
+            Player current = activePlayers.get(cycleIndex % activePlayers.size());
+            cycleIndex++;
+
+            // Skip players who have already passed this cycle
+            if (passedThisCycle.contains(current)) {
+                continue;
+            }
+
+            // Check if player is still active (could have forfeited/surrendered mid-round)
+            if (!state.isPlayerActive(current)) {
+                passedThisCycle.add(current); // Treat inactive as passed for cycle completion
+                continue;
+            }
+
             GameAction action;
 
             if (current.isHuman()) {
                 action = waitForHumanAction();
             } else {
                 // B5-0037: getAI returns null when this seat has no registered
-                // AIPlayer. Passing is the only safe move - there is no other
-                // seat's AI we may borrow to decide this seat's action.
+                // AIPlayer. Passing is the only safe move.
                 AIPlayer ai = getAI(current);
                 if (ai == null) {
                     action = GameAction.pass();
@@ -320,38 +362,29 @@ public class GameController {
 
             if (action.getType() == GameAction.Type.PASS) {
                 current.setPassed(true);
-                passCount++;
+                passedThisCycle.add(current);
             } else {
-                current.useAction();   // B5-4170: consume the action slot — was
-                                       // never called, so actionsLeft stayed at 1
-                                       // forever and every player acted every
-                                       // visit, never passing, round never ending.
-                sawNonPassAction = true;      // B5-2275
-                current.setPassed(false);   // B5-0372: un-pass — a passer may act later (rulebook §V)
-                passCount = 0;
+                // Non-pass action: clear all passed flags for this cycle,
+                // reset passed state for all players, and continue cycling.
+                sawNonPassAction = true;
+                for (Player p : activePlayers) {
+                    p.setPassed(false);
+                }
+                passedThisCycle.clear();
             }
-
-            totalActions++;
 
             Player winner = rules.checkVictory(state);
             if (winner != null) {
                 state.setWinner(winner);
                 notifyUI();
-                lastRoundWasFullTablePass = false;   // B5-2275: game decided, not a stall
+                lastRoundWasFullTablePass = false;
                 return;
             }
 
-            // B5-4170: endOfTurn enforced a 7-card hand limit after EVERY action
-            // in the round. That is wrong — the limit is checked once, in the
-            // AFTERMATH phase (RulesEngine.discardDownTo). Calling it here makes
-            // cards vanish from a player's hand mid-round with no play, which is
-            // what the playtester reported. The method is left in place but no
-            // longer called from the action loop.
-            state.advanceTurn();
+            cycles++;
         }
-        // B5-2275: a round that took no action at all is a full-table pass. The
-        // safety-cap break also lands here; it counts as a pass only if every
-        // action it did take was a PASS, which is the honest reading.
+
+        // B5-2275: a round that took no action at all is a full-table pass.
         lastRoundWasFullTablePass = !sawNonPassAction;
         rules.finishActionRound(state);
 

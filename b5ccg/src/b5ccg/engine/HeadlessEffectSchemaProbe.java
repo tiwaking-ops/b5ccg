@@ -80,11 +80,16 @@ public class HeadlessEffectSchemaProbe {
      * (STAT_MODIFY + PARTICIPATION_GRANT) were replaced by one printed-text
      * entry (PURGE_MARKS with markType, PSI_AT_LEAST condition, SET_STAT
      * operation) in B5-0107, reducing the count by one.</p>
+     *
+     * <p>The count then grew one B5-0178 follow-up batch at a time; B5-0199
+     * (event cards, part 2) is the most recent step and brings it to 161
+     * entries across 152 distinct cards. The constant is updated with each
+     * batch so the probe fails loudly if a batch is reverted or doubled.</p>
      */
-    private static final int EXPECTED_ENTRIES = 21;
+    private static final int EXPECTED_ENTRIES = 214;
 
-    /** The number of distinct cards the v0 document describes (12, not 17). */
-    private static final int EXPECTED_CARDS = 12;
+    /** The number of distinct cards the v0 document describes (193 after B5-0201). */
+    private static final int EXPECTED_CARDS = 204;
 
     /**
      * The canonical rendering of one known entry.
@@ -443,7 +448,7 @@ public class HeadlessEffectSchemaProbe {
                 buf.write(chunk, 0, n);
             }
             String json = new String(buf.toByteArray(), "UTF-8");
-            List<Object> cards = MiniJson.parseArray(json);
+            List<Object> cards = MiniJson.parseCardArray(json);
             for (int i = 0; i < cards.size(); i++) {
                 Object o = cards.get(i);
                 if (!(o instanceof Map)) continue;

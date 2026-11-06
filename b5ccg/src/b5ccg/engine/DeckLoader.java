@@ -302,6 +302,7 @@ public class DeckLoader {
 
     /** Split the top-level JSON array into individual object maps. */
     static List<Map<String, String>> splitObjects(String json) {
+        json = unwrapCardArray(json);
         List<Map<String, String>> result = new ArrayList<Map<String, String>>();
         int depth = 0;
         int start = -1;
@@ -319,6 +320,29 @@ public class DeckLoader {
             }
         }
         return result;
+    }
+
+    /** Tolerate a wrapper object {"source_of_truth":..., "cards":[...]}
+     * by extracting its nested "cards" array so the brace-counting splitter
+     * above sees a plain array, as it does for deluxe.json. A top-level array is
+     * returned unchanged, so deluxe.json and starter-deck files are unaffected. */
+    private static String unwrapCardArray(String json) {
+        String t = json.trim();
+        if (!t.startsWith("{")) return json;
+        int key = t.indexOf("\"cards\"");
+        if (key < 0) return json;
+        int colon = t.indexOf(':', key);
+        if (colon < 0) return json;
+        int j = colon + 1;
+        while (j < t.length() && Character.isWhitespace(t.charAt(j))) j++;
+        if (j >= t.length() || t.charAt(j) != '[') return json;
+        int depth = 0;
+        for (int i = j; i < t.length(); i++) {
+            char c = t.charAt(i);
+            if (c == '[') depth++;
+            else if (c == ']') { if (--depth == 0) return t.substring(j, i + 1); }
+        }
+        return json; // malformed wrapper; let the splitter fail loud
     }
 
     /** Parse a single JSON object { "key":"value", ... } into a Map. */

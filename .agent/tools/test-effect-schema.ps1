@@ -153,19 +153,49 @@ if (Test-Path -LiteralPath $ruleIndex) {
 }
 
 # ── 4. Every card id the data names exists in the card pool ─────────────────
+# B5-0182: the two pools have DIFFERENT shapes. deluxe.json is a bare array;
+# premiere.json is the owner-approved wrapper object
+# {"source_of_truth": ..., "cards": [...]} (docs/DECISIONS.md, 2026-10-31
+# wrapper entry). Iterating the wrapper with foreach yields ONE object whose
+# .id is null, which is how this section used to die with "You cannot call a
+# method on a null-valued expression" and take the whole gate down with it.
+# The unwrap is conditional, never unconditional: the wrapper is canonical and
+# must survive this probe.
 $cardFiles = @(
     (Join-Path $repoRoot 'b5ccg/resources/cards/premiere.json'),
     (Join-Path $repoRoot 'b5ccg/resources/cards/deluxe.json')
 )
 $ids = @{}
+$noId = @()
 foreach ($f in $cardFiles) {
     if (-not (Test-Path -LiteralPath $f)) { continue }
-    foreach ($c in (Get-Content -LiteralPath $f -Raw -Encoding UTF8 | ConvertFrom-Json)) {
+    $name = Split-Path -Leaf $f
+    $parsed = Get-Content -LiteralPath $f -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($parsed -is [System.Management.Automation.PSCustomObject] -and
+        ($parsed.PSObject.Properties.Name -contains 'cards')) {
+        $cards = @($parsed.cards)
+    } else {
+        $cards = @($parsed)
+    }
+    # A pool that parsed to nothing is a read failure, not an empty pool. Without
+    # this check an unwrap that found no cards at all would satisfy every
+    # remaining assertion by keeping them trivially true.
+    Check ("the card pool file yielded cards (" + $name + ": " + $cards.Count + ")") `
+        ($cards.Count -gt 0) ("0 card(s) parsed from " + $name)
+    foreach ($c in $cards) {
         $canonical = $c.id
+        if ([string]::IsNullOrEmpty($canonical)) { $noId += $name; continue }
         if ($canonical.StartsWith('de_')) { $canonical = $canonical.Substring(3) }
         $ids[$canonical] = $true
     }
 }
+Check ("every card in the pool files carries an id (" + $noId.Count + " without)") `
+    ($noId.Count -eq 0) (($noId | Select-Object -Unique) -join ', ')
+# Premiere holds 446 cards and Deluxe 383, 504 distinct canonical ids together.
+# A floor of 400 sits far below the real union and far above zero, so a silently
+# empty or half-unwrapped read fails here instead of passing quietly.
+Check ("the pool holds a plausible number of card ids (" + $ids.Count + ")") `
+    ($ids.Count -gt 400) ("only " + $ids.Count + " ids")
 $missing = @()
 foreach ($doc in $documents) {
     if (-not (Test-Path -LiteralPath $doc)) { continue }

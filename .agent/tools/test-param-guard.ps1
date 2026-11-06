@@ -99,9 +99,22 @@ foreach ($t in $tools) {
     }
     switch ($t.Name) {
         'ledger-query' {
-            # Must exit 0 and print a row of the ledger.
+            # Must exit 0 and reach its own query/report path.
+            #
+            # B5-0231: the original assertion demanded a B5-NNNN row, which made
+            # this probe a function of the LIVE backlog instead of a function of
+            # the tool. With zero OPEN rows the tool is CORRECT to exit 0 and
+            # report "No rows match status filter 'OPEN'", and the old check
+            # called that a failure -- so the verification gate could not be
+            # green on an empty backlog, which is a healthy state, and the red
+            # was blamed on the gate rather than on this assertion.
+            #
+            # Both outcomes are accepted because both prove the query ran and
+            # said what it found. An absorbed parameter or a crash produces
+            # neither marker, and the NEGATIVE case above still proves the
+            # parameter is not silently swallowed.
             if ($v.Code -ne 0) { $failures += ("ledger-query: valid invocation exited {0}, expected 0. Text: {1}" -f $v.Code, $v.Text.Trim()) }
-            elseif ($v.Text -notmatch 'B5-\d{4}') { $failures += "ledger-query: valid invocation printed no ledger row. It is supposed to list OPEN rows." }
+            elseif ($v.Text -notmatch 'B5-\d{4}' -and $v.Text -notmatch 'No rows match status filter') { $failures += "ledger-query: valid invocation neither listed a ledger row nor reported an empty result. It is supposed to run its query and report what it found." }
         }
         'lint-ledger' {
             # Must exit 0 and print its verdict line.

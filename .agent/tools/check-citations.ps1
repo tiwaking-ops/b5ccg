@@ -167,7 +167,13 @@ $ordinalPattern = '#(\d+)$'
 # silently, which is the one failure this phase exists to prevent. The trailing
 # lookahead keeps a malformed token from being silently shortened to a valid
 # prefix of itself.
-$rbPattern = 'RB:(?:(?:VI|IV|V|III|II|I|FM|GL|BM)(?:/[a-z0-9]+(?:-[a-z0-9]+)*)?(?:#\d+)?|\d+)(?![A-Za-z0-9/-])'
+# Catch-all for the division token. Listing only the divisions that happen to
+# exist today (VI|IV|V|III|II|I|FM|GL|BM) silently dropped any RB: token whose
+# division was not listed (RB:VII/..., RB:IX/...), so unknown divisions never
+# made it out of the regex to be reported as unresolved. Any uppercase division
+# is now captured; the downstream $byId lookup reports it if it is not an
+# entry in docs/RULE_INDEX.md. (B5-0239)
+$rbPattern = 'RB:(?:(?:[A-Z]+)(?:/[a-z0-9]+(?:-[a-z0-9]+)*)?(?:#\d+)?|\d+)(?![A-Za-z0-9/-])'
 
 $rbTotal     = 0
 $legacyOk    = New-Object System.Collections.Generic.List[object]

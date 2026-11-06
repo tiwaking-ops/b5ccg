@@ -165,6 +165,24 @@ public class HeadlessCanonicalParityProbe {
         m3.put("de_conf_example", "Example");
         check("mutation 3: a same-title twin is accepted as printings",
             undeclaredGroups(m3).isEmpty(), "got " + undeclaredGroups(m3));
+        // M4 (B5-0227): a title carrying a backslash-u escape must decode to
+        // the same string as its literal twin. CardSetManifestChecker
+        // .parseObject mirrors DeckLoader's escape handling; without the
+        // \\u case, premiere titles (Du\\u0027Nar) and deluxe titles (Du'Nar)
+        // read as distinct and 13 same-title pairs false-flag as undeclared.
+        List<Map<String, String>> esc = CardSetManifestChecker.splitObjects(
+            "[{\"id\":\"char_x\",\"title\":\"Du\\u0027Nar\"},"
+            + "{\"id\":\"de_char_x\",\"title\":\"Du'Nar\"}]");
+        Map<String, String> escTitles = new HashMap<String, String>();
+        for (int i = 0; i < esc.size(); i++) {
+            escTitles.put(esc.get(i).get("id"), esc.get(i).get("title"));
+        }
+        check("mutation 4: backslash-u escape decodes to the literal title",
+            esc.size() == 2 && "Du'Nar".equals(escTitles.get("char_x")),
+            "got " + escTitles);
+        check("mutation 4: escaped and literal twins are same-title printings",
+            undeclaredGroups(escTitles).isEmpty(),
+            "got " + undeclaredGroups(escTitles));
     }
 
     /**

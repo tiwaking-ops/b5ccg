@@ -209,6 +209,7 @@ public class CardSetManifestChecker {
     }
 
     static List<Map<String, String>> splitObjects(String json) {
+        json = unwrapCardArray(json);
         List<Map<String, String>> result = new ArrayList<Map<String, String>>();
         int depth = 0;
         int start = -1;
@@ -226,6 +227,28 @@ public class CardSetManifestChecker {
             }
         }
         return result;
+    }
+
+    /** Unwrap a {"source_of_truth":..., "cards":[...]} wrapper to its
+     * nested "cards" array, mirroring DeckLoader.unwrapCardArray. Leaves a plain
+     * top-level array (e.g. deluxe.json) untouched. */
+    private static String unwrapCardArray(String json) {
+        String t = json.trim();
+        if (!t.startsWith("{")) return json;
+        int key = t.indexOf("\"cards\"");
+        if (key < 0) return json;
+        int colon = t.indexOf(':', key);
+        if (colon < 0) return json;
+        int j = colon + 1;
+        while (j < t.length() && Character.isWhitespace(t.charAt(j))) j++;
+        if (j >= t.length() || t.charAt(j) != '[') return json;
+        int depth = 0;
+        for (int i = j; i < t.length(); i++) {
+            char c = t.charAt(i);
+            if (c == '[') depth++;
+            else if (c == ']') { if (--depth == 0) return t.substring(j, i + 1); }
+        }
+        return json; // malformed wrapper; let the splitter fail loud
     }
 
     private static Map<String, String> parseObject(String obj) {
@@ -260,6 +283,17 @@ public class CardSetManifestChecker {
                         if (next == '"') { sb.append('"'); i += 2; continue; }
                         if (next == '\\') { sb.append('\\'); i += 2; continue; }
                         if (next == 'n') { sb.append('\n'); i += 2; continue; }
+                        if (next == 'u' && i + 5 < obj.length()) {
+                            String hex = obj.substring(i + 2, i + 6);
+                            try {
+                                int code = Integer.parseInt(hex, 16);
+                                sb.append((char) code);
+                                i += 6;
+                                continue;
+                            } catch (NumberFormatException e) {
+                                // fall through to append raw backslash
+                            }
+                        }
                         sb.append(c); i++; continue;
                     }
                     if (c == '"') { i++; break; }

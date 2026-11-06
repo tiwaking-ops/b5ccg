@@ -469,7 +469,7 @@ public class HeadlessGroupEffectProbe {
     private static void readPoolCards(String path, List<PoolCard> out) throws Exception {
         String json = readResource(path);
         if (json == null) throw new java.io.FileNotFoundException("not found: " + path);
-        List<Object> cards = MiniJson.parseArray(json);
+        List<Object> cards = MiniJson.parseCardArray(json);
         for (int i = 0; i < cards.size(); i++) {
             Object o = cards.get(i);
             if (!(o instanceof Map)) continue;

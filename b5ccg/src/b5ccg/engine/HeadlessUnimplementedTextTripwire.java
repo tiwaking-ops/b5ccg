@@ -115,9 +115,26 @@ public class HeadlessUnimplementedTextTripwire {
      * the unimplemented total grows by one: 328 -> 329. The starter-deck count
      * is unchanged (Vorlon Enhancement is not a starter). This re-baseline
      * records a governed correctness decision, not a silent regression.</p>
+     *
+     * <p>B5-0192: Agenda cards (21 cards, 8 starters) were aligned to printed
+     * text per B5-0178 batch 5. The pool-based AGENDA_ROUND_INFLUENCE and
+     * AGENDA_DIPLOMACY_WIN maps were emptied (no printed agenda grants round
+     * influence or a Diplomacy-win bonus), and AGENDA_FLEET_PLUS1 was reduced
+     * to agenda_rise_of_the_republic only (Total War grants +1 Military to
+     * OTHER players' fleets; Order Above All prints no fleet Military bonus).
+     * AGENDA_MARK_GRANTS was extended with agenda_growth_in_chaos (Shadow Mark
+     * on ambassador). The net effect: agenda cards whose printed mechanics
+     * (Destiny Marks, tension tracking, power conversion, conditional bonuses)
+     * are not yet represented in CardEffects static maps are behaviour-bearing
+     * but not named by the engine registry, so the unimplemented total grows by
+     * one: 329 -> 330. The starter-deck count falls from 81 to 80
+     * (growth_in_chaos is a starter and is now implemented via AGENDA_MARK_GRANTS).
+     * This re-baseline records a governed correctness decision, not a silent
+     * regression. Full CardEffects behaviour integration for agenda cards is
+     * follow-up work (subsequent B5-0178 batches).</p>
      */
-    private static final int BASELINE_UNIMPLEMENTED_TOTAL = 329;
-    private static final int BASELINE_UNIMPLEMENTED_STARTER = 81;
+    private static final int BASELINE_UNIMPLEMENTED_TOTAL = 330;
+    private static final int BASELINE_UNIMPLEMENTED_STARTER = 80;
 
     private static int checks = 0;
     private static int failures = 0;

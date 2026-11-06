@@ -330,6 +330,10 @@ public class EffectCensusChecker {
     static List<Map<String, Object>> loadArray(String path)
             throws IOException {
         Object v = parse(readResource(path));
+        if (v instanceof Map) {
+            Object c = ((Map<?, ?>) v).get("cards");
+            if (c instanceof List) v = c;
+        }
         if (!(v instanceof List)) {
             throw new IOException("expected JSON array in " + path);
         }

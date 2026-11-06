@@ -22,15 +22,28 @@ RES="resources"
 # rather than flock because flock is not guaranteed on this host (Windows/Git
 # Bash). A waiting build retries for up to 60s then fails rather than clobbering
 # a concurrent build's output.
+#
+# B5-0231: only the run that CREATED the lock may remove it. The trap runs on
+# the FAILURE path too, so the previous unconditional `rm -rf` let a run that
+# never acquired the lock delete the lock its competitor was holding. That is
+# how two builds came to write out/ and the gate ledger at once despite this
+# lock: the loser waited out its retries, exited, and cleared the winner's lock
+# on the way out. LOCK_OWNED is the ownership test.
 LOCK_DIR="b5ccg_build.lock.dir"
+LOCK_OWNED=0
+# B5-0231: the retry count is overridable so the probe
+# (test-build-lock.ps1) can force the failure path immediately instead of
+# waiting the full 60s. The default is unchanged for every ordinary build.
+LOCK_RETRIES="${B5CCG_LOCK_RETRIES:-60}"
 acquire_lock() {
   local i=0
   while true; do
     if mkdir "$LOCK_DIR" 2>/dev/null; then
+      LOCK_OWNED=1
       return 0
     fi
     i=$((i+1))
-    if [ "$i" -ge 60 ]; then
+    if [ "$i" -ge "$LOCK_RETRIES" ]; then
       echo "ERROR: Could not acquire build lock $LOCK_DIR (another build in progress?)"
       return 1
     fi
@@ -39,7 +52,11 @@ acquire_lock() {
 }
 
 release_lock() {
-  rm -rf "$LOCK_DIR" 2>/dev/null || true
+  # B5-0231: never remove a lock this run did not create.
+  if [ "$LOCK_OWNED" = "1" ]; then
+    rm -rf "$LOCK_DIR" 2>/dev/null || true
+    LOCK_OWNED=0
+  fi
 }
 
 LIST=""
@@ -185,6 +202,8 @@ b5ccg.engine.HeadlessEffectSchemaProbe
 b5ccg.engine.HeadlessGroupEffectProbe
 b5ccg.engine.HeadlessEnhancementEffectProbe
 b5ccg.engine.HeadlessPrintingDiffTriageProbe
+b5ccg.engine.B50201FleetBatchProbe
+b5ccg.engine.B50217AgendaWinProbe
 b5ccg.model.EffectCensusChecker
 b5ccg.engine.HeadlessRulebookPinProbe
 b5ccg.model.HeadlessAftermathDetachProbe
@@ -232,7 +251,14 @@ GATE_EOF
 
   # Per-class logs, so a FAIL is diagnosable without re-running by hand.
   # "${OUT}_gate" keeps the out_*/ gitignore rule that out/ itself uses.
-  GATE_LOG_DIR="${OUT}_gate"
+  #
+  # B5-0231: the directory is PER RUN ($$ = this script's pid). It used to be
+  # "${OUT}_gate", so two runs sharing $OUT shared this directory: each run's
+  # `rm -rf` below deleted the other's per-class logs and the row-by-row table,
+  # and the "gate table does not account for every class" invariant then failed
+  # a run whose classes had all passed. Observed: 44 rows printed, 33 recorded,
+  # exit 1. The out_* prefix is kept so the gitignore rule still covers it.
+  GATE_LOG_DIR="${OUT}_gate_$$"
   rm -rf "$GATE_LOG_DIR"
   mkdir -p "$GATE_LOG_DIR"
 
@@ -373,15 +399,31 @@ GATE_EOF
   # B5-0169: test-find-card-scan-nopool.ps1 is hermetic (it builds its own temp
   # scan root and a 40x30 image), so it needs none of the pre-fork scans and can
   # run on any machine that has PowerShell.
-  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-flip-ledger.ps1 ../.agent/tools/test-effect-schema.ps1 ../.agent/tools/test-process-tax-measurement.ps1 ../.agent/tools/test-boot-files.ps1 ../.agent/tools/test-find-card-scan-nopool.ps1"
-  if command -v powershell > /dev/null 2>&1 && [ -f "../.agent/tools/test-param-guard.ps1" ]; then
+  # B5-0233: the four proposal-hygiene guards. Each has a proven RED state: the
+  # probe builds the violation as a fixture and requires the checker to reject
+  # it, so a checker that silently passes cannot land.
+  # B5-0244: the set itself is now an invariant. A listed probe whose file was
+  # missing used to be skipped silently, and a probe removed from the list was
+  # never seen, so the gate could print "Tooling probes: 11 passed, 0 failed"
+  # and exit 0 on a shrunk set. check-probe-set.ps1 fails when a declared probe
+  # file is absent or when the declared count is not TOOL_PROBE_EXPECTED. Add or
+  # retire a probe in ONE edit that updates TOOL_PROBES and TOOL_PROBE_EXPECTED
+  # together.
+  TOOL_PROBES="../.agent/tools/test-param-guard.ps1 ../.agent/tools/test-build-lock.ps1 ../.agent/tools/test-flip-ledger.ps1 ../.agent/tools/test-effect-schema.ps1 ../.agent/tools/test-process-tax-measurement.ps1 ../.agent/tools/test-boot-files.ps1 ../.agent/tools/test-find-card-scan-nopool.ps1 ../.agent/tools/test-report-required.ps1 ../.agent/tools/test-proposal-markers.ps1 ../.agent/tools/test-proposal-partition.ps1 ../.agent/tools/test-encoding-guard.ps1 ../.agent/tools/test-citation-ratchet.ps1 ../.agent/tools/test-probe-completeness.ps1"
+  TOOL_PROBE_EXPECTED=13
+  if command -v powershell > /dev/null 2>&1; then
     echo ""
     echo "=== Tooling probes (B5-0044) ==="
+    if ! powershell -NoProfile -ExecutionPolicy Bypass -File "../.agent/tools/check-probe-set.ps1" -ProbeList "$TOOL_PROBES" -Expected "$TOOL_PROBE_EXPECTED" -RepoRoot "$PWD"; then
+      echo ""
+      echo "ERROR: the tooling probe set is incomplete (B5-0244). Exit non-zero."
+      exit 1
+    fi
     TOOL_PASS=0
     TOOL_FAIL=0
+    TOOL_RAN=0
     TOOL_FAILED=""
     for probe in $TOOL_PROBES; do
-      [ -f "$probe" ] || continue
       pname=$(basename "$probe" .ps1)
       plog="$GATE_LOG_DIR/$pname.log"
       pstart=$(date +%s%N 2>/dev/null || echo 0)
@@ -390,6 +432,7 @@ GATE_EOF
       pend=$(date +%s%N 2>/dev/null || echo 0)
       pdur=$(( (pend - pstart) / 1000000 ))
       [ "$pdur" -lt 0 ] && pdur=0
+      TOOL_RAN=$(( TOOL_RAN + 1 ))
       if [ "$pcode" -eq 0 ]; then
         printf '%-6s %-8s %-10s %s\n' "0" "${pdur}ms" "PASS" "$pname"
         TOOL_PASS=$(( TOOL_PASS + 1 ))
@@ -400,6 +443,12 @@ GATE_EOF
       fi
     done
     echo "Tooling probes: $TOOL_PASS passed, $TOOL_FAIL failed"
+    echo "Tooling probe coverage: $TOOL_RAN of $TOOL_PROBE_EXPECTED declared probes ran"
+    if [ "$TOOL_RAN" -ne "$TOOL_PROBE_EXPECTED" ]; then
+      echo ""
+      echo "ERROR: $TOOL_RAN probes ran but $TOOL_PROBE_EXPECTED are expected (B5-0244). Exit non-zero."
+      exit 1
+    fi
     if [ "$TOOL_FAIL" -gt 0 ]; then
       echo ""
       echo "FAILING TOOLING PROBES:"
@@ -419,5 +468,14 @@ GATE_EOF
     echo ""
     echo "=== Tooling probes (B5-0044): SKIPPED (no powershell on PATH) ==="
   fi
+  echo "=== Data-Authority Gate (AGENTS.md §4) ==="
+  python3 ../.agent/tools/check-data-authority.py || exit 1
+  # B5-0235: the designation half of that gate must be provable, not just green.
+  # The self-test builds designated files that break the rule four different
+  # ways and requires each to be rejected, so a future edit that makes the
+  # check vacuous (for example by skipping every domain) fails the gate here
+  # even though the live tree is compliant.
+  echo "=== Authority Designation self-test (B5-0235) ==="
+  python3 ../.agent/tools/check-data-authority.py --self-test || exit 1
 fi
 

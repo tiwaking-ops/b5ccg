@@ -76,6 +76,109 @@ public final class CardEffects {
         return effect == WaiverEffect.FREE_PARTICIPANT ? effect : WaiverEffect.NONE;
     }
 
+    // ── Locations: card id → military-use restriction ───────────────────────
+    // Data: every Location card prints "Location's Military may only be used
+    // to oppose conflicts targeting this location." The restriction is not yet
+    // enforced in resolveConflict (that lives in RulesEngine); this registry
+    // makes the restriction discoverable so the enforcement call site can land
+    // in a follow-up row. IDs are canonical (Premiere/Deluxe twins collapse).
+    private static final Set<String> LOCATION_MILITARY_RESTRICTED =
+            new HashSet<String>();
+    static {
+        LOCATION_MILITARY_RESTRICTED.add("loc_centauri_prime");
+        LOCATION_MILITARY_RESTRICTED.add("loc_earth");
+        LOCATION_MILITARY_RESTRICTED.add("loc_immolan_v");
+        LOCATION_MILITARY_RESTRICTED.add("loc_mars_colony");
+        LOCATION_MILITARY_RESTRICTED.add("loc_minbari_protectorate");
+        LOCATION_MILITARY_RESTRICTED.add("loc_minbar");
+        LOCATION_MILITARY_RESTRICTED.add("loc_narn_homeworld");
+        LOCATION_MILITARY_RESTRICTED.add("loc_proxima_iii");
+        LOCATION_MILITARY_RESTRICTED.add("loc_quadrant_14");
+        LOCATION_MILITARY_RESTRICTED.add("loc_quadrant_37");
+        LOCATION_MILITARY_RESTRICTED.add("loc_ragesh_iii");
+        LOCATION_MILITARY_RESTRICTED.add("loc_sleeping_zhadum");
+        LOCATION_MILITARY_RESTRICTED.add("loc_transfer_point_io");
+    }
+
+    /** True when the card is a Location whose Military may only be used to
+     *  oppose conflicts targeting this location. */
+    public static boolean isLocationMilitaryRestricted(String cardId) {
+        return cardId != null && lookupSet(LOCATION_MILITARY_RESTRICTED, cardId);
+    }
+
+    /** The restriction text for a Location card, or null when unrestricted. */
+    public static String locationMilitaryRestriction(String cardId) {
+        if (!isLocationMilitaryRestricted(cardId)) return null;
+        return "Location's Military may only be used to oppose conflicts "
+                + "targeting this location.";
+    }
+
+    // ── Fleet cards: participation and initiation restrictions ─────────────
+    // Data: printed texts "Can only participate in conflicts targeting you"
+    // and "You may only initiate Military conflicts that target a player
+    // with whom you are at war." The restrictions are not yet enforced in
+    // RulesEngine; this registry makes them discoverable so enforcement
+    // call sites can land in follow-up rows. IDs are canonical.
+    private static final Set<String> FLEET_PARTICIPATION_RESTRICTED =
+            new HashSet<String>();
+    static {
+        FLEET_PARTICIPATION_RESTRICTED.add("fleet_garrison_centauri");
+        FLEET_PARTICIPATION_RESTRICTED.add("fleet_homeworld_centauri");
+        FLEET_PARTICIPATION_RESTRICTED.add("fleet_homeworld_human");
+        FLEET_PARTICIPATION_RESTRICTED.add("fleet_homeworld_minbari");
+    }
+
+    /** True when the fleet's participation is restricted to conflicts
+     *  targeting its controller. */
+    public static boolean isFleetParticipationRestricted(String cardId) {
+        return cardId != null && lookupSet(FLEET_PARTICIPATION_RESTRICTED, cardId);
+    }
+
+    /** The restriction text for a fleet card, or null when unrestricted. */
+    public static String fleetParticipationRestriction(String cardId) {
+        if (!isFleetParticipationRestricted(cardId)) return null;
+        return "Can only participate in conflicts targeting you.";
+    }
+
+    private static final Set<String> FLEET_PARTICIPATION_RESTRICTED_AT_WAR =
+            new HashSet<String>();
+    static {
+        FLEET_PARTICIPATION_RESTRICTED_AT_WAR.add("fleet_homeworld_narn");
+    }
+
+    /** True when the fleet's participation is restricted to conflicts
+     *  targeting its controller unless it is at war. */
+    public static boolean isFleetParticipationRestrictedAtWar(String cardId) {
+        return cardId != null
+                && lookupSet(FLEET_PARTICIPATION_RESTRICTED_AT_WAR, cardId);
+    }
+
+    /** The restriction text for the Narn homeworld fleet, or null. */
+    public static String fleetParticipationRestrictionAtWar(String cardId) {
+        if (!isFleetParticipationRestrictedAtWar(cardId)) return null;
+        return "Can only participate in conflicts targeting you "
+                + "unless you are at war.";
+    }
+
+    private static final Set<String> FLEET_INITIATION_RESTRICTED =
+            new HashSet<String>();
+    static {
+        FLEET_INITIATION_RESTRICTED.add("fleet_grey_council_fleet");
+    }
+
+    /** True when the fleet's controller may only initiate Military conflicts
+     *  targeting a player with whom they are at war. */
+    public static boolean isFleetInitiationRestricted(String cardId) {
+        return cardId != null && lookupSet(FLEET_INITIATION_RESTRICTED, cardId);
+    }
+
+    /** The initiation restriction text, or null. */
+    public static String fleetInitiationRestriction(String cardId) {
+        if (!isFleetInitiationRestricted(cardId)) return null;
+        return "You may only initiate Military conflicts that target a "
+                + "player with whom you are at war.";
+    }
+
     // ── Events: card id → influence gain for the playing player ─────────────
     // Data: event texts "Gain N Influence."
     private static final Map<String, Integer> EVENT_INFLUENCE = new HashMap<String, Integer>();
@@ -144,26 +247,31 @@ public final class CardEffects {
     }
 
     // ── Agendas: card id → influence at the start of each round ─────────────
-    // Data: "Ongoing: Gain 1 Influence at the start of each round." /
-    // "...if you have 2 or more characters in your Inner Circle, gain 1" (Deluxe).
+    // Data: no printed agenda grants influence at the start of each round.
+    // The pool text ("Ongoing: Gain 1 Influence at the start of each round.")
+    // does not match any printed card; every agenda card has a CHANGED verdict.
     private static final Map<String, Integer> AGENDA_ROUND_INFLUENCE = new HashMap<String, Integer>();
     static {
-        AGENDA_ROUND_INFLUENCE.put("agenda_higher_calling",       Integer.valueOf(1));
-        AGENDA_ROUND_INFLUENCE.put("de_agenda_servants_of_order", Integer.valueOf(1));
+        // Intentionally empty: no printed agenda text supports round influence.
     }
 
     // ── Agendas: card id → extra influence when owner wins a Diplomacy conflict
-    // Data: "Ongoing: Gain 1 additional Influence whenever you win a Diplomacy conflict."
+    // Data: no printed agenda grants additional Influence for winning a Diplomacy
+    // conflict. The pool text ("Ongoing: Gain 1 additional Influence whenever you
+    // win a Diplomacy conflict.") does not match any printed card.
     private static final Map<String, Integer> AGENDA_DIPLOMACY_WIN = new HashMap<String, Integer>();
     static {
-        AGENDA_DIPLOMACY_WIN.put("agenda_a_rising_power", Integer.valueOf(1));
+        // Intentionally empty: no printed agenda text supports a Diplomacy win bonus.
     }
 
     // ── Agendas: "Ongoing: Your fleets gain +1 Military." ───────────────────
+    // Data: only Rise of the Republic prints "+1 Military" to all own fleets.
+    // Total War grants +1 Military to OTHER players' fleets (not own), and
+    // Order Above All prints no fleet Military bonus at all. The pool text
+    // ("Your fleets gain +1 Military") does not match those printed cards.
     private static final Set<String> AGENDA_FLEET_PLUS1 = new HashSet<String>(
             Arrays.asList(new String[] {
-                "agenda_total_war",       "de_agenda_total_war",
-                "agenda_order_above_all"
+                "agenda_rise_of_the_republic"
             }));
 
     // ── Agendas: card id → the owner's own play restriction ─────────────────
@@ -202,6 +310,9 @@ public final class CardEffects {
                 new MarkGrant(MarkType.VORLON, 1, MarkGrant.Target.AMBASSADOR));
         AGENDA_MARK_GRANTS.put("de_agenda_servants_of_order",
                 new MarkGrant(MarkType.VORLON, 1, MarkGrant.Target.AMBASSADOR));
+        // Growth in Chaos: 1 Shadow Mark on ambassador while in play
+        AGENDA_MARK_GRANTS.put("agenda_growth_in_chaos",
+                new MarkGrant(MarkType.SHADOW, 1, MarkGrant.Target.AMBASSADOR));
     }
 
     /** Simple record for agenda mark grants. */
@@ -215,6 +326,18 @@ public final class CardEffects {
             this.count = count;
             this.target = target;
         }
+    }
+
+    // ── B5-0193: Group mark grants ───────────────────────────────────────────────
+    // Data: no printed group grants a mark to the ambassador, which is the only
+    // target the MarkGrant system supports. Thenta Makur prints "All Narn in play
+    // gain a Strife Mark while Thenta Makur is in play" — a grant to every Narn
+    // character, not the ambassador — so it does not fit this map. The map is
+    // kept empty so behaviourReferences() walks it, and the v0 effect document
+    // carries a MARK_GRANT placeholder entry for thenta_makur instead.
+    private static final Map<String, MarkGrant> GROUP_MARK_GRANTS = new HashMap<String, MarkGrant>();
+    static {
+        // Intentionally empty: no printed group card grants a mark to the ambassador.
     }
 
     // ── B5-1995: Enhancement mark grants ───────────────────────────────────────
@@ -1789,6 +1912,7 @@ public final class CardEffects {
         scanKeys(out, AGENDA_BANS_DIPLOMACY_AFTERMATH);
         scanKeys(out, ENH_LOCATION_INCOME);
         scanKeys(out, AGENDA_MARK_GRANTS);
+        scanKeys(out, GROUP_MARK_GRANTS);
         scanKeys(out, ENHANCEMENT_MARK_GRANTS);
         scanKeys(out, EVENT_MARK_GRANTS);
         scanKeys(out, CHARACTER_BEHAVIOUR_REFERENCES);
