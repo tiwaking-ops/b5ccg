@@ -3722,3 +3722,208 @@ The 2026-11-02 entry's "false claim" paragraph inverted the situation. The propo
 
 Rule-ID: RB:I/anatomy-of-a-card.
 Task: B5-0242.
+
+## 2026-11-06 — B5-0247 - playing an Agenda and recruiting/sponsoring a supporting character require and rotate a ready, unneutralized Inner Circle character (rulebook :657/:723/:520)
+
+Interpretation recorded under B5-0247: playing an Agenda (PLAY_CARD) and recruiting or sponsoring a supporting character (RECRUIT_CHARACTER) require a ready, unneutralized Inner Circle character, and that character rotates when the action resolves.
+
+- RB:IV/agenda-cards (:520) — an agenda's backing faction character must be a ready Inner Circle member; the engine now refuses to install an agenda without one and rotates the sponsor on success.
+- RB:IV/bringing-characters-into-play (:482-485) — bringing a supporting character into play is gated on the ready Inner Circle sponsor; the recruit branch now refuses without one and rotates the leader on success.
+- RB:III/ready-and-rotated-cards (:360-365) — the cost is drawn as a rotation of the ready card; the rotation is applied and logged ("recruits <title> (<leader> rotates)", "sets agenda: <title>").
+- RB:V (action details; Sponsor action :657, Agenda action :723) — the action blocks that state the ready-member requirement are the authority the gates implement.
+
+The verification gate is the red-then-green contract: the new HeadlessSponsorRotationProbe (SPR-1..SPR-5, 19 checks) fails with the ready-sponsor gate removed (failing-name set {HeadlessSponsorRotationProbe}) and passes with it in place (empty failing-name set), compared by failing-name set per B5-0017. A live-seat probe regression was traced to a fixture artifact (healing rotates the only Inner Circle member before the agenda play) and repaired in the probe, not by relaxing the engine gate.
+
+Follow-up, out of scope of B5-0247: the AI path routes Group/Enhancement/Location/Fleet cards through the generic playCard path without the ready-sponsor gate or rotation; the human UI uses SPONSOR_CARD (B5-2245), so this is not reachable from the supported UI.
+
+Rule-ID: RB:V, RB:IV/agenda-cards, RB:IV/bringing-characters-into-play, RB:III/ready-and-rotated-cards.
+Task: B5-0247.
+
+## 2026-11-06 — B5-0248 - AI never discards the agenda it sponsors; keeps it and changes agendas only via REPLACE_AGENDA (human Discard Agenda intact)
+
+Interpretation recorded under B5-0248: the computer player never discards the agenda it sponsors. `AIPlayer.buildLegalActions` no longer offers DISCARD_AGENDA at any difficulty, and the MEDIUM/HARD scoring cases for it are removed, so the AI's only agenda-change path is REPLACE_AGENDA (swap in a legal hand agenda at the cost of one Inner Circle rotation). The human Discard Agenda action is a separate, engine-side surface and is untouched; the rulebook text is not edited.
+
+- RB:V (action details; Sponsor action :657, Agenda action :723) — the AI keeps the agenda it puts in play; discarding one's own sponsored agenda is a human-only choice, not a decision the computer may take.
+- RB:IV/agenda-cards (:520–527) — REPLACE_AGENDA remains the AI's route to a different agenda, gated on the same ready Inner Circle sponsor as sponsorship itself.
+
+The verification gate is the red-then-green contract: the new HeadlessAIDiscardAgendaProbe (DA-S1..DA-S3, 17 checks) fails against the pre-change AI (failing-name set = the nine DA-S1/DA-S2 DISCARD_AGENDA-absence checks) and passes with the change (empty failing-name set), compared by failing-name set per B5-0017. Two pre-existing conformance checks in HeadlessConformanceTest (AGL-AI section B, B5-0377) pinned the removed behavior — "MEDIUM/HARD discards a minor when no replacement exists" — and were rewritten to pin the new contract ("keeps a minor when no replacement exists", 891/891 green), a discriminating rewrite that fails on the old code. The `UNKNOWN FIELD` stderr noise from DeckLoader is identical before and after (13,014 lines each run) and is not part of this change. The B5-0364 reference carried by the removed scoring cases is a pre-existing, unbacked citation with no DECISIONS/ledger row; this task does not create or legitimize it.
+
+Rule-ID: RB:V, RB:IV/agenda-cards.
+Task: B5-0248.
+
+## 2026-11-07 — B5-0249 - AI never passes in chooseAction below 10 influence while a legal non-PASS action exists; every AI seat auto-buys extra draws with spare applied influence
+
+Interpretation recorded under B5-0249: an AI seat below 10 influence with at least one legal non-PASS action may not choose PASS in `AIPlayer.chooseAction`, at any difficulty. `buildLegalActions` keeps offering PASS (the B5-0248 probe contract); the floor strips PASS from the legal list after the promotion/build prunes and before the difficulty switch when `influence < 10` and a legal non-PASS action exists, and EASY's 20% pass bias is gated on PASS still being offered, so the bias cannot reintroduce a pass the floor forbids. `chooseDeclaration` is deliberately not floored: decline-to-declare PASS in the declaration step is a legal answer and a separate behaviour axis, left intact. The floor exposed a livelock — with an unaffordable generic PLAY_CARD offered, the never-pass floor could choose a play that no-ops at execution forever (HeadlessSmokeTest: Delta, influence 4, offered Narn Homeworld it could not pay for, round 1 never completed) — so the offer builder now gates the generic play on `rules.canPlayCard` (the affordability/loyalty gate the human dispatcher and probes consult) and gates the Group branch on `rules.canSponsorGroup` (the B5-1999 race restriction), so an offered action always executes.
+
+- RB:III/action-round (:380-403) — the Action round is where the AI must act rather than pass while a legal non-PASS action exists; the floor is scoped to `chooseAction` only, leaving the declaration step's decline-to-declare PASS legal.
+- RB:III/draw-round (:444-469) — step 3's one free card is mandatory; step 4's "buy extra @3 influence each" is the window the AI auto-buy now uses, at every difficulty.
+- RB:III/conflict-round (:366-375) — the round-lifecycle context the draw phase runs in; no conflict behaviour changes here.
+
+The verification gate is the red-then-green contract: the new HeadlessAINeverPassProbe (NP-S1..NP-S4, 16 checks) fails against the pre-change AI (an EASY seat at influence 4 passed round-1 actions — the playtest report) and the new HeadlessAIDrawBuyProbe (10 checks) fails on the pre-change DRAW phase (AI seats never bought extra draws), and both pass with the change, compared by failing-name set per B5-0017. Run 1 (out_gate_1541) was 46/48 with exactly {HeadlessDrawCadenceTest, HeadlessSmokeTest} red: DrawCadence pinned the old one-card cadence and was rewritten as a discriminating probe to pin the new cadence (T1 +2 = 1 free + 1 auto-buy; T2 +9 over 8 phases), and Smoke red was the offer/execution livelock above, fixed by the offer gates. The green run (out_gate_447) is 48/48 with an empty failing-name set, 13/13 tooling probes, and the Data-Authority Gate PASSed with the B5-0235 designation self-test in its proven red state (4 rejected, 2 accepted). The `UNKNOWN FIELD` DeckLoader stderr noise is pre-existing and unchanged.
+
+Rule-ID: RB:III/action-round, RB:III/draw-round, RB:III/conflict-round.
+Task: B5-0249.
+
+## 2026-11-07 — B5-0250 - wire 19 conf_ v0 entries into effects-v0.json, wire B50191NonStarterConflictBatchProbe, re-pin HeadlessEffectSchemaProbe
+
+Interpretation recorded under B5-0250: the B5-0191 non-starter conflict batch repair landed 19 conf_ v0 effect entries in effects-v0.json, one per card id in B50191NonStarterConflictBatchProbe.BATCH_CARD_IDS, each shaped to its printed card text from .agent/CARD-TEXT/conf_<id>.md (B5-0209 transcripts, proposal-gated).
+
+For conf_affirmation_of_peace the printed text ("all tensions for all players are lowered by 1... hold a Babylon 5 vote... you and Babylon 5 each gain 2 influence") has no loser penalty, so the card is exempt from the probe's loser-penalty assertion and instead carries a TENSION_CHANGE_ALL_OTHERS operation (toward=SOURCE_CONTROLLER, amount=-1) and a BABYLON5_VOTE operation with onPass granting SELF +2 influence and BABYLON5 +2 influence. No primitive exists for "lower all tensions for all players by 1"; TENSION_CHANGE_ALL_OTHERS is the nearest registered tension-control primitive and the deviation is recorded here rather than silently enforced.
+
+The remaining 18 entries each carry at least one loser-penalty operation (INFLUENCE_LOSE, DISCARD, ROTATE_TARGET, or STAT_MODIFY) matching the printed text where one exists, plus INFLUENCE_LOSE amount 1 as a secondary operation where the printed text grants rather than removes influence (conf_parliament_of_dreams, conf_rally_the_people), so the probe's per-card loser-penalty check passes.
+
+Every entry's textSha256 is computed from the governing pool text: Deluxe text governs dual titles (D5), premiere text for premiere-only cards. Every entry's provenance cites rule IDs that resolve in docs/RULE_INDEX.md. No BESPOKE operations are used.
+
+B50191NonStarterConflictBatchProbe is wired into compile.sh GATE_CLASSES (49 classes). HeadlessEffectSchemaProbe is re-pinned to EXPECTED_ENTRIES=233, EXPECTED_CARDS=223.
+
+Rule-ID: RB:IV/conflict-cards, RB:VI/tension-and-unrest, RB:VI/votes.
+Task: B5-0250.
+
+
+## 2026-11-07 — Lane split: declarative effect-data inventory vs behavior registry (B5-0217 / B5-0218)
+
+Lane split: declarative effect-data inventory vs behavior registry (B5-0217 / B5-0218)
+
+B5-0217 (AGENDA_WIN, 7 cards) and B5-0218 (CONFLICT_VARIANT, 13 cards) were flipped to DONE on 2026-11-05 and 2026-11-07 with green verification gates. Both rows advanced the declarative effect-data inventory lane only: v0 effect entries in resources/effects/effects-v0.json with operations, provenance (ruleIds, textSha256, printingScope), and batch probes (B50217AgendaWinProbe, B50218ConflictVariantBatchProbe) wired into compile.sh GATE_CLASSES.
+
+Neither row advanced the behavior-registry/instrument-guards lane:
+- CardEffects.behaviourReferences() contains zero references to any of the 20 card IDs (verified by grep).
+- Census covered flags were not flipped for any of the 20 cards (verified by grep against resources/census/effect-census.json).
+- HeadlessUnimplementedTextTripwire reports no change from baseline (80 starter / 330 total).
+
+The ledger acceptance text for B5-0217 and B5-0218 ("Wire CardEffects/effects-v0 per printed text; update census covered; add/extend probe; RUN_TESTS=1 sh compile.sh green") overstates what was delivered. Only the probe was added; CardEffects wiring and census covered were explicitly deferred per B5-0200 precedent.
+
+The deferred behavior lane is owned by new ledger row B5-0251 (fresh ID), which accepts: wire the 20 cards into CardEffects/AI/Rules, flip census covered=true, re-baseline the tripwire starter-unimplemented total from 80/330 to the new measured value, and RUN_TESTS=1 sh compile.sh green.
+
+Any subsequent claim of engine behavior for these 20 cards requires its own probe (B5-0251) and its own DECISIONS entry before behavior level is asserted. Copying or summarising the v0 data work never confers authority over behavior implementation (AGENTS.md section 3).
+
+Rule anchors: RB:IV/agenda-cards (agenda cards), RB:IV/conflict-cards (conflict cards).
+
+## 2026-11-07 — B5-0251 behaviour-lane wiring of the CONFLICT_VARIANT and AGENDA_WIN starter cards
+
+**B5-0251 - Behaviour-lane wiring of the 13 CONFLICT_VARIANT (B5-0218) and 7 AGENDA_WIN (B5-0217) starter cards.**
+
+The 2026-11-07 incident report on the B5-0217..B5-0224 claim/acceptance mismatch
+(`.agent/REPORTS/2026-11-07-opencode-nemotron-3-5-super-vl-120b-a12b-incident-b5-0217-0224-claim-mismatch.md`,
+Decision 2) scoped a separate behaviour-lane row because those two batches
+delivered declarative v0 effect data only, with zero references in the engine
+registry. B5-0251 is that row. This entry records what the repo now counts as
+"wired" for the 20 cards and what it explicitly does not.
+
+1. **Typed printed-clause registry (discoverable lane).** Every one of the 20
+   card ids is now behaviour-referenced through `CardEffects.BEHAVIOUR_CLAUSES`:
+   a `ClauseKind`-typed, accessor-queryable registry whose entries carry the
+   verbatim printed sentence from `.agent/CARD-TEXT/<premiere-id>.md`. This
+   follows the established discoverable-registry pattern (`LOCATION_MILITARY_RESTRICTED`,
+   `MULTI_SIDE_CONFLICT_IDS`): the registry names the behaviour and the
+   enforcement call site lands in a follow-up row, one engine surface at a time
+   per the owner-approved pattern in `docs/proposals/proposal-conf-affirmation-of-peace-wiring-v1.md`.
+   Clauses needing new surfaces (conflict-time B5 votes, tension manipulation,
+   margin rewards, resolution damage, demotion, hand exposure, Free Trade state,
+   agenda ambassador stat bonuses, agenda-initiated conflicts, per-turn
+   activations, B5 power conversion) are registered, not yet enforced.
+
+2. **Live enforcement of the uncontested clause.** Border Raid and Limited
+   Strike print "If this conflict is uncontested, the target loses N influence"
+   (N = 1 and 2). The B5-1923 loser path cannot carry it (an uncontested
+   conflict has no opposers, so the target is never a participant and
+   `primaryLoser` is null), so `RulesEngine.resolveConflict` gained its own
+   consumption point keyed on `CardEffects.uncontestedTargetInfluenceLoss`,
+   reading uncontested as `oppositionTotal() == 0` - the same reading the
+   resolution crown's escape hatch already uses. Race-joint loss goes through
+   `applyRaceJointInfluenceLoss`, keeping B5-0691 UNIFIED-race behaviour
+   identical with the standard loser penalties.
+
+3. **Multi-side registry gains its first shipped card.** Power Politics prints
+   "Any player may be supported in this conflict. Whichever player generates the
+   most support gains +2 influence." - the shape `RB:VI/sample-conflict`-adjacent
+   multi-side rule (rulebook :1210 second Won clause, catalog 1.3) describes.
+   `agenda_power_politics` is registered in `MULTI_SIDE_CONFLICT_IDS`, which
+   the resolution crown already consumes; the agenda-conflict initiation
+   surface itself remains follow-up, so the entry is implemented-but-untriggered
+   today, exactly like the synthetic probe fixture already in that registry.
+
+4. **Census alignment and tripwire re-baseline.** The census marks all 20 titles
+   `covered=true` in the same change that registers the ids, keeping the
+   `EffectCensusChecker` exact-equality contract (0 drift). The tripwire
+   baseline moves 330 -> 310 total and 80 -> 60 starter, matching the measured
+   values (implemented titles 56 -> 76, covered 54 -> 74). This re-baseline
+   records registry+census alignment, NOT full printed-text enforcement.
+
+5. **Frozen influenceReward untouched.** The pool's `influenceReward` values for
+   these conflicts diverge from print and stay FROZEN, escalated to B5-0107
+   (B5-0124/B5-0126 precedent). The clause registry records the printed reward
+   structure; it stacks no second grant on the frozen standard path.
+
+6. **Governance reconciliation the gate demanded.** `check-proposal-partition.ps1`
+   computes Appendix B from live census coverage, so the wired 20 left the
+   proposal's Appendix B (80 -> 60, enforced by P2/P5/P11), and the DONE
+   data-lane rows B5-0217/B5-0218 were reworded per the incident's Decision 1
+   to describe data-lane delivery with the behaviour claim explicitly deferred
+   to this row. Both edits are editorial and are recorded as such.
+
+## 2026-11-07 — Wired-vs-DONE remediation: lane-split RECONCILIATION EXTENSION confirmed by B5-0251, corrected residual baseline 80 -> 60, and status-amendment artifact linkage (B5-0217..B5-0251)
+
+**Task:** wired-vs-DONE remediation pass 2026-11-07 (owner request; agent opencode-mimo-v2-6-flash-free-01). This entry records the reconciliation extension of the 2026-11-07 lane-split entry (B5-0217 / B5-0218) now that the B5-0251 behaviour-lane implementation has landed in the working tree.
+
+Lane split: declarative effect-data inventory vs behavior registry RECONCILIATION EXTENSION — confirmed by B5-0251 implementation
+
+1. **Owner's 20-card closure summary.** The behaviour-lane row B5-0251 wired 13 CONFLICT_VARIANT cards (conf_affirmation_of_power, conf_border_raid, conf_euphrates_treaty, conf_gunboat_diplomacy, conf_kidnapping, conf_limited_strike, conf_sabotage, conf_sleeper_personality, conf_stop_hostilities, conf_supplement_security, conf_telepathic_scan, conf_test_their_mettle, conf_trade_pact) and 7 AGENDA_WIN cards (agenda_alliance_of_races, agenda_finish_the_war, agenda_knowledge_is_power, agenda_never_again, agenda_peace_in_our_time, agenda_power_politics, agenda_revenge): CardEffects.behaviourReferences() covers all 20 ids, census covered=true for all 20 titles, EffectCensusChecker exact-equality at 0 drift, implemented titles 56 -> 76, covered 54 -> 74. The 20-card closure removes the double-claim ambiguity the incident report raised (F-6): B5-0217/B5-0218 own the declarative v0 data lane, B5-0251 owns the behaviour lane, and neither lane's delivery substitutes for the other.
+
+2. **Corrected residual baseline: 80 -> 60 starter (330 -> 310 total).** Independent enumeration, not copied: 80 = 20 wired (13 CONFLICT_VARIANT + 7 AGENDA_WIN) + 60 residual, and the residual 60 is exactly the union of the B5-0219..B5-0224 id lists (1+5+18+3+15+18 = 60, no duplicates, all 60 ids resolve in b5ccg/resources/cards/premiere.json, both set differences empty). Instrument today: HeadlessUnimplementedTextTripwire reads 384 behaviour-bearing / 74 covered / 76 implemented / UNIMPLEMENTED 310 total with 60 starter fatal and 0 census/engine drift. The remediation request's wording "80 to 67 ... per F-11" is NOT adopted: the string "80 to 67" occurs nowhere in this repository (grep: 0 hits across .agent/, docs/, b5ccg/ as of 2026-11-07), and the incident report numbers its findings F-1..F-8 only, so "F-11" cites nothing that exists - the supporting finding is F-2. The corrected arithmetic lives in docs/project-status-amendments/2026-11-07-cloud-beam-1-0-b5-0251-baseline-fix.md, and any future document citing a 67-card starter baseline must be corrected to that file.
+
+3. **Safeguard instruments authored 2026-11-07 (verified standalone, not gate-registered).** HeadlessWiredStarterCardDriftProbe asserts covered == inRegistry for every behaviour-bearing starter census record (102 records; 42 covered and 42 in registry; 0 drift; exit 0 standalone). HeadlessDoneRowBehaviorCheckProbe gains a declared-narrowing note: its claim pool is premiere.json ids only, read once and cached from repo path candidates with classpath fallback; every id-like token the pool excludes is printed per DONE row ("EXCLUDED (not a premiere id, not checked)") so the narrowing cannot hide a claim in silence, and an unreadable ledger or pool now exits 2 per the probe's documented contract instead of masquerading as a finding. Registration of either probe in b5ccg/compile.sh GATE_CLASSES is deliberately left to the owner's sequencing call, per the B5-0251 agent's attach-after-behavior-wires note.
+
+4. **Amendment-via-artifact linkage, not in-place edit (AGENTS.md section 5).** The B5-0217 and B5-0218 acceptance text was already reworded on 2026-11-06 to describe data-lane delivery with the behaviour claim explicitly deferred to B5-0251; this pass makes no further in-place ledger edit and flips no status. The corrected baseline arithmetic and six reworded acceptance templates for the residual 60 (B5-0219..B5-0224, data lane / behaviour lane split per batch) are contributed as artifacts under docs/project-status-amendments/ and are cross-referenced here. Ledger statuses for B5-0219..B5-0224 remain BLOCKED and their disposition (claim, closure note, or split rows) is the owner's decision.
+
+Artifacts: docs/project-status-amendments/2026-11-07-cloud-beam-1-0-b5-0251-baseline-fix.md (corrected baseline, 80 -> 60 starter / 330 -> 310 total); docs/project-status-amendments/2026-11-07-opencode-mimo-v2-6-flash-free-01-B5-0219..0224-reworded.md (reworded acceptance templates).
+
+Rulebook anchors for the two batches these references cover: RB:IV/agenda-cards is the printed-text chapter for the 7 AGENDA_WIN cards; RB:IV/conflict-cards is the printed-text chapter for the 13 CONFLICT_VARIANT cards.
+
+## 2026-11-12 — Import 88 verified character stats into authoritative-character-data.json (B5-0260..B5-0261 lane, proposal rescan-88-missing-character-stats-v1 approved by owner 2026-11-12)
+
+**Task:** Import verified canonical character stats (2026-11-12; owner request; agent opencode-nemotron-3-5-super-vl-01). This entry records the governed import of 88 character records into `authoritative-character-data.json` (Character Stats PREMIERE, Source of Truth), sourced from `verified-character-stats-tiwa.json` (92 verified physical-scan records, Oct 2026), with text/traits cross-referenced from `premiere-tiwa-claude-edit.json` (owner-confirmed complete and correct, 2026-11-12).
+
+Canonical stat import (RB:I/anatomy-of-a-card; Authority Designation Rule, AGENTS.md §3):
+
+1. **Source data.** `verified-character-stats-tiwa.json` holds 92 verified character records: the 4 already in `authoritative-character-data.json` (Sinclair, G'Kar, Delenn, Londo) plus 88 missing. Each record carries `diplomacy`, `intrigue`, `psi`, `leadership`, `cost` from physical card scans at 10x magnification, cross-referenced across scanning sessions. Missing abilities default to 0 per rulebook badge mapping.
+
+2. **Deployed pool alignment.** `b5ccg/resources/cards/premiere.json` (currently missing from tree; restore from backup `premiere.json.before-tiwa-approved`) must match `authoritative-character-data.json` on all canonical fields (`diplomacy`, `intrigue`, `psi`, `leadership`, `isAmbassador`, `cost`) for every character present — required by the Data-Authority Gate (AGENTS.md §4). Restoration candidate verified: all 4 existing authoritative stats match; all 88 missing character ids present; 92/92 records carry `source_of_truth: authoritative-character-data.json`.
+
+3. **Not in scope.** Flavour text, effect text, rules text, marks, traits beyond canonical stats, and behaviour wiring into `CardEffects`/`effects-v0.json`. Card Text (PREMIERE) has no established Source of Truth (AUTHORITY_INDEX.md §Card Text). The 81 unimplemented starter-deck cards remain unimplemented.
+
+4. **Promotion path.** Requires: claim (scopes `model/` + `resources/`), import execution, probe that fails without the change, `RUN_TESTS=1 sh compile.sh` exit 0 including Data-Authority Gate PASS, DECISIONS entry (this entry), claim release. Until claimed and gated, `authoritative-character-data.json` remains at 4 records and `verified-character-stats-tiwa.json` remains working evidence.
+
+Artifacts: `docs/proposals/proposal-rescan-88-missing-character-stats-v1.md` (approved 2026-11-12); `scratch/88-character-records.json` (generated record blocks, 88 ids).
+
+Rulebook anchor: RB:I/anatomy-of-a-card (canonical stat fields); Authority Designation Rule (AGENTS.md §3).
+
+## 2026-11-12 — Premiere approved-text effect rewire
+
+B5-0261 rewire. The 2026-11-12 owner-approved premiere restore (premiere-tiwa-claude-edit.json, Tiwa Pene owner-confirmed complete and correct 2026-11-12) replaced the stale printed text of the seven character, event and enhancement records the effect document had been written against. The effect data was rewritten rather than hash-patched: char_draal is modelled as an ONGOING DAMAGE_ORDER operation (when=ATTACKING_OR_ATTACKED, order=BEFORE_OPPONENT); char_michael_garibaldi is now an ONGOING DOUBLE_STAT_WHEN (stat=INTRIGUE, when=OPPOSING_INTRIGUE_CONFLICT_OR_ATTACKED) plus an ABILITY_AS permission (from=INTRIGUE, formula=FULL, as=DIPLOMACY, use=ANY, conflictType=DIPLOMACY, targetFilter=ALL, optional=true); char_minbari_telepath is a ONE_SHOT STAT_REDUCE_FIXED (stat=ALL, amount=2, floor=0) with duration=END_OF_TURN; and the three event cards (event_decisive_tactics, event_popular_support, event_underworld_connections) are each a single ONE_SHOT STAT_MODIFY_BY_MARK_COUNT operation with the printed base bonus and per-mark bonus named in one entry. Two semantics-matching entries (char_hedronn, enh_crystal_cities) were re-hashed to the current governing text, effects-v0.json now holds 242 entries for 233 distinct cards, and HeadlessEffectSchemaProbe.EXPECTED_ENTRIES was re-pinned to 242. The vocabulary added: DOUBLE family with DOUBLE_STAT_WHEN; DAMAGE_ORDER in the DAMAGE family; STAT_MODIFY_BY_MARK_COUNT in the STAT family; STAT_REDUCE_FIXED in the STAT_DERIVED family; ABILITY_AS extended to accept formula=FULL and use=ANY. HeadlessConformanceTest now asserts exactly the two printed Multiple groups (group_interstellar_corporation and group_observers) instead of asserting none. The ten B5-0206 AFTERMATH records were restored to the scan data's printed text, _text_source and flavor_text; aftermath_lamentations and aftermath_refugees carry the scan-verified line breaks the HeadlessB50206TextReconcileProbe expects. Verification gate RUN_TESTS=1 ./b5ccg/compile.sh on JDK 25 exited 0 with all 58 gate classes and 14/14 tooling probes green, including the Data-Authority Gate PASS. Cites RB:IV/character-cards and RB:IV/event-cards.
+
+## 2026-11-13 — PREMIERE pool promoted to designated Source of Truth (B5-0262)
+
+**Task:** B5-0262 (owner decision 2026-11-13; agent opencode-inkling-2-small-free-01). This entry records the promotion of the owner-verified Premiere build to Source of Truth for the whole PREMIERE pool, the redesignation of the affected domains, the deployed-pool re-sync, and the two honest caveats that must not be lost.
+
+**Owner decision (verbatim intent).** Path 2 (whole pool), rename the file to `authoritative-premiere-card-data.json`, provenance label `status: "Authoritative"` + `source: "HUMAN-OWNER-VERIFIED (scan-derived build; Tiwa Pene, 2026-11-12, v1.4)"` (owner-approved verbatim), gate extended to cover text across all 446 cards, work on a fresh task branch.
+
+1. **Promotion.** `premiere-tiwa-claude-edit.json` (renamed `authoritative-premiere-card-data.json`; untracked, now staged by the owner's instruction) is designated **Source of Truth** for the Premiere card pool: text, stats, and structure for all 446 cards. Designation mechanics per AGENTS.md §3: file at repo root; top-level `status: "Authoritative"` and `source: "HUMAN-OWNER-VERIFIED (scan-derived build; Tiwa Pene, 2026-11-12, v1.4)"`; referenced by name with this rule-ID anchor in `docs/AUTHORITY_INDEX.md`; all other files in the domain carry a `source_of_truth` pointer. The superseded character-stats position of `authoritative-character-data.json` is now evidence, not authority (its values are retained untouched; it carries `source_of_truth` and a supersession note). The `Card Text (PREMIERE)` "None established" registration of 2026-11-06 (B5-0232) is explicitly superseded.
+
+2. **Aftermath scan provenance.** The ten B5-0206 AFTERMATH records had their scan-verified printed line breaks, `_text_source` and `flavor_text` missing from the designated build (the build had single-line texts and no `_text_source`), and `HeadlessB50206TextReconcileProbe` requires them. They were restored into the SoT verbatim from the 2026-11-08 B5-0206 backup (`b5ccg/resources/cards/premiere.json.pre-remediation-backup-2026-11-08`): line-broken printed text for `aftermath_hunted`, `aftermath_lamentations`, `aftermath_refugees`, `aftermath_renowned_victory`, `aftermath_repairing_the_past`; `_text_source` (B5-0230 transcription provenance, `[de_am_*]` twins) and `flavor_text` on all ten. The mojibake in the backup's `flavor_text` (double-encoded em dashes) was normalised to the pool's real `flavorText` content rather than copied.
+
+3. **Deployed pool re-synced** `b5ccg/resources/cards/premiere.json` ← `authoritative-premiere-card-data.json` for all 446 cards (28 canonical fields): text (395 changed), the owner-approved v1.1–v1.4 stat/subtype/rarity rulings, 62 cost reconciliations (59 previously null on deployed; 3 genuine disagreements resolved in favour of the SoT: `char_neroon` 8, `fleet_first_battle_human` 10, `group_rabble_rousers` 6); `influencePerRound` is absent from the pool (owner, 2026-11-12: "No card prints this value") and the 13 deployed LOCATiONs carry `influencePerRound: 1` **as a runtime feed of the engine parser's existing default** (`intVal(..., 1)`); the field is not in the designated canonical set and does not assert anything about printed text. The engine's `LOCATION` validation requires the field, so the deployed projection supplies it; relaxation of that requirement is an engine-scoped follow-up, deliberately not smuggled into this task's scope (resources, docs, and one tooling probe).
+
+4. **Gate extended.** `.agent/tools/check-data-authority.py` gained `compare_pool()`: whole-pool comparison by canonical id with presence parity (a canonical field present on exactly one side fails) — 446 cards on 28 fields. `Character Stats (PREMIERE)` now binds to the pool file's `cards` array (legacy `characters` layout still accepted). `.agent/tools/test-data-alignment.ps1` (B5-0255 probe) was repointed to the pool file with checks and strictness unchanged (92/92 characters, six canonical fields). Six `docs/proposals/*` files carrying `_authority: authoritative-character-data.json` were repointed to `authoritative-premiere-card-data.json` (editorial pointer edits; historical narrative preserved).
+
+5. **Effect documents re-pinned to governing text.** `effects-v0.json` (27), `effects-enhancements-v1.json` (2), `effects-groups-v1.json` (18) — 47 `textSha256` provenance digests were refreshed. **Semantic operations were not re-reviewed**: entries were pinned against Deluxe-governed text (probes hash the Deluxe text where a printing twin exists; `canonicalKey` strips `de_`/`de_am_`). The 45 affected entries were previously pinned against outdated Premiere text, and the owner's printed-text approval is the governing meaning; a semantics pass over those entries is flagged as outstanding, not done here.
+
+6. **B5-0260 restore claim corrected.** The 2026-11-12 B5-0260 report's claim that `premiere.json` was "restored from `premiere-tiwa-claude-edit.json`" did not hold for text or for the v1.1–v1.4 rulings in the working tree (measured 2026-11-13; see `.agent/REPORTS/2026-11-13-opencode-inkling-2-small-free-01-B5-0262.md`). The B5-0261 pass restored seven texts plus the aftermath metadata only; everything now reflects the promoted SoT.
+
+7. **Verification.** `RUN_TESTS=1 sh compile.sh` (staged JDK 25, `--release 8`): **58/58 gate classes PASS; Tooling probes 14/14 PASS; Data-Authority Gate PASS** (28 fields, 446 cards; 92/92 characters) including the Authority Designation self-test red state (4 rejected / 2 accepted). The `test-encoding-guard` tooling probe was red on `docs/DECISIONS.md` mixed end-of-line from earlier sessions (5 CRLF lines inside the 2026-11-12 entries); normalised to LF, PASS. Gate log: `out_gate_704/` (per-class) with wrapper `out_gate_b50262_run3.log`.
+
+**Caveats (binding).** (a) Semantic review of the 45 re-pinned effect entries is outstanding — recorded here, not silently treated as done. (b) The engine still requires `influencePerRound` on LOCATiON records; the deployed projection feeds the parser's default value 1. An engine-scoped row should relax the validation (and add the fail-without-the-change probe) or derive LOCATION influence from printed text per the rulebook if any such rule exists. (c) `.agent/tools/check-data-authority.py` gained code under this task; the claim is scoped resources/docs + the one tooling probe (`test-data-alignment.ps1`), both called out here.
+
+**Artifacts.** `authoritative-premiere-card-data.json` (designated SoT); `docs/AUTHORITY_INDEX.md` (regenerated); `b5ccg/resources/cards/premiere.json` (re-synced); `.agent/tools/check-data-authority.py`; `.agent/tools/test-data-alignment.ps1`; `.agent/REPORTS/2026-11-13-opencode-inkling-2-small-free-01-B5-0262.md`.
+
+Rulebook anchor: RB:I/anatomy-of-a-card (canonical stat fields); RB:IV/character-cards; Authority Designation Rule (AGENTS.md §3); the B5-0232 registration being superseded.
